@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>12-1 CSS变量（CSS Custom Properties）</title>
+  <style>
+    :root {
+      /* 全局 CSS 变量（以 chen_ 开头） */
+      --chen_bg_color: #f5f7fa;
+      --chen_text_color: #2f3a4b;
+      --chen_primary_color: #4d7cfe;
+      --chen_secondary_color: #38bdf8;
+      --chen_card_bg: #ffffff;
+      --chen_border_color: #e5eaf2;
+      --chen_radius: 12px;
+      --chen_padding: 24px;
+      --chen_gap: 16px;
+      --chen_shadow: 0 10px 40px -20px rgba(77, 124, 254, 0.6);
+      --chen_font_size_base: 16px;
+      --chen_font_size_title: clamp(1.5rem, 3vw, 2rem);
+    }
+
+    /* 局部作用域：深色主题 */
+    .chen_dark_theme {
+      --chen_bg_color: #0f172a;
+      --chen_text_color: #e2e8f0;
+      --chen_card_bg: #16213f;
+      --chen_border_color: rgba(255, 255, 255, 0.08);
+      --chen_shadow: 0 20px 60px -30px rgba(56, 189, 248, 0.5);
+    }
+
+    /* 局部作用域：强调卡片 */
+    .chen_highlight_card {
+      --chen_primary_color: #22c55e;
+      --chen_secondary_color: #4ade80;
+      --chen_card_bg: #f0fff6;
+      --chen_border_color: #bbf7d0;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      background-color: var(--chen_bg_color);
+      color: var(--chen_text_color);
+      font-size: var(--chen_font_size_base);
+      line-height: 1.6;
+      padding: clamp(1rem, 4vw, 2rem);
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .chen_container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(1.5rem, 4vw, 2.5rem);
+    }
+
+    .chen_header {
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    .chen_title {
+      font-size: var(--chen_font_size_title);
+      font-weight: 700;
+      background: linear-gradient(
+        90deg,
+        var(--chen_primary_color),
+        var(--chen_secondary_color)
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    .chen_subtitle {
+      color: color-mix(in srgb, var(--chen_text_color) 70%, transparent);
+      font-size: clamp(0.95rem, 2vw, 1.05rem);
+    }
+
+    .chen_toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: var(--chen_gap);
+    }
+
+    .chen_btn {
+      appearance: none;
+      border: 1px solid var(--chen_border_color);
+      background: var(--chen_primary_color);
+      color: #ffffff;
+      padding: 0.6rem 1.2rem;
+      border-radius: calc(var(--chen_radius) - 4px);
+      font-size: 0.98rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--chen_shadow);
+      transition: transform 160ms ease-in-out, filter 160ms ease-in-out,
+        background-color 160ms ease-in-out;
+      white-space: nowrap;
+    }
+
+    .chen_btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .chen_btn:active {
+      transform: translateY(1px);
+    }
+
+    .chen_btn.chen_secondary {
+      background: transparent;
+      color: var(--chen_text_color);
+      backdrop-filter: blur(4px);
+    }
+
+    .chen_card_group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: clamp(1rem, 3vw, 1.5rem);
+    }
+
+    .chen_card {
+      background-color: var(--chen_card_bg);
+      border: 1px solid var(--chen_border_color);
+      border-radius: var(--chen_radius);
+      padding: var(--chen_padding);
+      box-shadow: var(--chen_shadow);
+      display: flex;
+      flex-direction: column;
+      gap: var(--chen_gap);
+      transition: transform 160ms ease-in-out, box-shadow 160ms ease-in-out,
+        background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .chen_card:hover {
+      transform: translateY(-2px);
+    }
+
+    .chen_card_title {
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+
+    .chen_card_desc {
+      color: color-mix(in srgb, var(--chen_text_color) 75%, transparent);
+    }
+
+    .chen_demo_box {
+      width: 100%;
+      min-height: 80px;
+      border-radius: calc(var(--chen_radius) - 4px);
+      background: linear-gradient(
+        135deg,
+        var(--chen_primary_color),
+        var(--chen_secondary_color)
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 0.75rem 1rem;
+      text-align: center;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+
+    .chen_var_list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 1rem;
+      border-radius: calc(var(--chen_radius) - 4px);
+      background-color: color-mix(in srgb, var(--chen_card_bg) 92%, black 8%);
+      border: 1px dashed var(--chen_border_color);
+      font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+      font-size: 0.95rem;
+      overflow-x: auto;
+    }
+
+    .chen_var_item {
+      white-space: nowrap;
+    }
+
+    .chen_footer {
+      text-align: center;
+      color: color-mix(in srgb, var(--chen_text_color) 65%, transparent);
+      font-size: 0.98rem;
+      padding: 1rem 0;
+    }
+
+    @media (max-width: 480px) {
+      .chen_toolbar {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chen_container">
+    <header class="chen_header">
+      <h1 class="chen_title">12-1 CSS 变量（CSS Custom Properties）</h1>
+      <p class="chen_subtitle">
+        展示 :root 全局变量、局部作用域变量、var() 函数及回退值（fallback）的使用
+      </p>
+    </header>
+
+    <div class="chen_toolbar">
+      <button class="chen_btn" id="chen_btn_light">浅色主题（默认）</button>
+      <button class="chen_btn chen_secondary" id="chen_btn_dark">
+        深色主题
+      </button>
+      <button class="chen_btn chen_secondary" id="chen_btn_highlight">
+        强调色卡片
+      </button>
+      <button class="chen_btn chen_secondary" id="chen_btn_reset">
+        重置所有作用域
+      </button>
+    </div>
+
+    <div class="chen_card_group">
+      <section class="chen_card">
+        <h2 class="chen_card_title">1. 全局变量（:root）</h2>
+        <p class="chen_card_desc">
+          在 <code>:root</code> 中定义以 <code>--chen_</code>
+          开头的自定义属性，整个页面都可以通过 <code>var()</code> 使用。
+        </p>
+        <div class="chen_demo_box">var(--chen_primary_color)</div>
+        <div class="chen_var_list">
+          <div class="chen_var_item">--chen_bg_color: #f5f7fa;</div>
+          <div class="chen_var_item">--chen_text_color: #2f3a4b;</div>
+          <div class="chen_var_item">--chen_primary_color: #4d7cfe;</div>
+          <div class="chen_var_item">--chen_card_bg: #ffffff;</div>
+          <div class="chen_var_item">--chen_radius: 12px;</div>
+          <div class="chen_var_item">--chen_padding: 24px;</div>
+        </div>
+      </section>
+
+      <section class="chen_card chen_dark_theme">
+        <h2 class="chen_card_title">2. 局部作用域变量（.chen_dark_theme）</h2>
+        <p class="chen_card_desc">
+          CSS 变量具有层叠（Cascading）特性，在某个选择器内重新定义同名变量，只影响该作用域内的元素。
+        </p>
+        <div class="chen_demo_box">深色主题作用域内的 var()</div>
+        <div class="chen_var_list">
+          <div class="chen_var_item">--chen_bg_color: #0f172a;</div>
+          <div class="chen_var_item">--chen_text_color: #e2e8f0;</div>
+          <div class="chen_var_item">--chen_card_bg: #16213f;</div>
+          <div class="chen_var_item">--chen_border_color: rgba(255,255,255,0.08);</div>
+        </div>
+      </section>
+
+      <section class="chen_card chen_highlight_card">
+        <h2 class="chen_card_title">3. 作用域覆盖（绿色强调）</h2>
+        <p class="chen_card_desc">
+          为不同的卡片设置不同的变量值，实现主题化（Theming），而不需要修改组件样式。
+        </p>
+        <div class="chen_demo_box">var(--chen_primary_color) = #22c55e</div>
+        <div class="chen_var_list">
+          <div class="chen_var_item">--chen_primary_color: #22c55e;</div>
+          <div class="chen_var_item">--chen_secondary_color: #4ade80;</div>
+          <div class="chen_var_item">--chen_card_bg: #f0fff6;</div>
+          <div class="chen_var_item">--chen_border_color: #bbf7d0;</div>
+        </div>
+      </section>
+
+      <section class="chen_card">
+        <h2 class="chen_card_title">4. var() 函数与回退值（Fallback）</h2>
+        <p class="chen_card_desc">
+          使用 <code>var(--chen_xxx, #999)</code>
+          可以在变量未定义时提供默认回退值，提升健壮性。
+        </p>
+        <div class="chen_demo_box" style="background: var(--chen_unknown_color, #9ca3af)">
+          未定义变量 + 回退值（#9ca3af）
+        </div>
+        <div class="chen_var_list">
+          <div class="chen_var_item">
+            background: var(--chen_unknown_color, #9ca3af);
+          </div>
+          <div class="chen_var_item">
+            color: var(--chen_text_color, #111111);
+          </div>
+          <div class="chen_var_item">border-radius: var(--chen_radius, 8px);</div>
+        </div>
+      </section>
+
+      <section class="chen_card">
+        <h2 class="chen_card_title">5. CSS 变量的计算与过渡</h2>
+        <p class="chen_card_desc">
+          CSS 变量可以配合 <code>color-mix()</code>、<code>calc()</code>、过渡（transition）等属性使用，实现动态主题切换效果。
+        </p>
+        <div class="chen_demo_box">主题切换时平滑过渡背景/文字颜色</div>
+        <div class="chen_var_list">
+          <div class="chen_var_item">
+            transition: background-color 0.3s ease, color 0.3s ease;
+          </div>
+          <div class="chen_var_item">
+            color: color-mix(in srgb, var(--chen_text_color) 75%, transparent);
+          </div>
+          <div class="chen_var_item">
+            border-radius: calc(var(--chen_radius) - 4px);
+          </div>
+        </div>
+      </section>
+
+      <section class="chen_card">
+        <h2 class="chen_card_title">6. 总结</h2>
+        <p class="chen_card_desc">
+          CSS 自定义变量（Custom Properties）让样式更具可维护性、可复用性和可扩展性。结合局部作用域可以轻松实现多主题、组件样式变体等设计需求。
+        </p>
+        <div class="chen_demo_box">
+          使用 var() + 层叠（Cascading）实现灵活的样式系统
+        </div>
+      </section>
+    </div>
+
+    <footer class="chen_footer">
+      © 2026 12-1.html · CSS 变量展示 · 学号：24001010722 · 姓名：陈弘毅
+    </footer>
+  </div>
+
+  <script>
+    const chen_body = document.body;
+    const chen_btnLight = document.getElementById("chen_btn_light");
+    const chen_btnDark = document.getElementById("chen_btn_dark");
+    const chen_btnHighlight = document.getElementById("chen_btn_highlight");
+    const chen_btnReset = document.getElementById("chen_btn_reset");
+
+    function chen_setTheme(theme) {
+      chen_body.classList.remove("chen_dark_theme", "chen_highlight_card");
+      if (theme === "dark") {
+        chen_body.classList.add("chen_dark_theme");
+      } else if (theme === "highlight") {
+        chen_body.classList.add("chen_highlight_card");
+      }
+      // light: 不添加额外类，使用 :root 默认变量
+    }
+
+    if (chen_btnLight) {
+      chen_btnLight.addEventListener("click", function () {
+        chen_setTheme("light");
+      });
+    }
+
+    if (chen_btnDark) {
+      chen_btnDark.addEventListener("click", function () {
+        chen_setTheme("dark");
+      });
+    }
+
+    if (chen_btnHighlight) {
+      chen_btnHighlight.addEventListener("click", function () {
+        chen_setTheme("highlight");
+      });
+    }
+
+    if (chen_btnReset) {
+      chen_btnReset.addEventListener("click", function () {
+        chen_setTheme("light");
+      });
+    }
+  </script>
+</body>
+
+</html>
