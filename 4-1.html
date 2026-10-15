@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>722 陈弘毅</title>
+    <style>
+        h2,h3,p{
+            padding:0;
+            margin:0;
+        }
+        #box{
+            padding:8px;
+            margin:20px;
+            border:1px solid #ccc;
+            font-size:12px;
+            width:480px;
+        }
+        #box  h3{
+            font-size:16px;
+            line-height:33px;
+            text-align: center;
+            color: #034;
+            letter-spacing:3px;
+        }
+        #box p{
+            color: #666;
+            text-indent:2em;
+            line-height:150%;
+        }
+        #box a{
+            color: #c00;
+            text-decoration:none;
+        }
+        /* 拓展1：学号、姓名、班级蓝色加粗，共用一个选择器，给这几个文字套上.bb类 */
+        .bb{
+            color:blue;
+            font-weight:bold;
+        }
+        /* 拓展2：h2黑底白字 */
+        h2{
+            background-color:black;
+            color:white;
+        }
+        /* 拓展3：知识点（h3）蓝底白字 */
+        #box h3{
+            background-color:blue;
+            color:white;
+        }
+    </style>
+</head>
+<body>
+    <h2>css群组选择器和后代选择器</h2>
+    <div id="box">
+        <h3>CSS进阶</h3>
+        <p> 学号：<span class="bb">722</span>，姓名：<span class="bb">陈弘毅</span>，班级：<span class="bb">24007</span>，《高级网页设计》设计的学习难度：一般， 
+            <a href="#">【更多】</a>
+        </p>
+    </div>
+</body>
+</html>

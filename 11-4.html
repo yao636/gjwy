@@ -1,0 +1,729 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11-4 排行榜（Ranking List）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://at.alicdn.com/t/c/font_4321335_8z351w4eqf.css">
+  <style>
+    :root {
+      --chen_bg: #0f172a;
+      --chen_card_bg: rgba(15, 26, 58, 0.9);
+      --chen_border: rgba(255, 255, 255, 0.08);
+      --chen_text: #e2e8f0;
+      --chen_text_secondary: #94a3b8;
+      --chen_gold: #f59e0b;
+      --chen_silver: #cbd5f5;
+      --chen_bronze: #b87333;
+      --chen_primary: #4d7cfe;
+      --chen_success: #22c55e;
+      --chen_danger: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(circle at top, var(--chen_bg), #020617);
+      color: var(--chen_text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+      min-height: 100vh;
+    }
+
+    .chen_container {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .chen_header {
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    .chen_header_title {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--chen_primary), #38bdf8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    .chen_header_subtitle {
+      color: var(--chen_text_secondary);
+      font-size: clamp(0.95rem, 2vw, 1.05rem);
+    }
+
+    .chen_board {
+      background: var(--chen_card_bg);
+      border: 1px solid var(--chen_border);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px -30px rgba(77, 124, 254, 0.5);
+      backdrop-filter: blur(10px) saturate(120%);
+      overflow: hidden;
+    }
+
+    .chen_board_header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: clamp(1rem, 3vw, 1.5rem) clamp(1rem, 3vw, 2rem);
+      border-bottom: 1px solid var(--chen_border);
+      background: radial-gradient(circle at left, rgba(77, 124, 254, 0.18), transparent 70%);
+    }
+
+    .chen_board_title_group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .chen_crown_icon {
+      font-size: 1.8rem;
+      color: var(--chen_gold);
+      filter: drop-shadow(0 0 18px rgba(245, 158, 11, 0.45));
+    }
+
+    .chen_board_name {
+      font-size: clamp(1.2rem, 2.6vw, 1.6rem);
+      font-weight: 600;
+    }
+
+    .chen_board_update {
+      color: var(--chen_text_secondary);
+      font-size: 0.95rem;
+    }
+
+    .chen_table_wrap {
+      overflow-x: auto;
+    }
+
+    .chen_rank_table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px;
+    }
+
+    .chen_rank_table thead tr {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .chen_rank_table th {
+      text-align: left;
+      font-weight: 600;
+      color: var(--chen_text_secondary);
+      font-size: 0.95rem;
+      padding: 0.9rem clamp(1rem, 2.2vw, 1.8rem);
+      white-space: nowrap;
+    }
+
+    .chen_rank_table th.chen_center {
+      text-align: center;
+    }
+
+    .chen_rank_table td {
+      padding: 1rem clamp(1rem, 2.2vw, 1.8rem);
+      border-top: 1px solid var(--chen_border);
+      vertical-align: middle;
+    }
+
+    .chen_rank_table tbody tr {
+      transition: background 160ms ease-in-out, transform 160ms ease-in-out;
+    }
+
+    .chen_rank_table tbody tr:hover {
+      background: radial-gradient(circle at left, rgba(77, 124, 254, 0.14), transparent 70%);
+      transform: translateY(-1px);
+    }
+
+    .chen_rank_table tbody tr:first-child td {
+      border-top: none;
+    }
+
+    .chen_rank_num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--chen_border);
+      color: var(--chen_text_secondary);
+    }
+
+    .chen_rank_num.chen_top1 {
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.7));
+      color: #1f2937;
+      box-shadow: 0 0 26px rgba(245, 158, 11, 0.45);
+      border-color: transparent;
+    }
+
+    .chen_rank_num.chen_top2 {
+      background: radial-gradient(circle, rgba(226, 232, 255, 0.95), rgba(148, 163, 184, 0.8));
+      color: #0f172a;
+      box-shadow: 0 0 22px rgba(203, 213, 225, 0.38);
+      border-color: transparent;
+    }
+
+    .chen_rank_num.chen_top3 {
+      background: radial-gradient(circle, rgba(196, 138, 86, 0.95), rgba(153, 101, 62, 0.8));
+      color: #fff7ed;
+      box-shadow: 0 0 20px rgba(184, 115, 51, 0.35);
+      border-color: transparent;
+    }
+
+    .chen_user_info {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+    }
+
+    .chen_avatar_wrap {
+      position: relative;
+    }
+
+    .chen_avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 10px 30px -18px rgba(77, 124, 254, 0.9);
+    }
+
+    .chen_badge {
+      position: absolute;
+      right: -4px;
+      bottom: -4px;
+      width: 1.6rem;
+      height: 1.6rem;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--chen_gold), #d97706);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1f2937;
+      font-size: 1rem;
+      font-weight: 700;
+      box-shadow: 0 0 18px rgba(245, 158, 11, 0.5);
+      border: 2px solid rgba(15, 23, 42, 0.9);
+    }
+
+    .chen_user_name {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .chen_user_tag {
+      margin-top: 0.2rem;
+      color: var(--chen_text_secondary);
+      font-size: 0.9rem;
+    }
+
+    .chen_center_text {
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.98rem;
+      white-space: nowrap;
+    }
+
+    .chen_score_high {
+      color: var(--chen_success);
+    }
+
+    .chen_score_mid {
+      color: #38bdf8;
+    }
+
+    .chen_score_low {
+      color: var(--chen_danger);
+    }
+
+    .chen_change {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    .chen_change_up {
+      color: var(--chen_success);
+    }
+
+    .chen_change_down {
+      color: var(--chen_danger);
+    }
+
+    .chen_change_flat {
+      color: var(--chen_text_secondary);
+    }
+
+    .chen_level {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid var(--chen_border);
+      background: rgba(255, 255, 255, 0.05);
+      font-size: 0.9rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .chen_dot {
+      width: 0.45rem;
+      height: 0.45rem;
+      border-radius: 50%;
+    }
+
+    .chen_dot_master {
+      background: radial-gradient(circle, #a855f7, #7c3aed);
+      box-shadow: 0 0 14px rgba(124, 58, 237, 0.5);
+    }
+
+    .chen_dot_diamond {
+      background: radial-gradient(circle, #38bdf8, #2563eb);
+      box-shadow: 0 0 14px rgba(37, 99, 235, 0.45);
+    }
+
+    .chen_dot_platinum {
+      background: radial-gradient(circle, #22d3ee, #0ea5e9);
+      box-shadow: 0 0 14px rgba(14, 165, 233, 0.4);
+    }
+
+    .chen_dot_gold {
+      background: radial-gradient(circle, var(--chen_gold), #d97706);
+      box-shadow: 0 0 14px rgba(217, 119, 6, 0.4);
+    }
+
+    .chen_dot_silver {
+      background: radial-gradient(circle, var(--chen_silver), #94a3b8);
+      box-shadow: 0 0 12px rgba(148, 163, 184, 0.35);
+    }
+
+    .chen_legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem 1.5rem;
+      padding: 0 clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 1.5rem);
+      color: var(--chen_text_secondary);
+      font-size: 0.95rem;
+    }
+
+    .chen_legend_item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .chen_footer {
+      text-align: center;
+      color: var(--chen_text_secondary);
+      font-size: 0.95rem;
+      padding: 1rem 0;
+    }
+
+    @media (max-width: 680px) {
+      .chen_rank_table {
+        min-width: 620px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="chen_container">
+    <header class="chen_header">
+      <h1 class="chen_header_title">排行榜（Top 10）</h1>
+      <p class="chen_header_subtitle">数据实时更新 · 综合积分 · 段位分布</p>
+    </header>
+
+    <section class="chen_board">
+      <div class="chen_board_header">
+        <div class="chen_board_title_group">
+          <i class="iconfont icon-huangguan chen_crown_icon"></i>
+          <div>
+            <h2 class="chen_board_name">2026 年度巅峰榜</h2>
+            <p class="chen_board_update">更新时间：2026-10-12 16:40</p>
+          </div>
+        </div>
+        <p class="chen_board_update">统计范围：全平台活跃玩家</p>
+      </div>
+
+      <div class="chen_table_wrap">
+        <table class="chen_rank_table">
+          <thead>
+            <tr>
+              <th>排名</th>
+              <th>玩家</th>
+              <th class="chen_center">积分（Score）</th>
+              <th class="chen_center">胜率（Win%）</th>
+              <th class="chen_center">场次（Matches）</th>
+              <th class="chen_center">段位（Tier）</th>
+              <th class="chen_center">排名变化（24h）</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <span class="chen_rank_num chen_top1">1</span>
+              </td>
+              <td>
+                <div class="chen_user_info">
+                  <div class="chen_avatar_wrap">
+                    <img class="chen_avatar" src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=200&h=200&fit=crop&crop=face" alt="玩家头像">
+                    <span class="chen_badge">1</span>
+                  </div>
+                  <div>
+                    <div class="chen_user_name">Chen_Alpha</div>
+                    <div class="chen_user_tag">ID: 10241001 · 战队：Nova</div>
+                  </div>
+                </div>
+              </td>
+              <td class="chen_center_text chen_score_high">98,420</td>
+              <td class="chen_center_text">78.6%</td>
+              <td class="chen_center_text">1,264</td>
+              <td class="chen_center_text">
+                <span class="chen_level">
+                  <span class="chen_dot chen_dot_master"></span>
+                  Master
+                </span>
+              </td>
+              <td class="chen_center_text">
+                <span class="chen_change chen_change_up">
+                  <i class="iconfont icon-shangsheng"></i>
+                  +1
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="chen_rank_num chen_top2">2</span>
+              </td>
+              <td>
+                <div class="chen_user_info">
+                  <div class="chen_avatar_wrap">
+                    <img class="chen_avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face" alt="玩家头像">
+                  </div>
+                  <div>
+                    <div class="chen_user_name">Chen_Vortex</div>
+                    <div class="chen_user_tag">ID: 10241002 · 战队：Apex</div>
+                  </div>
+                </div>
+              </td>
+              <td class="chen_center_text chen_score_high">95,860</td>
+              <td class="chen_center_text">76.9%</td>
+              <td class="chen_center_text">1,186</td>
+              <td class="chen_center_text">
+                <span class="chen_level">
+                  <span class="chen_dot chen_dot_master"></span>
+                  Master
+                </span>
+              </td>
+              <td class="chen_center_text">
+                <span class="chen_change chen_change_flat">
+                  <i class="iconfont icon-wujiaoxing"></i>
+                  0
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="chen_rank_num chen_top3">3</span>
+              </td>
+              <td>
+                <div class="chen_user_info">
+                  <div class="chen_avatar_wrap">
+                    <img class="chen_avatar" src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=200&h=200&fit=crop&crop=face" alt="玩家头像">
+                  </div>
+                  <div>
+                    <div class="chen_user_name">Chen_Rogue</div>
+                    <div class="chen_user_tag">ID: 10241003 · 战队：Obsidian</div>
+                  </div>
+                </div>
+              </td>
+              <td class="chen_center_text chen_score_mid">93,240</td>
+              <td class="chen_center_text">75.2%</td>
+              <td class="chen_center_text">1,142</td>
+              <td class="chen_center_text">
+                <span class="chen_level">
+                  <span class="chen_dot chen_dot_diamond"></span>
+                  Diamond I
+                </span>
+              </td>
+              <td class="chen_center_text">
+                <span class="chen_change chen_change_down">
+                  <i class="iconfont icon-xiajiang"></i>
+                  -1
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="chen_rank_num">4</span>
+              </td>
+              <td>
+                <div class="chen_user_info">
+                  <div class="chen_avatar_wrap">
+                    <img class="chen_avatar" src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop&crop=face" alt="玩家头像">
+                  </div>
+                  <div>
+                    <div class="chen_user_name">Chen_Orbit</div>
+                    <div class="chen_user_tag">ID: 10241004 · 战队：Nebula</div>
+                  </div>
+                </div>
+              </td>
+              <td class="chen_center_text chen_score_mid">91,580</td>
+              <td class="chen_center_text">73.8%</td>
+              <td class="chen_center_text">1,098</td>
+              <td class="chen_center_text">
+                <span class="chen_level">
+                  <span class="chen_dot chen_dot_diamond"></span>
+                  Diamond I
+                </span>
+              </td>
+              <td class="chen_center_text">
+                <span class="chen_change chen_change_up">
+                  <i class="iconfont icon-shangsheng"></i>
+                  +2
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="chen_rank_num">5</span>
+              </td>
+              <td>
+                <div class="chen_user_info">
+                  <div class="chen_avatar_wrap">
+                    <img class="chen_avatar" src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop&crop=face" alt="玩家头像">
+                  </div>
+                  <div>
+                    <div class="chen_user_name">Chen_Nexus</div>
+                    <div class="chen_user_tag">ID: 10241005 · 战队：Zenith</div>
+                  </div>
+                </div>
+              </td>
+              <td class="chen_center_text chen_score_mid">89,960</td>
+              <td class="chen_center_text">72.5%</td>
+              <td class="chen_center_text">1,056</td>
+              <td class="chen_center_text">
+                <span class="chen_level">
+                  <span class="chen_dot chen_dot_platinum"></span>
+                  Platinum II
+                </span>
+              </td>
+              <td class="chen_center_text">
+                <span class="chen_change chen_change_up">
+                  <i class="iconfont icon-shangsheng"></i>
+                  +1
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="chen_rank_num">6</span>
+              </td>
+              <td>
+                <div class="chen_user_info">
+                  <div class="chen_avatar_wrap">
+                    <img class="chen_avatar" src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&h=200&fit=crop&crop=face" alt="玩家头像">
+                  </div>
+                  <div>
+                    <div class="chen_user_name">Chen_Zero</div>
+                    <div class="chen_user_tag">ID: 10241006 · 战队：Cipher</div>
+                  </div>
+                </div>
+              </td>
+              <td class="chen_center_text chen_score_mid">88,420</td>
+              <td class="chen_center_text">71.4%</td>
+              <td class="chen_center_text">1,024</td>
+              <td class="chen_center_text">
+                <span class="chen_level">
+                  <span class="chen_dot chen_dot_platinum"></span>
+                  Platinum II
+                </span>
+              </td>
+              <td class="chen_center_text">
+                <span class="chen_change chen_change_down">
+                  <i class="iconfont icon-xiajiang"></i>
+                  -2
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="chen_rank_num">7</span>
+              </td>
+              <td>
+                <div class="chen_user_info">
+                  <div class="chen_avatar_wrap">
+                    <img class="chen_avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face" alt="玩家头像">
+                  </div>
+                  <div>
+                    <div class="chen_user_name">Chen_Astra</div>
+                    <div class="chen_user_tag">ID: 10241007 · 战队：Lumen</div>
+                  </div>
+                </div>
+              </td>
+              <td class="chen_center_text">86,880</td>
+              <td class="chen_center_text">70.2%</td>
+              <td class="chen_center_text">992</td>
+              <td class="chen_center_text">
+                <span class="chen_level">
+                  <span class="chen_dot chen_dot_platinum"></span>
+                  Platinum I
+                </span>
+              </td>
+              <td class="chen_center_text">
+                <span class="chen_change chen_change_up">
+                  <i class="iconfont icon-shangsheng"></i>
+                  +3
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="chen_rank_num">8</span>
+              </td>
+              <td>
+                <div class="chen_user_info">
+                  <div class="chen_avatar_wrap">
+                    <img class="chen_avatar" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face" alt="玩家头像">
+                  </div>
+                  <div>
+                    <div class="chen_user_name">Chen_Mimir</div>
+                    <div class="chen_user_tag">ID: 10241008 · 战队：Eon</div>
+                  </div>
+                </div>
+              </td>
+              <td class="chen_center_text">85,360</td>
+              <td class="chen_center_text">69.0%</td>
+              <td class="chen_center_text">964</td>
+              <td class="chen_center_text">
+                <span class="chen_level">
+                  <span class="chen_dot chen_dot_gold"></span>
+                  Gold III
+                </span>
+              </td>
+              <td class="chen_center_text">
+                <span class="chen_change chen_change_flat">
+                  <i class="iconfont icon-wujiaoxing"></i>
+                  0
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="chen_rank_num">9</span>
+              </td>
+              <td>
+                <div class="chen_user_info">
+                  <div class="chen_avatar_wrap">
+                    <img class="chen_avatar" src="https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&h=200&fit=crop&crop=face" alt="玩家头像">
+                  </div>
+                  <div>
+                    <div class="chen_user_name">Chen_Omni</div>
+                    <div class="chen_user_tag">ID: 10241009 · 战队：Solace</div>
+                  </div>
+                </div>
+              </td>
+              <td class="chen_center_text">83,920</td>
+              <td class="chen_center_text">67.8%</td>
+              <td class="chen_center_text">938</td>
+              <td class="chen_center_text">
+                <span class="chen_level">
+                  <span class="chen_dot chen_dot_gold"></span>
+                  Gold II
+                </span>
+              </td>
+              <td class="chen_center_text">
+                <span class="chen_change chen_change_up">
+                  <i class="iconfont icon-shangsheng"></i>
+                  +1
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="chen_rank_num">10</span>
+              </td>
+              <td>
+                <div class="chen_user_info">
+                  <div class="chen_avatar_wrap">
+                    <img class="chen_avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face" alt="玩家头像">
+                  </div>
+                  <div>
+                    <div class="chen_user_name">Chen_Paradox</div>
+                    <div class="chen_user_tag">ID: 10241010 · 战队：Arcane</div>
+                  </div>
+                </div>
+              </td>
+              <td class="chen_center_text">82,500</td>
+              <td class="chen_center_text">66.5%</td>
+              <td class="chen_center_text">914</td>
+              <td class="chen_center_text">
+                <span class="chen_level">
+                  <span class="chen_dot chen_dot_gold"></span>
+                  Gold I
+                </span>
+              </td>
+              <td class="chen_center_text">
+                <span class="chen_change chen_change_down">
+                  <i class="iconfont icon-xiajiang"></i>
+                  -1
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="chen_legend">
+        <div class="chen_legend_item">
+          <span class="chen_dot chen_dot_master"></span>
+          <span>Master（宗师）</span>
+        </div>
+        <div class="chen_legend_item">
+          <span class="chen_dot chen_dot_diamond"></span>
+          <span>Diamond（钻石）</span>
+        </div>
+        <div class="chen_legend_item">
+          <span class="chen_dot chen_dot_platinum"></span>
+          <span>Platinum（铂金）</span>
+        </div>
+        <div class="chen_legend_item">
+          <span class="chen_dot chen_dot_gold"></span>
+          <span>Gold（金牌）</span>
+        </div>
+        <div class="chen_legend_item">
+          <span class="chen_dot chen_dot_silver"></span>
+          <span>Silver（白银）</span>
+        </div>
+      </div>
+    </section>
+
+        <footer class="chen_footer">© 2025 排行榜展示（11-4.html） · 学号：24001010722 · 姓名：陈弘毅</footer>
+  </div>
+</body>
+</html>

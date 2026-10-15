@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .box-wrap{
+            display: flex;
+            gap:30px;
+            padding:20px;
+        }
+        .item{
+            width:220px;
+            height:220px;
+            border:1px solid #333;
+            display:flex;
+        }
+      
+        .demo1{
+            justify-content:center;
+            align-items:center;
+        }
+        .demo1 .inner{
+            width:60px;
+            height:60px;
+            border:1px solid #333;
+        }
+       
+        .demo2{
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            gap:10px;
+        }
+        .demo2 .inner{
+            width:80px;
+            height:60px;
+            border:1px solid #333;
+        }
+       
+        .demo3{
+            flex-wrap:wrap;
+            justify-content:space-around;
+            align-items:center;
+        }
+        .demo3 .inner{
+            width:80px;
+            height:60px;
+            border:1px solid #333;
+        }
+        
+        .demo4{
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            gap:10px;
+        }
+        .demo4 .bottom{
+            display:flex;
+            gap:10px;
+        }
+        .demo4 .top{
+            width:160px; 
+            height:60px;
+            border:1px solid #333;
+        }
+        .demo4 .bottom .inner{
+            width:75px;
+            height:60px;
+            border:1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <h2>陈弘毅的flex</h2>
+    <div class="box-wrap">
+        <div class="item demo1">
+            <div class="inner"></div>
+        </div>
+        <div class="item demo2">
+            <div class="inner"></div>
+            <div class="inner"></div>
+        </div>
+        <div class="item demo3">
+            <div class="inner"></div>
+            <div class="inner"></div>
+            <div class="inner"></div>
+            <div class="inner"></div>
+        </div>
+        <div class="item demo4">
+            <div class="top"></div>
+            <div class="bottom">
+                <div class="inner"></div>
+                <div class="inner"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

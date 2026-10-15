@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四色背景动画</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+            background: #f3f5f4;
+            color: #202522;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        main {
+            width: min(100%, 420px);
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0 0 28px;
+            font-size: 24px;
+            font-weight: 650;
+        }
+
+        .toggle {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            clip-path: inset(50%);
+        }
+
+        .click-button {
+            display: inline-grid;
+            min-width: 112px;
+            min-height: 44px;
+            place-items: center;
+            margin-bottom: 24px;
+            border: 1px solid #202522;
+            border-radius: 4px;
+            background: #202522;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 160ms ease, color 160ms ease;
+        }
+
+        .click-button:hover {
+            background: #fff;
+            color: #202522;
+        }
+
+        .toggle:focus-visible + .click-button {
+            outline: 3px solid #5478ff;
+            outline-offset: 4px;
+        }
+
+        .color-box {
+            width: min(100%, 320px);
+            aspect-ratio: 1;
+            margin: 0 auto;
+            border: 1px solid rgb(32 37 34 / 12%);
+            border-radius: 8px;
+            background-color: #ff5d73;
+            box-shadow: 0 18px 42px rgb(32 37 34 / 12%);
+        }
+
+        .toggle:checked ~ .color-box {
+            animation: color-cycle 8s linear infinite;
+        }
+
+        @keyframes color-cycle {
+            0%, 100% { background-color: #ff5d73; }
+            25% { background-color: #ffc145; }
+            50% { background-color: #2ec4b6; }
+            75% { background-color: #5478ff; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .toggle:checked ~ .color-box {
+                animation-duration: 20s;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>四色背景动画</h1>
+        <input class="toggle" type="checkbox" id="animation-toggle" aria-label="切换背景动画">
+        <label class="click-button" for="animation-toggle">Click</label>
+        <div class="color-box" aria-label="四色循环动画盒子"></div>
+    </main>
+</body>
+</html>

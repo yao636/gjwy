@@ -1,0 +1,483 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11-3 CSS3 3D动画</title>
+  <style>
+    :root {
+      --chen_bg: #0f172a;
+      --chen_card_bg: rgba(15, 26, 58, 0.8);
+      --chen_border: rgba(255, 255, 255, 0.1);
+      --chen_text: #e2e8f0;
+      --chen_text_secondary: #94a3b8;
+      --chen_primary: #4d7cfe;
+      --chen_success: #22c55e;
+      --chen_warning: #f59e0b;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(circle at top, var(--chen_bg), #020617);
+      color: var(--chen_text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      overflow-x: hidden;
+    }
+
+    .chen_header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .chen_title {
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--chen_primary), #38bdf8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    .chen_subtitle {
+      color: var(--chen_text_secondary);
+      font-size: clamp(0.95rem, 2vw, 1.05rem);
+    }
+
+    .chen_container {
+      display: flex;
+      flex-direction: column;
+      gap: 4rem;
+      align-items: center;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .chen_section {
+      background: var(--chen_card_bg);
+      border: 1px solid var(--chen_border);
+      border-radius: 12px;
+      padding: clamp(1.5rem, 3vw, 2rem);
+      width: 100%;
+      backdrop-filter: blur(8px) saturate(120%);
+      box-shadow: 0 10px 30px -20px rgba(77, 124, 254, 0.4);
+    }
+
+    .chen_section_title {
+      font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .chen_section_desc {
+      color: var(--chen_text_secondary);
+      margin-bottom: 2rem;
+      line-height: 1.8;
+    }
+
+    .chen_stage {
+      perspective: 1200px;
+      perspective-origin: 50% 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      border: 1px solid var(--chen_border);
+      overflow: hidden;
+    }
+
+    .chen_code {
+      font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      border: 1px solid var(--chen_border);
+      font-size: 0.95rem;
+    }
+
+    /* 1. 立方体 */
+    .chen_cube_container {
+      width: 150px;
+      height: 150px;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: chen_cube_rotate 6s linear infinite;
+    }
+
+    .chen_cube_face {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      background: rgba(77, 124, 254, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 1.1rem;
+      backface-visibility: visible;
+      box-shadow: inset 0 0 60px rgba(77, 124, 254, 0.2);
+    }
+
+    .chen_front { transform: translateZ(75px); background: rgba(77, 124, 254, 0.4); }
+    .chen_back { transform: rotateY(180deg) translateZ(75px); background: rgba(34, 197, 94, 0.4); }
+    .chen_right { transform: rotateY(90deg) translateZ(75px); background: rgba(245, 158, 11, 0.4); }
+    .chen_left { transform: rotateY(-90deg) translateZ(75px); background: rgba(56, 189, 248, 0.4); }
+    .chen_top { transform: rotateX(90deg) translateZ(75px); background: rgba(168, 85, 247, 0.4); }
+    .chen_bottom { transform: rotateX(-90deg) translateZ(75px); background: rgba(239, 68, 68, 0.4); }
+
+    @keyframes chen_cube_rotate {
+      0% { transform: rotateX(0deg) rotateY(0deg); }
+      25% { transform: rotateX(0deg) rotateY(90deg); }
+      50% { transform: rotateX(0deg) rotateY(180deg); }
+      75% { transform: rotateX(180deg) rotateY(270deg); }
+      100% { transform: rotateX(360deg) rotateY(360deg); }
+    }
+
+    /* 2. 3D 翻转卡片 */
+    .chen_flip_card {
+      width: clamp(220px, 40vw, 280px);
+      height: clamp(160px, 30vw, 200px);
+      perspective: 1000px;
+    }
+
+    .chen_flip_inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+    }
+
+    .chen_flip_card:hover .chen_flip_inner {
+      transform: rotateY(180deg);
+    }
+
+    .chen_flip_face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 12px;
+      border: 2px solid var(--chen_border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 10px 40px -20px rgba(77, 124, 254, 0.6);
+    }
+
+    .chen_flip_front {
+      background: linear-gradient(135deg, rgba(77, 124, 254, 0.3), rgba(56, 189, 248, 0.2));
+    }
+
+    .chen_flip_back {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(14, 165, 233, 0.2));
+      transform: rotateY(180deg);
+    }
+
+    .chen_flip_title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .chen_flip_text {
+      color: var(--chen_text_secondary);
+      font-size: 0.98rem;
+      line-height: 1.7;
+    }
+
+    /* 3. 旋转木马（Carousel） */
+    .chen_carousel {
+      width: 200px;
+      height: 120px;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: chen_carousel_spin 8s linear infinite;
+    }
+
+    .chen_carousel_item {
+      position: absolute;
+      width: 180px;
+      height: 100px;
+      left: 50%;
+      top: 50%;
+      margin-left: -90px;
+      margin-top: -50px;
+      border-radius: 10px;
+      border: 2px solid var(--chen_border);
+      background: linear-gradient(135deg, rgba(77, 124, 254, 0.35), rgba(56, 189, 248, 0.25));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.98rem;
+      text-align: center;
+      padding: 0.5rem;
+      backface-visibility: visible;
+      box-shadow: 0 8px 30px -16px rgba(77, 124, 254, 0.8);
+    }
+
+    .chen_carousel_item:nth-child(1) { transform: rotateY(0deg) translateZ(240px); }
+    .chen_carousel_item:nth-child(2) { transform: rotateY(72deg) translateZ(240px); }
+    .chen_carousel_item:nth-child(3) { transform: rotateY(144deg) translateZ(240px); }
+    .chen_carousel_item:nth-child(4) { transform: rotateY(216deg) translateZ(240px); }
+    .chen_carousel_item:nth-child(5) { transform: rotateY(288deg) translateZ(240px); }
+
+    @keyframes chen_carousel_spin {
+      from { transform: rotateY(0deg); }
+      to { transform: rotateY(-360deg); }
+    }
+
+    /* 4. 翻滚球体（3D Sphere） */
+    .chen_sphere {
+      width: 160px;
+      height: 160px;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: chen_sphere_spin 10s linear infinite;
+      border-radius: 50%;
+    }
+
+    .chen_ring {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      border: 2px solid rgba(77, 124, 254, 0.5);
+      transform-style: preserve-3d;
+    }
+
+    .chen_ring:nth-child(1) { transform: rotateY(0deg); }
+    .chen_ring:nth-child(2) { transform: rotateY(30deg); }
+    .chen_ring:nth-child(3) { transform: rotateY(60deg); }
+    .chen_ring:nth-child(4) { transform: rotateY(90deg); }
+    .chen_ring:nth-child(5) { transform: rotateY(120deg); }
+    .chen_ring:nth-child(6) { transform: rotateY(150deg); }
+    .chen_ring:nth-child(7) { transform: rotateX(30deg); }
+    .chen_ring:nth-child(8) { transform: rotateX(60deg); }
+    .chen_ring:nth-child(9) { transform: rotateX(90deg); }
+    .chen_ring:nth-child(10) { transform: rotateX(120deg); }
+    .chen_ring:nth-child(11) { transform: rotateX(150deg); }
+
+    .chen_core {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 40px;
+      height: 40px;
+      margin: -20px 0 0 -20px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #38bdf8, var(--chen_primary));
+      box-shadow: 0 0 40px rgba(77, 124, 254, 0.8);
+      transform: translateZ(0);
+    }
+
+    @keyframes chen_sphere_spin {
+      0% { transform: rotateX(0deg) rotateY(0deg); }
+      100% { transform: rotateX(360deg) rotateY(360deg); }
+    }
+
+    /* 5. 3D 平移与缩放 */
+    .chen_floating_box {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, var(--chen_primary), #38bdf8);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      text-align: center;
+      box-shadow: 0 20px 60px -20px rgba(77, 124, 254, 0.9);
+      transform-style: preserve-3d;
+      animation: chen_float_3d 3s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+
+    @keyframes chen_float_3d {
+      0% {
+        transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1);
+      }
+      50% {
+        transform: translate3d(0, -20px, 40px) rotateX(10deg) rotateY(15deg) scale3d(1.08, 1.08, 1.08);
+      }
+      100% {
+        transform: translate3d(0, 10px, 20px) rotateX(-5deg) rotateY(-10deg) scale3d(0.98, 0.98, 0.98);
+      }
+    }
+
+    .chen_tips {
+      margin-top: 1.5rem;
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--chen_text);
+      line-height: 1.8;
+    }
+
+    .chen_tips strong {
+      color: #7dd3fc;
+    }
+
+    .chen_footer {
+      margin-top: 3rem;
+      color: var(--chen_text_secondary);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 768px) {
+      .chen_stage {
+        min-height: 160px;
+        padding: 1rem;
+      }
+      
+      .chen_carousel_item:nth-child(1) { transform: rotateY(0deg) translateZ(180px); }
+      .chen_carousel_item:nth-child(2) { transform: rotateY(72deg) translateZ(180px); }
+      .chen_carousel_item:nth-child(3) { transform: rotateY(144deg) translateZ(180px); }
+      .chen_carousel_item:nth-child(4) { transform: rotateY(216deg) translateZ(180px); }
+      .chen_carousel_item:nth-child(5) { transform: rotateY(288deg) translateZ(180px); }
+    }
+  </style>
+</head>
+<body>
+  <header class="chen_header">
+    <h1 class="chen_title">CSS3 3D 动画（3D Transforms & Animations）</h1>
+    <p class="chen_subtitle">利用 transform-style、perspective、keyframes 实现立体旋转、翻转、环绕等 3D 效果</p>
+  </header>
+
+  <main class="chen_container">
+    <!-- 1. 3D 立方体 -->
+    <section class="chen_section">
+      <h2 class="chen_section_title">1. 3D 立方体（Cube）</h2>
+      <p class="chen_section_desc">
+        关键属性：<span class="chen_code">transform-style: preserve-3d</span>、
+        <span class="chen_code">perspective</span>、
+        <span class="chen_code">translateZ / rotateX / rotateY</span>
+      </p>
+      <div class="chen_stage">
+        <div class="chen_cube_container">
+          <div class="chen_cube_face chen_front">前 Front</div>
+          <div class="chen_cube_face chen_back">后 Back</div>
+          <div class="chen_cube_face chen_right">右 Right</div>
+          <div class="chen_cube_face chen_left">左 Left</div>
+          <div class="chen_cube_face chen_top">上 Top</div>
+          <div class="chen_cube_face chen_bottom">下 Bottom</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 3D 翻转卡片 -->
+    <section class="chen_section">
+      <h2 class="chen_section_title">2. 3D 翻转卡片（Flip Card）</h2>
+      <p class="chen_section_desc">
+        鼠标悬停（Hover）触发 <span class="chen_code">rotateY(180deg)</span>，配合
+        <span class="chen_code">backface-visibility: hidden</span> 实现正反面切换
+      </p>
+      <div class="chen_stage">
+        <div class="chen_flip_card">
+          <div class="chen_flip_inner">
+            <div class="chen_flip_face chen_flip_front">
+              <h3 class="chen_flip_title">正面（Front）</h3>
+              <p class="chen_flip_text">将鼠标悬停在此卡片上，查看 3D 翻转效果</p>
+            </div>
+            <div class="chen_flip_face chen_flip_back">
+              <h3 class="chen_flip_title">反面（Back）</h3>
+              <p class="chen_flip_text">CSS3 transform 结合 preserve-3d 可轻松实现立体翻转</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 3D 旋转木马 -->
+    <section class="chen_section">
+      <h2 class="chen_section_title">3. 3D 旋转木马（Carousel）</h2>
+      <p class="chen_section_desc">
+        沿 Y 轴均匀分布面板（<span class="chen_code">rotateY + translateZ</span>），通过
+        <span class="chen_code">@keyframes</span> 实现连续环绕旋转
+      </p>
+      <div class="chen_stage">
+        <div class="chen_carousel">
+          <div class="chen_carousel_item">第 1 张面板</div>
+          <div class="chen_carousel_item">第 2 张面板</div>
+          <div class="chen_carousel_item">第 3 张面板</div>
+          <div class="chen_carousel_item">第 4 张面板</div>
+          <div class="chen_carousel_item">第 5 张面板</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 3D 球体 -->
+    <section class="chen_section">
+      <h2 class="chen_section_title">4. 3D 球体（Sphere）</h2>
+      <p class="chen_section_desc">
+        使用多个 <span class="chen_code">rotateX / rotateY</span> 构成经纬线环，组合形成球形轮廓，并添加
+        <span class="chen_code">rotateX + rotateY</span> 双轴旋转动画
+      </p>
+      <div class="chen_stage">
+        <div class="chen_sphere">
+          <div class="chen_ring"></div>
+          <div class="chen_ring"></div>
+          <div class="chen_ring"></div>
+          <div class="chen_ring"></div>
+          <div class="chen_ring"></div>
+          <div class="chen_ring"></div>
+          <div class="chen_ring"></div>
+          <div class="chen_ring"></div>
+          <div class="chen_ring"></div>
+          <div class="chen_ring"></div>
+          <div class="chen_ring"></div>
+          <div class="chen_core"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. 3D 平移、旋转、缩放组合 -->
+    <section class="chen_section">
+      <h2 class="chen_section_title">5. 3D 变换组合（translate3d + rotate3d + scale3d）</h2>
+      <p class="chen_section_desc">
+        使用 <span class="chen_code">translate3d()</span>、<span class="chen_code">rotateX/rotateY</span>、
+        <span class="chen_code">scale3d()</span> 结合 <span class="chen_code">@keyframes</span> 实现悬浮（Floating）3D 动画
+      </p>
+      <div class="chen_stage">
+        <div class="chen_floating_box">3D 浮动</div>
+      </div>
+    </section>
+
+    <div class="chen_tips">
+      <p>
+        <strong>3D 动画要点：</strong>
+        ① 设置 <span class="chen_code">perspective</span>（景深）定义视角距离；
+        ② 父容器使用 <span class="chen_code">transform-style: preserve-3d</span> 保留子元素 3D 空间；
+        ③ 使用 <span class="chen_code">translateZ</span> 控制 Z 轴深度；
+        ④ 使用 <span class="chen_code">backface-visibility: hidden</span> 优化性能并隐藏背面；
+        ⑤ 移动端可适当减少 <span class="chen_code">perspective</span> 或复杂度以提升流畅度。
+      </p>
+    </div>
+  </main>
+
+      <footer class="chen_footer">© 2025 CSS3 3D 动画展示（11-3.html） · 学号：24001010722 · 姓名：陈弘毅</footer>
+</body>
+</html>
