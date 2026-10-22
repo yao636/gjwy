@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#059669">
+  <meta name="description" content="13-4 使用 font 目录下 iconfont 的 SVG symbol 图标，制作移动端自适应全屏固定底部导航。">
+  <title>13-4 SVG 图标固定下导航</title>
+  <style>
+    :root {
+      --chen_bg: #f1faf6;
+      --chen_surface: #ffffff;
+      --chen_text: #10241e;
+      --chen_text_soft: #334f46;
+      --chen_muted: #64748b;
+      --chen_primary: #059669;
+      --chen_primary_deep: #065f46;
+      --chen_primary_soft: #d1fae5;
+      --chen_accent: #0d9488;
+      --chen_red: #ef4444;
+      --chen_border: #d9e8e2;
+      --chen_radius: 20px;
+      --chen_shadow: 0 24px 55px -34px rgba(6, 78, 59, 0.35);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(16, 185, 129, 0.14), transparent 26rem),
+        radial-gradient(circle at 96% 8%, rgba(13, 148, 136, 0.12), transparent 24rem),
+        var(--chen_bg);
+      color: var(--chen_text);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .chen_page {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      padding: 18px 16px calc(118px + env(safe-area-inset-bottom));
+    }
+
+    /* ---------- 顶部 ---------- */
+    .chen_topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .chen_brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--chen_text_soft);
+      font-size: 0.86rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .chen_brand_dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--chen_primary), var(--chen_accent));
+      box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12);
+    }
+
+    .chen_page_nav {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 999px;
+      background: #e3f0ea;
+    }
+
+    .chen_page_nav_link {
+      padding: 6px 12px;
+      border-radius: 999px;
+      color: var(--chen_muted);
+      font-size: 0.76rem;
+      text-decoration: none;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .chen_page_nav_link_active {
+      background: #ffffff;
+      color: var(--chen_primary);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    /* ---------- 主视觉 ---------- */
+    .chen_hero {
+      position: relative;
+      overflow: hidden;
+      padding: 28px 24px;
+      border-radius: 26px;
+      color: #ffffff;
+      background: linear-gradient(135deg, #042f2e 0%, #065f46 52%, #0f766e 100%);
+      box-shadow: 0 30px 65px -36px rgba(4, 47, 46, 0.72);
+    }
+
+    .chen_hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(circle at 78% 24%, #000 0%, transparent 72%);
+      -webkit-mask-image: radial-gradient(circle at 78% 24%, #000 0%, transparent 72%);
+      pointer-events: none;
+    }
+
+    .chen_hero_content {
+      position: relative;
+      z-index: 1;
+      max-width: 520px;
+    }
+
+    .chen_kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.09);
+      color: #d1fae5;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+    }
+
+    .chen_kicker::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #5eead4;
+      box-shadow: 0 0 0 4px rgba(94, 234, 212, 0.16);
+    }
+
+    .chen_title {
+      margin-top: 16px;
+      font-size: clamp(1.8rem, 6vw, 2.5rem);
+      font-weight: 800;
+      line-height: 1.16;
+      letter-spacing: -0.02em;
+    }
+
+    .chen_title_mark {
+      color: #6ee7b7;
+    }
+
+    .chen_lead {
+      max-width: 490px;
+      margin-top: 12px;
+      color: rgba(236, 253, 245, 0.85);
+      font-size: 0.94rem;
+    }
+
+    .chen_pill_row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .chen_pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #d1fae5;
+      font-size: 0.76rem;
+    }
+
+    .chen_pill_svg {
+      width: 15px;
+      height: 15px;
+      fill: #5eead4;
+      flex: 0 0 auto;
+    }
+
+    .chen_hero_icon_svg {
+      position: absolute;
+      right: 12px;
+      bottom: -24px;
+      width: clamp(8rem, 26vw, 11rem);
+      height: clamp(8rem, 26vw, 11rem);
+      fill: #ffffff;
+      opacity: 0.1;
+      transform: rotate(-8deg);
+      pointer-events: none;
+    }
+
+    /* ---------- 状态卡片 ---------- */
+    .chen_status_card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      padding: 18px 20px;
+      border: 1px solid var(--chen_border);
+      border-radius: 18px;
+      background: var(--chen_surface);
+      box-shadow: var(--chen_shadow);
+    }
+
+    .chen_status_label {
+      display: block;
+      color: #94a3b8;
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+    }
+
+    .chen_status_value {
+      margin-top: 2px;
+      color: var(--chen_primary);
+      font-size: 1.28rem;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .chen_status_hint {
+      color: var(--chen_muted);
+      font-size: 0.8rem;
+    }
+
+    /* ---------- 说明卡片 ---------- */
+    .chen_info_grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .chen_info_card,
+    .chen_card {
+      border: 1px solid var(--chen_border);
+      border-radius: 18px;
+      background: var(--chen_surface);
+      box-shadow: var(--chen_shadow);
+    }
+
+    .chen_info_card {
+      padding: 18px;
+    }
+
+    .chen_info_icon {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      margin-bottom: 10px;
+      border-radius: 11px;
+      background: var(--chen_primary_soft);
+      color: var(--chen_primary);
+    }
+
+    .chen_info_svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .chen_info_title {
+      font-size: 0.96rem;
+      font-weight: 700;
+    }
+
+    .chen_info_text {
+      margin-top: 5px;
+      color: var(--chen_muted);
+      font-size: 0.84rem;
+    }
+
+    .chen_card {
+      margin-top: 16px;
+      padding: 20px;
+    }
+
+    .chen_card_title {
+      font-size: 1.08rem;
+      font-weight: 800;
+    }
+
+    .chen_card_desc {
+      margin-top: 5px;
+      color: var(--chen_muted);
+      font-size: 0.86rem;
+    }
+
+    /* ---------- 徽章示例 ---------- */
+    .chen_badge_demo {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 28px;
+      margin-top: 18px;
+      padding: 20px;
+      border: 1px dashed #a7f3d0;
+      border-radius: 16px;
+      background: #f7fdfa;
+    }
+
+    .chen_badge_demo_item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .chen_demo_icon_wrap {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 52px;
+      height: 52px;
+      border: 1px solid #bbf7d0;
+      border-radius: 16px;
+      background: #ffffff;
+      color: var(--chen_primary);
+    }
+
+    .chen_demo_icon_wrap .chen_nav_svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .chen_badge_demo_text {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      color: var(--chen_muted);
+      font-size: 0.78rem;
+    }
+
+    .chen_badge_demo_title {
+      color: var(--chen_text_soft);
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    /* ---------- 代码 ---------- */
+    .chen_code_inline {
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: var(--chen_primary_soft);
+      color: var(--chen_primary_deep);
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.84em;
+    }
+
+    .chen_code_block {
+      margin-top: 16px;
+      padding: 18px 20px;
+      overflow-x: auto;
+      border-radius: 14px;
+      background: #0b1f1b;
+      color: #e2f5ee;
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.8rem;
+      line-height: 1.8;
+      tab-size: 2;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .chen_code_comment {
+      color: #7f9f95;
+    }
+
+    .chen_code_tag {
+      color: #5eead4;
+    }
+
+    .chen_code_attr {
+      color: #c4b5fd;
+    }
+
+    .chen_code_str {
+      color: #86efac;
+    }
+
+    .chen_note {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+      padding: 13px 15px;
+      border: 1px solid #a7f3d0;
+      border-radius: 12px;
+      background: #ecfdf5;
+      color: #064e3b;
+      font-size: 0.84rem;
+    }
+
+    .chen_note_svg {
+      flex: 0 0 auto;
+      width: 18px;
+      height: 18px;
+      margin-top: 4px;
+      fill: #059669;
+    }
+
+    /* ---------- 页脚 ---------- */
+    .chen_footer {
+      margin-top: 24px;
+      padding: 20px 8px 4px;
+      border-top: 1px solid rgba(100, 116, 139, 0.28);
+      color: var(--chen_muted);
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    .chen_footer_title {
+      color: var(--chen_text_soft);
+      font-weight: 700;
+    }
+
+    .chen_footer_meta {
+      margin-top: 4px;
+    }
+
+    /* ---------- 固定底部导航 ---------- */
+    .chen_bottom_nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1000;
+      width: 100%;
+      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+      border-top: 1px solid rgba(217, 232, 226, 0.95);
+      background: rgba(255, 255, 255, 0.94);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 -12px 34px -22px rgba(6, 78, 59, 0.4);
+    }
+
+    .chen_nav_inner {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .chen_nav_item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      min-width: 0;
+      min-height: 52px;
+      padding: 6px 4px;
+      border: 0;
+      background: transparent;
+      color: #94a3b8;
+      font: inherit;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: color 0.2s ease;
+    }
+
+    .chen_nav_item:focus-visible {
+      outline: 3px solid rgba(5, 150, 105, 0.35);
+      outline-offset: -3px;
+      border-radius: 12px;
+    }
+
+    .chen_nav_item_active {
+      color: var(--chen_primary);
+    }
+
+    .chen_nav_icon_wrap {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 30px;
+      border-radius: 10px;
+      transition: background-color 0.2s ease;
+    }
+
+    .chen_nav_item_active .chen_nav_icon_wrap {
+      background: var(--chen_primary_soft);
+    }
+
+    .chen_nav_svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+      display: block;
+    }
+
+    .chen_nav_label {
+      overflow: hidden;
+      max-width: 100%;
+      font-size: 11px;
+      line-height: 1.2;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .chen_nav_item_active .chen_nav_label {
+      font-weight: 700;
+    }
+
+    .chen_nav_badge,
+    .chen_nav_dot {
+      position: absolute;
+      z-index: 1;
+      border: 2px solid #ffffff;
+      border-radius: 999px;
+      background: var(--chen_red);
+      box-sizing: content-box;
+    }
+
+    .chen_nav_badge {
+      top: -8px;
+      right: -12px;
+      display: grid;
+      place-items: center;
+      min-width: 14px;
+      height: 14px;
+      padding: 0 3px;
+      color: #ffffff;
+      font-size: 9.5px;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: 0 3px 8px rgba(239, 68, 68, 0.36);
+    }
+
+    .chen_nav_dot {
+      top: -2px;
+      right: -4px;
+      width: 8px;
+      height: 8px;
+    }
+
+    @media (min-width: 640px) {
+      .chen_info_grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .chen_hero {
+        padding: 34px 32px;
+      }
+    }
+
+    @media (max-width: 639px) {
+      html {
+        scrollbar-width: none;
+      }
+
+      html::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .chen_page {
+        padding-right: 12px;
+        padding-left: 12px;
+      }
+
+      .chen_hero {
+        padding: 24px 18px;
+      }
+
+      .chen_badge_demo {
+        gap: 18px;
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chen_page">
+    <header class="chen_topbar">
+      <span class="chen_brand"><span class="chen_brand_dot"></span>移动端导航</span>
+      <nav class="chen_page_nav" aria-label="版本切换">
+        <a class="chen_page_nav_link" href="13-3.html">字体图标</a>
+        <a class="chen_page_nav_link chen_page_nav_link_active" href="13-4.html" aria-current="page">SVG</a>
+      </nav>
+    </header>
+
+    <main class="chen_main">
+      <section class="chen_hero" aria-labelledby="chen_hero_title">
+        <div class="chen_hero_content">
+          <span class="chen_kicker">第 13 周 · 移动端组件</span>
+          <h1 class="chen_title" id="chen_hero_title">固定底部导航<br><span class="chen_title_mark">SVG 图标版</span></h1>
+          <p class="chen_lead">
+            同样使用 <span class="chen_code_inline">font</span> 目录下的 iconfont，
+            但这次改用 <span class="chen_code_inline">iconfont.js</span> 的 SVG symbol 精灵图。
+            导航依旧全宽固定，4 项等分，并带数字徽章与红点。
+          </p>
+          <div class="chen_pill_row">
+            <span class="chen_pill">
+              <svg class="chen_pill_svg" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                <use href="#icon-dingwei"></use>
+              </svg>固定底部
+            </span>
+            <span class="chen_pill">
+              <svg class="chen_pill_svg" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                <use href="#icon-gengduo"></use>
+              </svg>四等分自适应
+            </span>
+            <span class="chen_pill">
+              <svg class="chen_pill_svg" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                <use href="#icon-chenggong"></use>
+              </svg>安全区适配
+            </span>
+          </div>
+        </div>
+        <svg class="chen_hero_icon_svg" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+          <use href="#icon-shouye1"></use>
+        </svg>
+      </section>
+
+      <section class="chen_status_card" aria-label="当前导航状态">
+        <div>
+          <span class="chen_status_label">当前选中</span>
+          <div class="chen_status_value" id="chen_current_label" aria-live="polite">首页</div>
+        </div>
+        <span class="chen_status_hint">点击底部导航即可切换</span>
+      </section>
+
+      <section class="chen_info_grid" aria-label="实现要点">
+        <article class="chen_info_card">
+          <div class="chen_info_icon">
+            <svg class="chen_info_svg" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+              <use href="#icon-dingwei"></use>
+            </svg>
+          </div>
+          <h2 class="chen_info_title">固定定位</h2>
+          <p class="chen_info_text">
+            <span class="chen_code_inline">position: fixed</span> 让导航脱离文档流，
+            始终贴在视口底部。
+          </p>
+        </article>
+        <article class="chen_info_card">
+          <div class="chen_info_icon">
+            <svg class="chen_info_svg" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+              <use href="#icon-gengduo"></use>
+            </svg>
+          </div>
+          <h2 class="chen_info_title">四等分自适应</h2>
+          <p class="chen_info_text">
+            导航条宽度 100%，内部 4 列 Grid 平分空间，屏幕变宽变窄都不错位。
+          </p>
+        </article>
+        <article class="chen_info_card">
+          <div class="chen_info_icon">
+            <svg class="chen_info_svg" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+              <use href="#icon-jinggao"></use>
+            </svg>
+          </div>
+          <h2 class="chen_info_title">SVG 可着色</h2>
+          <p class="chen_info_text">
+            symbol 中的路径使用 <span class="chen_code_inline">currentColor</span>，
+            选中状态只需要修改文字颜色。
+          </p>
+        </article>
+      </section>
+
+      <section class="chen_card" aria-labelledby="chen_badge_title">
+        <h2 class="chen_card_title" id="chen_badge_title">数字徽章与红点</h2>
+        <p class="chen_card_desc">
+          徽章仍然定位在图标右上角。消息显示 12，订单显示 3；
+          首页和“我的”用纯红点表示有新内容。
+        </p>
+
+        <div class="chen_badge_demo">
+          <div class="chen_badge_demo_item">
+            <span class="chen_demo_icon_wrap">
+              <svg class="chen_nav_svg" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                <use href="#icon-xiaoxi"></use>
+              </svg>
+              <span class="chen_nav_badge" aria-hidden="true">12</span>
+            </span>
+            <span class="chen_badge_demo_text">
+              <span class="chen_badge_demo_title">数字徽章</span>
+              <span>12 条未读消息</span>
+            </span>
+          </div>
+          <div class="chen_badge_demo_item">
+            <span class="chen_demo_icon_wrap">
+              <svg class="chen_nav_svg" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                <use href="#icon-shouye1"></use>
+              </svg>
+              <span class="chen_nav_dot" aria-hidden="true"></span>
+            </span>
+            <span class="chen_badge_demo_text">
+              <span class="chen_badge_demo_title">红点提醒</span>
+              <span>右上角小圆点</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="chen_note">
+          <svg class="chen_note_svg" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+            <use href="#icon-jinggao"></use>
+          </svg>
+          <p>
+            图标是真正的 <span class="chen_code_inline">&lt;svg&gt;</span> 元素，
+            可以用 CSS 设置 <span class="chen_code_inline">fill</span>、
+            <span class="chen_code_inline">width</span> 和 <span class="chen_code_inline">height</span>，
+            放大也不会模糊。
+          </p>
+        </div>
+      </section>
+
+      <section class="chen_card" aria-labelledby="chen_code_title">
+        <h2 class="chen_card_title" id="chen_code_title">SVG 用法</h2>
+        <p class="chen_card_desc">
+          先引入本地 iconfont.js，它会注入 symbol 精灵图；页面里用 use 引用图标 id。
+        </p>
+
+        <pre class="chen_code_block"><code><span class="chen_code_comment">&lt;!-- 1. 引入 iconfont.js，注入 SVG symbol --&gt;</span>
+&lt;<span class="chen_code_tag">script</span> <span class="chen_code_attr">src</span>=<span class="chen_code_str">"font/font_5244855_fm8s0yq40te/iconfont.js"</span>&gt;&lt;/<span class="chen_code_tag">script</span>&gt;
+
+<span class="chen_code_comment">&lt;!-- 2. 用 svg + use 引用图标 --&gt;</span>
+&lt;<span class="chen_code_tag">svg</span> <span class="chen_code_attr">class</span>=<span class="chen_code_str">"chen_nav_svg"</span> <span class="chen_code_attr">viewBox</span>=<span class="chen_code_str">"0 0 1024 1024"</span>&gt;
+  &lt;<span class="chen_code_tag">use</span> <span class="chen_code_attr">href</span>=<span class="chen_code_str">"#icon-xiaoxi"</span>&gt;&lt;/<span class="chen_code_tag">use</span>&gt;
+&lt;/<span class="chen_code_tag">svg</span>&gt;
+
+<span class="chen_code_comment">/* 3. 图标跟随父元素颜色 */</span>
+.chen_nav_svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}</code></pre>
+      </section>
+    </main>
+
+    <footer class="chen_footer">
+      <p class="chen_footer_title">© 2026 13-4.html · SVG 图标固定下导航</p>
+      <p class="chen_footer_meta">学号：24001010722 · 姓名：陈弘毅</p>
+    </footer>
+  </div>
+
+  <nav class="chen_bottom_nav" aria-label="底部导航">
+    <div class="chen_nav_inner">
+      <button class="chen_nav_item chen_nav_item_active" type="button" data-chen-nav="home"
+        aria-label="首页，有新内容" aria-current="page">
+        <span class="chen_nav_icon_wrap">
+          <svg class="chen_nav_svg" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+            <use href="#icon-shouye1"></use>
+          </svg>
+          <span class="chen_nav_dot" aria-hidden="true"></span>
+        </span>
+        <span class="chen_nav_label">首页</span>
+      </button>
+
+      <button class="chen_nav_item" type="button" data-chen-nav="message" aria-label="消息，12 条未读">
+        <span class="chen_nav_icon_wrap">
+          <svg class="chen_nav_svg" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+            <use href="#icon-xiaoxi"></use>
+          </svg>
+          <span class="chen_nav_badge" aria-hidden="true">12</span>
+        </span>
+        <span class="chen_nav_label">消息</span>
+      </button>
+
+      <button class="chen_nav_item" type="button" data-chen-nav="order" aria-label="订单，3 个待处理">
+        <span class="chen_nav_icon_wrap">
+          <svg class="chen_nav_svg" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+            <use href="#icon-dingdan"></use>
+          </svg>
+          <span class="chen_nav_badge" aria-hidden="true">3</span>
+        </span>
+        <span class="chen_nav_label">订单</span>
+      </button>
+
+      <button class="chen_nav_item" type="button" data-chen-nav="mine" aria-label="我的，有新内容">
+        <span class="chen_nav_icon_wrap">
+          <svg class="chen_nav_svg" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+            <use href="#icon-wodedangxuan"></use>
+          </svg>
+          <span class="chen_nav_dot" aria-hidden="true"></span>
+        </span>
+        <span class="chen_nav_label">我的</span>
+      </button>
+    </div>
+  </nav>
+
+  <script src="font/font_5244855_fm8s0yq40te/iconfont.js"></script>
+  <script>
+    const chen_nav_items = Array.from(document.querySelectorAll("[data-chen-nav]"));
+    const chen_current_label = document.getElementById("chen_current_label");
+    const chen_nav_names = {
+      home: "首页",
+      message: "消息",
+      order: "订单",
+      mine: "我的"
+    };
+
+    function chen_setActive(chen_item) {
+      chen_nav_items.forEach(function (chen_el) {
+        const chen_isActive = chen_el === chen_item;
+        chen_el.classList.toggle("chen_nav_item_active", chen_isActive);
+        if (chen_isActive) {
+          chen_el.setAttribute("aria-current", "page");
+        } else {
+          chen_el.removeAttribute("aria-current");
+        }
+      });
+      chen_current_label.textContent = chen_nav_names[chen_item.getAttribute("data-chen-nav")];
+    }
+
+    chen_nav_items.forEach(function (chen_item) {
+      chen_item.addEventListener("click", function () {
+        chen_setActive(chen_item);
+      });
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>光影集 · 下导航设计原图</title>
+  <script src="../iconfont-sprite.js"></script>
+  <style>
+    :root {
+      --chen_bg: #08080b;
+      --chen_surface: #101014;
+      --chen_text: #f3eee4;
+      --chen_muted: #8e8a80;
+      --chen_gold: #e2b467;
+      --chen_gold_soft: #f3d49a;
+      --chen_red: #ff5a5f;
+      --chen_border: rgba(255, 255, 255, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 780px;
+      height: 360px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(226, 180, 103, 0.14), transparent 42%),
+        radial-gradient(circle at 88% 12%, rgba(120, 90, 50, 0.16), transparent 40%),
+        var(--chen_bg);
+      color: var(--chen_text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC",
+        "Microsoft YaHei", sans-serif;
+    }
+
+    .chen_design_canvas {
+      position: relative;
+      width: 780px;
+      height: 360px;
+      overflow: hidden;
+    }
+
+    .chen_design_canvas::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 39px 39px;
+      mask-image: linear-gradient(to bottom, #000, transparent 72%);
+      -webkit-mask-image: linear-gradient(to bottom, #000, transparent 72%);
+      pointer-events: none;
+    }
+
+    .chen_design_header {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 26px 30px 0;
+    }
+
+    .chen_design_brand_en {
+      color: var(--chen_gold);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.28em;
+    }
+
+    .chen_design_brand_cn {
+      margin-top: 5px;
+      font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+    }
+
+    .chen_design_meta {
+      text-align: right;
+      color: var(--chen_muted);
+      font-size: 10px;
+      line-height: 1.7;
+      letter-spacing: 0.08em;
+    }
+
+    .chen_design_meta strong {
+      display: block;
+      color: var(--chen_text);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+    }
+
+    .chen_design_annotations {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 22px 30px 0;
+      color: var(--chen_muted);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+    }
+
+    .chen_annotation {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .chen_annotation_dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--chen_gold);
+    }
+
+    .chen_annotation_line {
+      width: 26px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(226, 180, 103, 0.75));
+    }
+
+    /* ----- 2x 导航设计稿 ----- */
+    .chen_design_nav_area {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 188px;
+    }
+
+    .chen_design_nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      width: 100%;
+      height: 168px;
+      padding: 0 6px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 15, 19, 0.97);
+      box-shadow: 0 -18px 54px -30px rgba(0, 0, 0, 0.9);
+    }
+
+    .chen_design_nav_item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      color: #7e7a72;
+    }
+
+    .chen_design_nav_item_active {
+      color: var(--chen_gold);
+    }
+
+    .chen_design_icon_wrap {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 70px;
+      height: 54px;
+      border-radius: 18px;
+    }
+
+    .chen_design_nav_item_active .chen_design_icon_wrap {
+      background: rgba(226, 180, 103, 0.1);
+    }
+
+    .chen_design_nav_svg {
+      width: 48px;
+      height: 48px;
+      fill: currentColor;
+      display: block;
+    }
+
+    .chen_design_nav_label {
+      font-size: 19px;
+      line-height: 1.1;
+      letter-spacing: 0.06em;
+    }
+
+    .chen_design_nav_item_active .chen_design_nav_label {
+      font-weight: 700;
+    }
+
+    .chen_design_nav_item_active::after {
+      content: "";
+      position: absolute;
+      bottom: 5px;
+      width: 36px;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, var(--chen_gold), transparent);
+    }
+
+    .chen_design_publish {
+      position: absolute;
+      left: 50%;
+      bottom: 66px;
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      width: 104px;
+      height: 104px;
+      border: 7px solid #0f0f13;
+      border-radius: 50%;
+      background: linear-gradient(140deg, #f6dba7 0%, #e2b467 48%, #b87a31 100%);
+      color: #1a1308;
+      transform: translateX(-50%);
+      box-shadow:
+        0 0 0 1px rgba(255, 226, 168, 0.35),
+        0 18px 44px -16px rgba(226, 180, 103, 0.65);
+    }
+
+    .chen_design_publish_svg {
+      width: 46px;
+      height: 46px;
+      fill: currentColor;
+      display: block;
+    }
+
+    .chen_design_publish_label {
+      position: absolute;
+      top: 92px;
+      left: 50%;
+      z-index: 3;
+      color: #7e7a72;
+      font-size: 19px;
+      letter-spacing: 0.06em;
+      transform: translateX(-50%);
+    }
+
+    .chen_design_badge,
+    .chen_design_dot {
+      position: absolute;
+      z-index: 2;
+      border: 4px solid #0f0f13;
+      box-sizing: content-box;
+    }
+
+    .chen_design_badge {
+      top: -4px;
+      right: -14px;
+      display: grid;
+      place-items: center;
+      min-width: 24px;
+      height: 24px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: var(--chen_red);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .chen_design_dot {
+      top: 4px;
+      right: -6px;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--chen_red);
+    }
+
+    .chen_design_ruler {
+      position: absolute;
+      left: 30px;
+      right: 30px;
+      bottom: 8px;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #5f5b54;
+      font-size: 9px;
+      letter-spacing: 0.08em;
+    }
+
+    .chen_design_ruler_line {
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .chen_design_callout {
+      position: absolute;
+      z-index: 4;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #8e8a80;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    .chen_design_callout::after {
+      content: "";
+      width: 34px;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(226, 180, 103, 0.7), transparent);
+    }
+
+    .chen_callout_badge {
+      right: 48px;
+      top: 202px;
+    }
+
+    .chen_callout_dot {
+      right: 48px;
+      top: 236px;
+    }
+
+    .chen_callout_fixed {
+      left: 30px;
+      top: 202px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chen_design_canvas">
+    <header class="chen_design_header">
+      <div>
+        <div class="chen_design_brand_en">LUMIÈRE / PHOTOGRAPHY</div>
+        <div class="chen_design_brand_cn">光影集 · 底部导航设计稿</div>
+      </div>
+      <div class="chen_design_meta">
+        <strong>ORIGINAL DESIGN · 2X</strong>
+        390 × 84 px / 安全区适配
+      </div>
+    </header>
+
+    <div class="chen_design_annotations">
+      <span class="chen_annotation"><span class="chen_annotation_dot"></span>全宽固定底栏</span>
+      <span class="chen_annotation">5 个入口 · 中心发布按钮<span class="chen_annotation_line"></span></span>
+      <span class="chen_annotation">数字徽章 / 红点提醒<span class="chen_annotation_dot"></span></span>
+    </div>
+
+    <div class="chen_design_nav_area">
+
+      <div class="chen_design_nav">
+        <div class="chen_design_nav_item chen_design_nav_item_active">
+          <span class="chen_design_icon_wrap">
+            <svg class="chen_design_nav_svg" viewBox="0 0 1024 1024" aria-hidden="true">
+              <use href="#icon-shouye1"></use>
+            </svg>
+          </span>
+          <span class="chen_design_nav_label">首页</span>
+        </div>
+
+        <div class="chen_design_nav_item">
+          <span class="chen_design_icon_wrap">
+            <svg class="chen_design_nav_svg" viewBox="0 0 1024 1024" aria-hidden="true">
+              <use href="#icon-sousuo"></use>
+            </svg>
+          </span>
+          <span class="chen_design_nav_label">发现</span>
+        </div>
+
+        <div class="chen_design_nav_spacer" aria-hidden="true"></div>
+
+        <div class="chen_design_nav_item">
+          <span class="chen_design_icon_wrap">
+            <svg class="chen_design_nav_svg" viewBox="0 0 1024 1024" aria-hidden="true">
+              <use href="#icon-shoucang"></use>
+            </svg>
+            <span class="chen_design_badge">8</span>
+          </span>
+          <span class="chen_design_nav_label">收藏</span>
+        </div>
+
+        <div class="chen_design_nav_item">
+          <span class="chen_design_icon_wrap">
+            <svg class="chen_design_nav_svg" viewBox="0 0 1024 1024" aria-hidden="true">
+              <use href="#icon-wodedangxuan"></use>
+            </svg>
+            <span class="chen_design_dot"></span>
+          </span>
+          <span class="chen_design_nav_label">我的</span>
+        </div>
+
+        <div class="chen_design_publish" aria-hidden="true">
+          <svg class="chen_design_publish_svg" viewBox="0 0 1024 1024">
+            <use href="#icon-zhaoxiangji"></use>
+          </svg>
+        </div>
+        <span class="chen_design_publish_label">发布</span>
+      </div>
+
+      <div class="chen_design_ruler">
+        <span>0</span>
+        <span class="chen_design_ruler_line"></span>
+        <span>780 px @2x</span>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

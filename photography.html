@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#08080b">
+  <meta name="description" content="光影集 LUMIÈRE · 摄影作品在线展示网站，使用 iconfont 的 SVG 图标实现自适应全宽固定下导航。">
+  <title>光影集 LUMIÈRE · 摄影作品在线展示</title>
+  <link rel="stylesheet" href="project-assets/css/photography.css">
+</head>
+
+<body>
+  <!-- 高级网页设计I · 图像解决方案 · 学号 24001010722 姓名 陈弘毅 班级 24007 -->
+  <div class="chen_app">
+    <header class="chen_topbar">
+      <a class="chen_brand" href="photography.html" aria-label="光影集首页">
+        <span class="chen_brand_mark" aria-hidden="true">
+          <svg class="chen_brand_svg" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="16.5"></circle>
+            <path d="M20 3.5v33"></path>
+            <path d="M5.7 11.8 34.3 28.2"></path>
+            <path d="M5.7 28.2 34.3 11.8"></path>
+            <circle cx="20" cy="20" r="4.2"></circle>
+          </svg>
+        </span>
+        <span class="chen_brand_text">
+          <span class="chen_brand_cn">光影集</span>
+          <span class="chen_brand_en">LUMIÈRE</span>
+        </span>
+      </a>
+
+      <div class="chen_topbar_actions">
+        <button class="chen_icon_btn" type="button" data-chen-toast-message="搜索功能演示：输入摄影师或作品名"
+          aria-label="搜索作品">
+          <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+            <use href="#icon-sousuo"></use>
+          </svg>
+        </button>
+        <button class="chen_avatar" type="button" data-chen-toast-message="个人中心 · 陈弘毅" aria-label="打开个人中心">
+          <img class="chen_avatar_img" src="project-assets/img/light05.jpg" alt="陈弘毅的头像">
+        </button>
+      </div>
+    </header>
+
+    <main class="chen_main">
+      <section class="chen_hero" aria-labelledby="chen_hero_title">
+        <img class="chen_hero_img" src="project-assets/img/light06.jpg" width="800" height="1100"
+          alt="黄昏时分，运河两侧的建筑倒映在水面上">
+        <div class="chen_hero_overlay" aria-hidden="true"></div>
+        <div class="chen_hero_content">
+          <span class="chen_eyebrow"><span class="chen_eyebrow_dot"></span>本周精选 / EDITOR'S PICK</span>
+          <h1 class="chen_hero_title" id="chen_hero_title">河流把黄昏<br>分成两半</h1>
+          <p class="chen_hero_meta">摄影 / 陈弘毅 · 2026 · 米兰</p>
+          <div class="chen_hero_stats">
+            <span class="chen_hero_stat">
+              <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                <use href="#icon-shoucang"></use>
+              </svg>1.2k 收藏
+            </span>
+            <span class="chen_hero_stat">
+              <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                <use href="#icon-xiaoxi"></use>
+              </svg>86 评论
+            </span>
+            <span class="chen_hero_stat">
+              <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                <use href="#icon-dingwei"></use>
+              </svg>米兰 · 意大利
+            </span>
+          </div>
+          <button class="chen_hero_cta" type="button" data-chen-scroll="gallery">
+            浏览全部作品
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="chen_section" aria-labelledby="chen_gallery_title">
+        <div class="chen_section_head">
+          <div>
+            <span class="chen_section_kicker">EXPLORE</span>
+            <h2 class="chen_section_title" id="chen_gallery_title">探索作品</h2>
+          </div>
+          <span class="chen_section_note">发现不同的视角</span>
+        </div>
+
+        <div class="chen_filter" role="group" aria-label="作品分类">
+          <button class="chen_filter_btn chen_filter_btn_active" type="button" data-chen-filter="all"
+            aria-pressed="true">全部</button>
+          <button class="chen_filter_btn" type="button" data-chen-filter="风光" aria-pressed="false">风光</button>
+          <button class="chen_filter_btn" type="button" data-chen-filter="建筑" aria-pressed="false">建筑</button>
+          <button class="chen_filter_btn" type="button" data-chen-filter="静物" aria-pressed="false">静物</button>
+          <button class="chen_filter_btn" type="button" data-chen-filter="美食" aria-pressed="false">美食</button>
+          <button class="chen_filter_btn" type="button" data-chen-filter="旅行" aria-pressed="false">旅行</button>
+        </div>
+
+        <div class="chen_gallery" data-chen-gallery>
+          <article class="chen_photo_card" data-chen-category="建筑">
+            <div class="chen_photo_media">
+              <img class="chen_photo_img" src="project-assets/img/light03.jpg" width="800" height="1100"
+                alt="锈红色钢结构桥梁与砖砌拱门" decoding="async">
+              <span class="chen_photo_tag">建筑</span>
+              <button class="chen_photo_like" type="button" data-chen-like data-chen-count="215"
+                aria-label="收藏作品《钢铁的骨骼》" aria-pressed="false">
+                <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                  <use href="#icon-shoucang"></use>
+                </svg>
+                <span class="chen_photo_like_count">215</span>
+              </button>
+            </div>
+            <div class="chen_photo_body">
+              <h3 class="chen_photo_title">钢铁的骨骼</h3>
+              <p class="chen_photo_meta">
+                <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                  <use href="#icon-dingwei"></use>
+                </svg>汉堡 · 德国
+              </p>
+              <div class="chen_photo_actions">
+                <span class="chen_photo_stat">
+                  <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                    <use href="#icon-xiaoxi"></use>
+                  </svg>18
+                </span>
+                <button class="chen_photo_share" type="button" data-chen-share
+                  aria-label="分享作品《钢铁的骨骼》">
+                  <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                    <use href="#icon-fenxiang"></use>
+                  </svg>分享
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="chen_photo_card" data-chen-category="风光">
+            <div class="chen_photo_media">
+              <img class="chen_photo_img" src="project-assets/img/light05.jpg" width="800" height="1100"
+                alt="森林深处倾泻而下的瀑布" decoding="async">
+              <span class="chen_photo_tag">风光</span>
+              <button class="chen_photo_like" type="button" data-chen-like data-chen-count="462"
+                aria-label="收藏作品《山谷里的白噪音》" aria-pressed="false">
+                <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                  <use href="#icon-shoucang"></use>
+                </svg>
+                <span class="chen_photo_like_count">462</span>
+              </button>
+            </div>
+            <div class="chen_photo_body">
+              <h3 class="chen_photo_title">山谷里的白噪音</h3>
+              <p class="chen_photo_meta">
+                <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                  <use href="#icon-dingwei"></use>
+                </svg>俄勒冈 · 美国
+              </p>
+              <div class="chen_photo_actions">
+                <span class="chen_photo_stat">
+                  <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                    <use href="#icon-xiaoxi"></use>
+                  </svg>31
+                </span>
+                <button class="chen_photo_share" type="button" data-chen-share
+                  aria-label="分享作品《山谷里的白噪音》">
+                  <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                    <use href="#icon-fenxiang"></use>
+                  </svg>分享
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="chen_photo_card" data-chen-category="风光">
+            <div class="chen_photo_media">
+              <img class="chen_photo_img" src="project-assets/img/light04.jpg" width="800" height="1100"
+                alt="黑白海滩，潮水退去后的泡沫与礁石" decoding="async">
+              <span class="chen_photo_tag">风光</span>
+              <button class="chen_photo_like" type="button" data-chen-like data-chen-count="189"
+                aria-label="收藏作品《潮水退去以后》" aria-pressed="false">
+                <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                  <use href="#icon-shoucang"></use>
+                </svg>
+                <span class="chen_photo_like_count">189</span>
+              </button>
+            </div>
+            <div class="chen_photo_body">
+              <h3 class="chen_photo_title">潮水退去以后</h3>
+              <p class="chen_photo_meta">
+                <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                  <use href="#icon-dingwei"></use>
+                </svg>北海 · 英国
+              </p>
+              <div class="chen_photo_actions">
+                <span class="chen_photo_stat">
+                  <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                    <use href="#icon-xiaoxi"></use>
+                  </svg>12
+                </span>
+                <button class="chen_photo_share" type="button" data-chen-share
+                  aria-label="分享作品《潮水退去以后》">
+                  <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                    <use href="#icon-fenxiang"></use>
+                  </svg>分享
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="chen_photo_card" data-chen-category="美食">
+            <div class="chen_photo_media">
+              <img class="chen_photo_img" src="project-assets/img/light02.jpg" width="800" height="1100"
+                alt="覆盖着白霜的树莓与黑莓" decoding="async">
+              <span class="chen_photo_tag">美食</span>
+              <button class="chen_photo_like" type="button" data-chen-like data-chen-count="276"
+                aria-label="收藏作品《霜降》" aria-pressed="false">
+                <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                  <use href="#icon-shoucang"></use>
+                </svg>
+                <span class="chen_photo_like_count">276</span>
+              </button>
+            </div>
+            <div class="chen_photo_body">
+              <h3 class="chen_photo_title">霜降</h3>
+              <p class="chen_photo_meta">
+                <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                  <use href="#icon-dingwei"></use>
+                </svg>静物棚 · 上海
+              </p>
+              <div class="chen_photo_actions">
+                <span class="chen_photo_stat">
+                  <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                    <use href="#icon-xiaoxi"></use>
+                  </svg>20
+                </span>
+                <button class="chen_photo_share" type="button" data-chen-share
+                  aria-label="分享作品《霜降》">
+                  <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                    <use href="#icon-fenxiang"></use>
+                  </svg>分享
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="chen_photo_card" data-chen-category="静物">
+            <div class="chen_photo_media">
+              <img class="chen_photo_img" src="project-assets/img/light01.jpg" width="800" height="1100"
+                alt="暖色光线下带有复古图案的白色马克杯" decoding="async">
+              <span class="chen_photo_tag">静物</span>
+              <button class="chen_photo_like" type="button" data-chen-like data-chen-count="143"
+                aria-label="收藏作品《午后的一杯》" aria-pressed="false">
+                <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                  <use href="#icon-shoucang"></use>
+                </svg>
+                <span class="chen_photo_like_count">143</span>
+              </button>
+            </div>
+            <div class="chen_photo_body">
+              <h3 class="chen_photo_title">午后的一杯</h3>
+              <p class="chen_photo_meta">
+                <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                  <use href="#icon-dingwei"></use>
+                </svg>咖啡馆 · 上海
+              </p>
+              <div class="chen_photo_actions">
+                <span class="chen_photo_stat">
+                  <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                    <use href="#icon-xiaoxi"></use>
+                  </svg>9
+                </span>
+                <button class="chen_photo_share" type="button" data-chen-share
+                  aria-label="分享作品《午后的一杯》">
+                  <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                    <use href="#icon-fenxiang"></use>
+                  </svg>分享
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="chen_photo_card" data-chen-category="旅行">
+            <div class="chen_photo_media">
+              <img class="chen_photo_img" src="project-assets/img/light06.jpg" width="800" height="1100"
+                alt="黄昏里的运河与两岸建筑" decoding="async">
+              <span class="chen_photo_tag">旅行</span>
+              <button class="chen_photo_like" type="button" data-chen-like data-chen-count="328"
+                aria-label="收藏作品《河流把黄昏分成两半》" aria-pressed="false">
+                <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                  <use href="#icon-shoucang"></use>
+                </svg>
+                <span class="chen_photo_like_count">328</span>
+              </button>
+            </div>
+            <div class="chen_photo_body">
+              <h3 class="chen_photo_title">河流把黄昏分成两半</h3>
+              <p class="chen_photo_meta">
+                <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                  <use href="#icon-dingwei"></use>
+                </svg>米兰 · 意大利
+              </p>
+              <div class="chen_photo_actions">
+                <span class="chen_photo_stat">
+                  <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                    <use href="#icon-xiaoxi"></use>
+                  </svg>24
+                </span>
+                <button class="chen_photo_share" type="button" data-chen-share
+                  aria-label="分享作品《河流把黄昏分成两半》">
+                  <svg class="chen_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+                    <use href="#icon-fenxiang"></use>
+                  </svg>分享
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="chen_section chen_about" aria-labelledby="chen_about_title">
+        <div>
+          <span class="chen_section_kicker">ABOUT LUMIÈRE</span>
+          <h2 class="chen_about_quote" id="chen_about_title">摄影不是看见什么，<br>而是让什么被看见。</h2>
+          <p class="chen_about_text">
+            光影集是一个开放的摄影作品在线展示空间。我们收集城市、自然与日常里的瞬间，
+            用图像记录光线走过的痕迹。每一张作品，都是一次与世界对视的机会。
+          </p>
+        </div>
+        <div class="chen_stats" aria-label="站点数据">
+          <div class="chen_stat">
+            <strong class="chen_stat_value">1,280</strong>
+            <span class="chen_stat_label">作品</span>
+          </div>
+          <div class="chen_stat">
+            <strong class="chen_stat_value">36</strong>
+            <span class="chen_stat_label">摄影师</span>
+          </div>
+          <div class="chen_stat">
+            <strong class="chen_stat_value">12</strong>
+            <span class="chen_stat_label">城市</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="chen_footer">
+      <p class="chen_footer_brand">光影集 LUMIÈRE · 摄影作品在线展示网站</p>
+      <p class="chen_footer_meta">学号：24001010722 · 姓名：陈弘毅 · 班级：24007</p>
+      <p>图片来源：Lorem Picsum（演示用） · 图标来源：iconfont 项目 5244855</p>
+    </footer>
+  </div>
+
+  <div class="chen_toast" data-chen-toast role="status" aria-live="polite"></div>
+
+  <nav class="chen_bottom_nav" aria-label="底部导航">
+    <div class="chen_nav_inner">
+      <button class="chen_nav_item chen_nav_item_active" type="button" data-chen-nav="home"
+        aria-label="首页" aria-current="page">
+        <span class="chen_nav_icon_wrap">
+          <svg class="chen_icon chen_nav_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+            <use href="#icon-shouye1"></use>
+          </svg>
+        </span>
+        <span class="chen_nav_label">首页</span>
+      </button>
+
+      <button class="chen_nav_item" type="button" data-chen-nav="discover" aria-label="发现作品">
+        <span class="chen_nav_icon_wrap">
+          <svg class="chen_icon chen_nav_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+            <use href="#icon-sousuo"></use>
+          </svg>
+        </span>
+        <span class="chen_nav_label">发现</span>
+      </button>
+
+      <button class="chen_nav_item chen_nav_item_publish" type="button" data-chen-nav="publish"
+        aria-label="发布作品">
+        <span class="chen_publish_circle">
+          <svg class="chen_icon chen_publish_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+            <use href="#icon-zhaoxiangji"></use>
+          </svg>
+        </span>
+        <span class="chen_nav_label">发布</span>
+      </button>
+
+      <button class="chen_nav_item" type="button" data-chen-nav="favorites" aria-label="收藏，8 个新收藏">
+        <span class="chen_nav_icon_wrap">
+          <svg class="chen_icon chen_nav_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+            <use href="#icon-shoucang"></use>
+          </svg>
+          <span class="chen_nav_badge" aria-hidden="true">8</span>
+        </span>
+        <span class="chen_nav_label">收藏</span>
+      </button>
+
+      <button class="chen_nav_item" type="button" data-chen-nav="mine" aria-label="我的，有新消息">
+        <span class="chen_nav_icon_wrap">
+          <svg class="chen_icon chen_nav_icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+            <use href="#icon-wodedangxuan"></use>
+          </svg>
+          <span class="chen_nav_dot" aria-hidden="true"></span>
+        </span>
+        <span class="chen_nav_label">我的</span>
+      </button>
+    </div>
+  </nav>
+
+  <script src="project-assets/iconfont-sprite.js"></script>
+  <script src="project-assets/js/photography.js"></script>
+</body>
+
+</html>

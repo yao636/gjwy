@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="13-1 Font Awesome 字体图标展示：通过本地 CDN 引入字体文件，用 CSS 类名调用图标。">
+  <title>13-1 Font Awesome 字体图标</title>
+  <link rel="stylesheet" href="cdn/fontawesome/css/all.min.css">
+  <style>
+    :root {
+      --chen_bg: #eef2ff;
+      --chen_surface: #ffffff;
+      --chen_text: #1e293b;
+      --chen_text_soft: #475569;
+      --chen_muted: #64748b;
+      --chen_primary: #4f46e5;
+      --chen_primary_deep: #3730a3;
+      --chen_primary_soft: #e0e7ff;
+      --chen_accent: #0ea5e9;
+      --chen_border: #dbe3f2;
+      --chen_radius: 20px;
+      --chen_shadow: 0 22px 55px -30px rgba(30, 64, 175, 0.45);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(99, 102, 241, 0.16), transparent 34rem),
+        radial-gradient(circle at 88% 12%, rgba(14, 165, 233, 0.14), transparent 30rem),
+        var(--chen_bg);
+      color: var(--chen_text);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    .chen_page {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: clamp(16px, 2.6vw, 34px);
+    }
+
+    /* ---------- 页头 ---------- */
+    .chen_header {
+      position: relative;
+      overflow: hidden;
+      border-radius: 30px;
+      padding: clamp(28px, 5vw, 58px);
+      color: #ffffff;
+      background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 48%, #0369a1 100%);
+      box-shadow: 0 30px 70px -35px rgba(30, 27, 75, 0.75);
+    }
+
+    .chen_header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+      background-size: 30px 30px;
+      mask-image: radial-gradient(circle at 70% 30%, #000 0%, transparent 72%);
+      -webkit-mask-image: radial-gradient(circle at 70% 30%, #000 0%, transparent 72%);
+      pointer-events: none;
+    }
+
+    .chen_header::after {
+      content: "";
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      right: -110px;
+      bottom: -170px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.42), transparent 68%);
+      pointer-events: none;
+    }
+
+    .chen_header_content {
+      position: relative;
+      z-index: 1;
+      max-width: 820px;
+    }
+
+    .chen_header_top {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .chen_badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 6px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.09);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      color: #e0e7ff;
+    }
+
+    .chen_badge_dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 0 5px rgba(56, 189, 248, 0.16);
+    }
+
+    .chen_nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chen_nav_link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 999px;
+      color: #e0e7ff;
+      font-size: 0.84rem;
+      text-decoration: none;
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+    }
+
+    .chen_nav_link:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.55);
+      color: #ffffff;
+    }
+
+    .chen_nav_link_active {
+      background: #ffffff;
+      border-color: #ffffff;
+      color: #312e81;
+      font-weight: 600;
+    }
+
+    .chen_nav_link_active:hover {
+      background: #ffffff;
+      color: #312e81;
+    }
+
+    .chen_title {
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      line-height: 1.14;
+      letter-spacing: -0.02em;
+      font-weight: 800;
+    }
+
+    .chen_title_mark {
+      color: #7dd3fc;
+    }
+
+    .chen_subtitle {
+      max-width: 690px;
+      margin-top: 15px;
+      font-size: clamp(0.96rem, 1.6vw, 1.1rem);
+      color: rgba(238, 242, 255, 0.86);
+    }
+
+    .chen_chip_row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 26px;
+    }
+
+    .chen_chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #e0e7ff;
+      font-size: 0.82rem;
+    }
+
+    .chen_chip i {
+      color: #7dd3fc;
+    }
+
+    .chen_header_icon {
+      position: absolute;
+      right: 6%;
+      top: 50%;
+      z-index: 0;
+      transform: translateY(-50%) rotate(-12deg);
+      font-size: clamp(7rem, 15vw, 13rem);
+      line-height: 1;
+      color: rgba(255, 255, 255, 0.1);
+      pointer-events: none;
+    }
+
+    /* ---------- 主体 ---------- */
+    .chen_main {
+      display: grid;
+      gap: 24px;
+      margin-top: 28px;
+    }
+
+    .chen_card {
+      min-width: 0;
+      padding: clamp(20px, 3.4vw, 36px);
+      border: 1px solid var(--chen_border);
+      border-radius: var(--chen_radius);
+      background: var(--chen_surface);
+      box-shadow: var(--chen_shadow);
+    }
+
+    .chen_section_head {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .chen_section_num {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--chen_primary_soft);
+      color: var(--chen_primary);
+      font-size: 0.86rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .chen_section_title {
+      font-size: clamp(1.16rem, 2.4vw, 1.48rem);
+      line-height: 1.32;
+    }
+
+    .chen_section_desc {
+      margin-top: 4px;
+      color: var(--chen_muted);
+      font-size: 0.94rem;
+    }
+
+    .chen_feature_grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .chen_feature {
+      padding: 18px;
+      border: 1px solid var(--chen_border);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff, #f8faff);
+    }
+
+    .chen_feature_icon {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      margin-bottom: 12px;
+      border-radius: 13px;
+      background: var(--chen_primary_soft);
+      color: var(--chen_primary);
+      font-size: 1.12rem;
+    }
+
+    .chen_feature_title {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .chen_feature_text {
+      margin-top: 6px;
+      color: var(--chen_muted);
+      font-size: 0.9rem;
+    }
+
+    /* ---------- 交互预览 ---------- */
+    .chen_playground {
+      display: grid;
+      grid-template-columns: minmax(260px, 1.08fr) minmax(280px, 0.92fr);
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    .chen_preview {
+      --chen_demo_size: 72px;
+      --chen_demo_color: #4f46e5;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      min-height: 290px;
+      padding: 22px;
+      overflow: hidden;
+      border: 1px dashed #c7d2fe;
+      border-radius: 18px;
+      background: radial-gradient(circle at 50% 38%, #eef2ff, #f8faff 72%);
+    }
+
+    .chen_preview::before {
+      content: "";
+      position: absolute;
+      width: 210px;
+      height: 210px;
+      border: 1px solid rgba(79, 70, 229, 0.12);
+      border-radius: 50%;
+    }
+
+    .chen_preview::after {
+      content: "";
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border: 1px solid rgba(79, 70, 229, 0.07);
+      border-radius: 50%;
+    }
+
+    .chen_demo_icon {
+      position: relative;
+      z-index: 1;
+      font-size: var(--chen_demo_size);
+      line-height: 1;
+      color: var(--chen_demo_color);
+      transition: font-size 0.18s ease, color 0.18s ease;
+      filter: drop-shadow(0 12px 18px rgba(79, 70, 229, 0.22));
+    }
+
+    .chen_preview_label {
+      position: relative;
+      z-index: 1;
+      padding: 5px 12px;
+      border: 1px solid var(--chen_border);
+      border-radius: 999px;
+      background: #ffffff;
+      color: var(--chen_text_soft);
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.78rem;
+    }
+
+    .chen_controls {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .chen_control {
+      display: block;
+    }
+
+    .chen_control_row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--chen_text_soft);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .chen_control_value {
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: var(--chen_primary_soft);
+      color: var(--chen_primary);
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.78rem;
+    }
+
+    .chen_range {
+      width: 100%;
+      margin-top: 9px;
+      accent-color: var(--chen_primary);
+      cursor: pointer;
+    }
+
+    .chen_color_row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .chen_color {
+      width: 56px;
+      height: 36px;
+      padding: 0;
+      border: 1px solid var(--chen_border);
+      border-radius: 9px;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .chen_btn_row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chen_btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border: 1px solid transparent;
+      border-radius: 11px;
+      background: var(--chen_primary);
+      color: #ffffff;
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease,
+        border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .chen_btn:hover {
+      transform: translateY(-1px);
+      background: #4338ca;
+      box-shadow: 0 12px 26px -16px rgba(67, 56, 202, 0.9);
+    }
+
+    .chen_btn:focus-visible {
+      outline: 3px solid rgba(79, 70, 229, 0.35);
+      outline-offset: 2px;
+    }
+
+    .chen_btn_ghost {
+      border-color: var(--chen_border);
+      background: #ffffff;
+      color: var(--chen_text_soft);
+    }
+
+    .chen_btn_ghost:hover {
+      background: #f8faff;
+      color: var(--chen_primary);
+    }
+
+    .chen_btn_active {
+      border-color: #0f172a;
+      background: #0f172a;
+      color: #ffffff;
+    }
+
+    @keyframes chen_rotate {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .chen_is_spinning {
+      animation: chen_rotate 1.6s linear infinite;
+    }
+
+    /* ---------- 图标墙 ---------- */
+    .chen_icon_group + .chen_icon_group {
+      margin-top: 26px;
+    }
+
+    .chen_icon_group_head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .chen_icon_group_title {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .chen_icon_group_tag {
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: var(--chen_primary_soft);
+      color: var(--chen_primary);
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.72rem;
+    }
+
+    .chen_icon_grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+      gap: 10px;
+    }
+
+    .chen_icon_item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 8px 12px;
+      border: 1px solid var(--chen_border);
+      border-radius: 14px;
+      background: #ffffff;
+      color: var(--chen_text_soft);
+      font: inherit;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease,
+        box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .chen_icon_item:hover {
+      transform: translateY(-3px);
+      border-color: #a5b4fc;
+      background: #f8faff;
+      box-shadow: 0 14px 30px -20px rgba(79, 70, 229, 0.6);
+    }
+
+    .chen_icon_item:focus-visible {
+      outline: 3px solid rgba(79, 70, 229, 0.35);
+      outline-offset: 2px;
+    }
+
+    .chen_icon_item .fa-solid,
+    .chen_icon_item .fa-regular,
+    .chen_icon_item .fa-brands {
+      font-size: 1.65rem;
+      line-height: 1;
+      color: var(--chen_primary);
+    }
+
+    .chen_icon_item_brand .fa-brands {
+      color: #0284c7;
+    }
+
+    .chen_icon_name {
+      overflow-wrap: anywhere;
+      word-break: normal;
+      color: var(--chen_muted);
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.68rem;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    /* ---------- 代码与文件 ---------- */
+    .chen_code_inline {
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: #eef2ff;
+      color: #4338ca;
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.86em;
+    }
+
+    .chen_code_block {
+      margin-top: 16px;
+      padding: 20px 22px;
+      overflow-x: auto;
+      border-radius: 16px;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.84rem;
+      line-height: 1.85;
+      tab-size: 2;
+    }
+
+    .chen_code_comment {
+      color: #94a3b8;
+    }
+
+    .chen_code_tag {
+      color: #7dd3fc;
+    }
+
+    .chen_code_attr {
+      color: #c4b5fd;
+    }
+
+    .chen_code_str {
+      color: #86efac;
+    }
+
+    .chen_file_list {
+      display: grid;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .chen_file_row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 11px 14px;
+      border: 1px solid var(--chen_border);
+      border-radius: 10px;
+      background: #f8fafc;
+      font-size: 0.86rem;
+    }
+
+    .chen_file_path {
+      word-break: break-all;
+      color: #334155;
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+    }
+
+    .chen_file_desc {
+      flex: 0 0 auto;
+      color: var(--chen_muted);
+      font-size: 0.8rem;
+    }
+
+    .chen_note {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border: 1px solid #bfdbfe;
+      border-radius: 14px;
+      background: #eff6ff;
+      color: #1e3a8a;
+      font-size: 0.9rem;
+    }
+
+    .chen_note i {
+      margin-top: 4px;
+      color: #2563eb;
+    }
+
+    .chen_footer {
+      margin-top: 30px;
+      padding: 24px 10px 8px;
+      border-top: 1px solid rgba(148, 163, 184, 0.32);
+      color: var(--chen_muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .chen_footer_title {
+      color: var(--chen_text_soft);
+      font-weight: 700;
+    }
+
+    .chen_footer_meta {
+      margin-top: 6px;
+    }
+
+    @media (max-width: 820px) {
+      .chen_playground {
+        grid-template-columns: 1fr;
+      }
+
+      .chen_header_icon {
+        display: none;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .chen_file_row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+
+      .chen_icon_grid {
+        grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chen_page">
+    <header class="chen_header">
+      <div class="chen_header_top">
+        <span class="chen_badge"><span class="chen_badge_dot"></span>第 13 周 · 图标库</span>
+        <nav class="chen_nav" aria-label="页面导航">
+          <a class="chen_nav_link chen_nav_link_active" href="13-1.html" aria-current="page">
+            <i class="fa-solid fa-font" aria-hidden="true"></i>Font Awesome
+          </a>
+          <a class="chen_nav_link" href="13-2.html">
+            <i class="fa-solid fa-shapes" aria-hidden="true"></i>Lucide SVG
+          </a>
+        </nav>
+      </div>
+
+      <div class="chen_header_content">
+        <h1 class="chen_title">Font Awesome <span class="chen_title_mark">字体图标</span></h1>
+        <p class="chen_subtitle">
+          用字体文件绘制图标：一个类名就能调用，颜色、大小、旋转全部交给 CSS。
+          本页所有资源已下载到本地 <span class="chen_code_inline">cdn</span> 目录，断网也能正常显示。
+        </p>
+        <div class="chen_chip_row">
+          <span class="chen_chip"><i class="fa-solid fa-font" aria-hidden="true"></i>字体渲染</span>
+          <span class="chen_chip"><i class="fa-solid fa-palette" aria-hidden="true"></i>CSS 换色</span>
+          <span class="chen_chip"><i class="fa-solid fa-wifi" aria-hidden="true"></i>本地离线可用</span>
+        </div>
+      </div>
+
+      <div class="chen_header_icon" aria-hidden="true">
+        <i class="fa-solid fa-font"></i>
+      </div>
+    </header>
+
+    <main class="chen_main">
+      <section class="chen_card" aria-labelledby="chen_intro_title">
+        <div class="chen_section_head">
+          <span class="chen_section_num">01</span>
+          <div>
+            <h2 class="chen_section_title" id="chen_intro_title">什么是字体图标</h2>
+            <p class="chen_section_desc">
+              Font Awesome 把图标做成字体文件，每个图标对应一个 Unicode 码位。
+              页面里写的 <span class="chen_code_inline">&lt;i class="fa-solid fa-house"&gt;</span>
+              本质上是给文字指定了特殊字体和字符，所以图标能像文字一样被 CSS 控制。
+            </p>
+          </div>
+        </div>
+
+        <div class="chen_feature_grid">
+          <article class="chen_feature">
+            <div class="chen_feature_icon"><i class="fa-solid fa-star" aria-hidden="true"></i></div>
+            <h3 class="chen_feature_title">矢量无损</h3>
+            <p class="chen_feature_text">字体轮廓随字号缩放，放大到任意尺寸都不会出现锯齿或模糊。</p>
+          </article>
+          <article class="chen_feature">
+            <div class="chen_feature_icon"><i class="fa-solid fa-bolt" aria-hidden="true"></i></div>
+            <h3 class="chen_feature_title">调用简单</h3>
+            <p class="chen_feature_text">两个类名即可：风格类（solid / regular / brands）+ 图标名类。</p>
+          </article>
+          <article class="chen_feature">
+            <div class="chen_feature_icon"><i class="fa-solid fa-palette" aria-hidden="true"></i></div>
+            <h3 class="chen_feature_title">完全可控</h3>
+            <p class="chen_feature_text">直接使用 font-size、color、text-shadow 和动画，不需要额外图片。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="chen_card" aria-labelledby="chen_play_title">
+        <div class="chen_section_head">
+          <span class="chen_section_num">02</span>
+          <div>
+            <h2 class="chen_section_title" id="chen_play_title">动手试一试</h2>
+            <p class="chen_section_desc">
+              拖动下面的滑块改变字号，选择颜色，再点一下旋转。所有变化只修改 CSS 变量，图标本身没有重新加载。
+            </p>
+          </div>
+        </div>
+
+        <div class="chen_playground">
+          <div class="chen_preview" id="chen_preview">
+            <i class="fa-solid fa-house chen_demo_icon" id="chen_demo_fa" aria-hidden="true"></i>
+            <span class="chen_preview_label" id="chen_preview_label">fa-solid fa-house</span>
+          </div>
+
+          <div class="chen_controls">
+            <label class="chen_control" for="chen_size">
+              <span class="chen_control_row">
+                <span>图标大小</span>
+                <output class="chen_control_value" id="chen_size_out" for="chen_size">72 px</output>
+              </span>
+              <input class="chen_range" id="chen_size" type="range" min="24" max="120" step="2" value="72">
+            </label>
+
+            <div class="chen_control">
+              <div class="chen_control_row">
+                <label for="chen_color">图标颜色</label>
+                <input class="chen_color" id="chen_color" type="color" value="#4f46e5" aria-label="选择图标颜色">
+              </div>
+            </div>
+
+            <div class="chen_btn_row">
+              <button class="chen_btn chen_btn_ghost" id="chen_spin_btn" type="button" aria-pressed="false">
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                <span>旋转动画</span>
+              </button>
+              <button class="chen_btn chen_btn_ghost" id="chen_reset_btn" type="button">
+                <i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i>
+                重置
+              </button>
+            </div>
+
+            <p class="chen_section_desc">
+              提示：点击下方图标墙里的任意图标，也能把它放到预览区里试效果。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="chen_card" aria-labelledby="chen_wall_title">
+        <div class="chen_section_head">
+          <span class="chen_section_num">03</span>
+          <div>
+            <h2 class="chen_section_title" id="chen_wall_title">图标墙</h2>
+            <p class="chen_section_desc">
+              下面按风格分成三组。实心和描边使用同一套图标名，品牌图标需要配合
+              <span class="chen_code_inline">fa-brands</span> 使用。
+            </p>
+          </div>
+        </div>
+
+        <div class="chen_icon_group">
+          <div class="chen_icon_group_head">
+            <h3 class="chen_icon_group_title">常用实心图标</h3>
+            <span class="chen_icon_group_tag">fa-solid</span>
+          </div>
+          <div class="chen_icon_grid">
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-house" aria-label="预览 house 图标">
+              <i class="fa-solid fa-house" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-house</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-user" aria-label="预览 user 图标">
+              <i class="fa-solid fa-user" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-user</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-heart" aria-label="预览 heart 图标">
+              <i class="fa-solid fa-heart" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-heart</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-star" aria-label="预览 star 图标">
+              <i class="fa-solid fa-star" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-star</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-gear" aria-label="预览 gear 图标">
+              <i class="fa-solid fa-gear" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-gear</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-magnifying-glass" aria-label="预览搜索图标">
+              <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-magnifying-glass</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-bell" aria-label="预览 bell 图标">
+              <i class="fa-solid fa-bell" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-bell</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-camera" aria-label="预览 camera 图标">
+              <i class="fa-solid fa-camera" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-camera</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-download" aria-label="预览 download 图标">
+              <i class="fa-solid fa-download" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-download</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-trash" aria-label="预览 trash 图标">
+              <i class="fa-solid fa-trash" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-trash</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-envelope" aria-label="预览 envelope 图标">
+              <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-envelope</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-calendar" aria-label="预览 calendar 图标">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-calendar</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-location-dot" aria-label="预览定位图标">
+              <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-location-dot</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-cart-shopping" aria-label="预览购物车图标">
+              <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-cart-shopping</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-circle-check" aria-label="预览完成图标">
+              <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-circle-check</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-arrow-right" aria-label="预览箭头图标">
+              <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-arrow-right</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-clock" aria-label="预览 clock 图标">
+              <i class="fa-solid fa-clock" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-clock</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-folder-open" aria-label="预览文件夹图标">
+              <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-folder-open</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-comment" aria-label="预览 comment 图标">
+              <i class="fa-solid fa-comment" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-comment</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-solid fa-thumbs-up" aria-label="预览点赞图标">
+              <i class="fa-solid fa-thumbs-up" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-thumbs-up</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="chen_icon_group">
+          <div class="chen_icon_group_head">
+            <h3 class="chen_icon_group_title">描边风格</h3>
+            <span class="chen_icon_group_tag">fa-regular</span>
+          </div>
+          <div class="chen_icon_grid">
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-regular fa-heart" aria-label="预览描边 heart 图标">
+              <i class="fa-regular fa-heart" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-heart</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-regular fa-star" aria-label="预览描边 star 图标">
+              <i class="fa-regular fa-star" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-star</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-regular fa-user" aria-label="预览描边 user 图标">
+              <i class="fa-regular fa-user" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-user</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-regular fa-envelope" aria-label="预览描边 envelope 图标">
+              <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-envelope</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-regular fa-bell" aria-label="预览描边 bell 图标">
+              <i class="fa-regular fa-bell" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-bell</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-regular fa-clock" aria-label="预览描边 clock 图标">
+              <i class="fa-regular fa-clock" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-clock</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-regular fa-calendar" aria-label="预览描边 calendar 图标">
+              <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-calendar</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-regular fa-comment" aria-label="预览描边 comment 图标">
+              <i class="fa-regular fa-comment" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-comment</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-regular fa-folder-open" aria-label="预览描边文件夹图标">
+              <i class="fa-regular fa-folder-open" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-folder-open</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-regular fa-thumbs-up" aria-label="预览描边点赞图标">
+              <i class="fa-regular fa-thumbs-up" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-thumbs-up</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-regular fa-circle-check" aria-label="预览描边完成图标">
+              <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-circle-check</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-icon="fa-regular fa-square-check" aria-label="预览描边勾选图标">
+              <i class="fa-regular fa-square-check" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-square-check</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="chen_icon_group">
+          <div class="chen_icon_group_head">
+            <h3 class="chen_icon_group_title">品牌图标</h3>
+            <span class="chen_icon_group_tag">fa-brands</span>
+          </div>
+          <div class="chen_icon_grid">
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-github" aria-label="预览 GitHub 图标">
+              <i class="fa-brands fa-github" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-github</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-weixin" aria-label="预览微信图标">
+              <i class="fa-brands fa-weixin" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-weixin</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-qq" aria-label="预览 QQ 图标">
+              <i class="fa-brands fa-qq" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-qq</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-bilibili" aria-label="预览 Bilibili 图标">
+              <i class="fa-brands fa-bilibili" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-bilibili</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-weibo" aria-label="预览微博图标">
+              <i class="fa-brands fa-weibo" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-weibo</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-x-twitter" aria-label="预览 X 图标">
+              <i class="fa-brands fa-x-twitter" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-x-twitter</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-youtube" aria-label="预览 YouTube 图标">
+              <i class="fa-brands fa-youtube" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-youtube</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-apple" aria-label="预览 Apple 图标">
+              <i class="fa-brands fa-apple" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-apple</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-android" aria-label="预览 Android 图标">
+              <i class="fa-brands fa-android" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-android</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-windows" aria-label="预览 Windows 图标">
+              <i class="fa-brands fa-windows" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-windows</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-linux" aria-label="预览 Linux 图标">
+              <i class="fa-brands fa-linux" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-linux</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-docker" aria-label="预览 Docker 图标">
+              <i class="fa-brands fa-docker" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-docker</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-java" aria-label="预览 Java 图标">
+              <i class="fa-brands fa-java" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-java</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-js" aria-label="预览 JavaScript 图标">
+              <i class="fa-brands fa-js" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-js</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-html5" aria-label="预览 HTML5 图标">
+              <i class="fa-brands fa-html5" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-html5</span>
+            </button>
+            <button class="chen_icon_item chen_icon_item_brand" type="button" data-chen-icon="fa-brands fa-css3-alt" aria-label="预览 CSS3 图标">
+              <i class="fa-brands fa-css3-alt" aria-hidden="true"></i>
+              <span class="chen_icon_name">fa-css3-alt</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="chen_card" aria-labelledby="chen_code_title">
+        <div class="chen_section_head">
+          <span class="chen_section_num">04</span>
+          <div>
+            <h2 class="chen_section_title" id="chen_code_title">代码写法</h2>
+            <p class="chen_section_desc">引入一次样式文件，之后每个图标只需要一行 HTML。</p>
+          </div>
+        </div>
+
+        <pre class="chen_code_block"><code><span class="chen_code_comment">&lt;!-- 1. 引入本地 Font Awesome 样式 --&gt;</span>
+&lt;<span class="chen_code_tag">link</span> <span class="chen_code_attr">rel</span>=<span class="chen_code_str">"stylesheet"</span> <span class="chen_code_attr">href</span>=<span class="chen_code_str">"cdn/fontawesome/css/all.min.css"</span>&gt;
+
+<span class="chen_code_comment">&lt;!-- 2. 两个类名：风格 + 图标名 --&gt;</span>
+&lt;<span class="chen_code_tag">i</span> <span class="chen_code_attr">class</span>=<span class="chen_code_str">"fa-solid fa-house"</span>&gt;&lt;/<span class="chen_code_tag">i</span>&gt;
+&lt;<span class="chen_code_tag">i</span> <span class="chen_code_attr">class</span>=<span class="chen_code_str">"fa-regular fa-heart"</span>&gt;&lt;/<span class="chen_code_tag">i</span>&gt;
+&lt;<span class="chen_code_tag">i</span> <span class="chen_code_attr">class</span>=<span class="chen_code_str">"fa-brands fa-github"</span>&gt;&lt;/<span class="chen_code_tag">i</span>&gt;
+
+<span class="chen_code_comment">/* 3. 图标本质是文字，直接用 CSS 控制 */</span>
+.chen_icon {
+  font-size: 32px;
+  color: #4f46e5;
+}</code></pre>
+
+        <div class="chen_note">
+          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          <p>
+            图标默认继承文字颜色和字号。给父元素设置 <span class="chen_code_inline">color</span> 和
+            <span class="chen_code_inline">font-size</span>，内部的图标会自动跟随；
+            装饰性图标建议加上 <span class="chen_code_inline">aria-hidden="true"</span>，避免被读屏软件重复朗读。
+          </p>
+        </div>
+      </section>
+
+      <section class="chen_card" aria-labelledby="chen_file_title">
+        <div class="chen_section_head">
+          <span class="chen_section_num">05</span>
+          <div>
+            <h2 class="chen_section_title" id="chen_file_title">本地 CDN 文件</h2>
+            <p class="chen_section_desc">
+              以下文件均已下载到项目目录，页面不需要联网。样式里的字体路径是相对路径，请保持目录结构不变。
+            </p>
+          </div>
+        </div>
+
+        <div class="chen_file_list">
+          <div class="chen_file_row">
+            <span class="chen_file_path">cdn/fontawesome/css/all.min.css</span>
+            <span class="chen_file_desc">全部图标样式</span>
+          </div>
+          <div class="chen_file_row">
+            <span class="chen_file_path">cdn/fontawesome/webfonts/fa-solid-900.woff2</span>
+            <span class="chen_file_desc">实心图标字体</span>
+          </div>
+          <div class="chen_file_row">
+            <span class="chen_file_path">cdn/fontawesome/webfonts/fa-regular-400.woff2</span>
+            <span class="chen_file_desc">描边图标字体</span>
+          </div>
+          <div class="chen_file_row">
+            <span class="chen_file_path">cdn/fontawesome/webfonts/fa-brands-400.woff2</span>
+            <span class="chen_file_desc">品牌图标字体</span>
+          </div>
+          <div class="chen_file_row">
+            <span class="chen_file_path">cdn/fontawesome/webfonts/fa-v4compatibility.woff2</span>
+            <span class="chen_file_desc">旧版图标兼容字体</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="chen_footer">
+      <p class="chen_footer_title">© 2026 13-1.html · Font Awesome 字体图标</p>
+      <p class="chen_footer_meta">学号：24001010722 · 姓名：陈弘毅</p>
+    </footer>
+  </div>
+
+  <script>
+    const chen_preview = document.getElementById("chen_preview");
+    const chen_demo = document.getElementById("chen_demo_fa");
+    const chen_preview_label = document.getElementById("chen_preview_label");
+    const chen_size = document.getElementById("chen_size");
+    const chen_size_out = document.getElementById("chen_size_out");
+    const chen_color = document.getElementById("chen_color");
+    const chen_spin_btn = document.getElementById("chen_spin_btn");
+    const chen_reset_btn = document.getElementById("chen_reset_btn");
+    let chen_spinning = false;
+
+    function chen_applySize() {
+      chen_preview.style.setProperty("--chen_demo_size", chen_size.value + "px");
+      chen_size_out.textContent = chen_size.value + " px";
+    }
+
+    function chen_applyColor() {
+      chen_preview.style.setProperty("--chen_demo_color", chen_color.value);
+    }
+
+    function chen_setSpin(chen_on) {
+      chen_spinning = chen_on;
+      chen_demo.classList.toggle("chen_is_spinning", chen_spinning);
+      chen_spin_btn.setAttribute("aria-pressed", String(chen_spinning));
+      chen_spin_btn.classList.toggle("chen_btn_active", chen_spinning);
+      chen_spin_btn.querySelector("span").textContent = chen_spinning ? "停止旋转" : "旋转动画";
+    }
+
+    function chen_showIcon(chen_icon) {
+      chen_demo.className = "chen_demo_icon " + chen_icon;
+      if (chen_spinning) {
+        chen_demo.classList.add("chen_is_spinning");
+      }
+      chen_preview_label.textContent = chen_icon;
+    }
+
+    chen_size.addEventListener("input", chen_applySize);
+    chen_color.addEventListener("input", chen_applyColor);
+
+    chen_spin_btn.addEventListener("click", function () {
+      chen_setSpin(!chen_spinning);
+    });
+
+    chen_reset_btn.addEventListener("click", function () {
+      chen_size.value = "72";
+      chen_color.value = "#4f46e5";
+      chen_preview.style.removeProperty("--chen_demo_size");
+      chen_preview.style.removeProperty("--chen_demo_color");
+      chen_size_out.textContent = "72 px";
+      chen_setSpin(false);
+      chen_showIcon("fa-solid fa-house");
+    });
+
+    document.querySelectorAll("[data-chen-icon]").forEach(function (chen_item) {
+      chen_item.addEventListener("click", function () {
+        chen_showIcon(chen_item.getAttribute("data-chen-icon"));
+      });
+    });
+
+    chen_applySize();
+    chen_applyColor();
+  </script>
+</body>
+
+</html>

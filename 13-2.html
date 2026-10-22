@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="13-2 Lucide SVG 图标展示：通过本地 CDN 引入 Lucide，在页面中生成可自由控制的内联 SVG 图标。">
+  <title>13-2 Lucide SVG 图标</title>
+  <style>
+    :root {
+      --chen_bg: #ecfdf5;
+      --chen_surface: #ffffff;
+      --chen_text: #0f2e26;
+      --chen_text_soft: #3f5f56;
+      --chen_muted: #64748b;
+      --chen_primary: #059669;
+      --chen_primary_deep: #065f46;
+      --chen_primary_soft: #d1fae5;
+      --chen_accent: #0d9488;
+      --chen_border: #d5e8e0;
+      --chen_radius: 20px;
+      --chen_shadow: 0 22px 55px -30px rgba(6, 95, 70, 0.4);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(16, 185, 129, 0.16), transparent 34rem),
+        radial-gradient(circle at 90% 10%, rgba(13, 148, 136, 0.14), transparent 30rem),
+        var(--chen_bg);
+      color: var(--chen_text);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    .chen_page {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: clamp(16px, 2.6vw, 34px);
+    }
+
+    /* ---------- 页头 ---------- */
+    .chen_header {
+      position: relative;
+      overflow: hidden;
+      border-radius: 30px;
+      padding: clamp(28px, 5vw, 58px);
+      color: #ffffff;
+      background: linear-gradient(135deg, #042f2e 0%, #065f46 52%, #0f766e 100%);
+      box-shadow: 0 30px 70px -35px rgba(4, 47, 46, 0.8);
+    }
+
+    .chen_header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 30px 30px;
+      mask-image: radial-gradient(circle at 70% 30%, #000 0%, transparent 72%);
+      -webkit-mask-image: radial-gradient(circle at 70% 30%, #000 0%, transparent 72%);
+      pointer-events: none;
+    }
+
+    .chen_header::after {
+      content: "";
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      right: -110px;
+      bottom: -170px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(45, 212, 191, 0.4), transparent 68%);
+      pointer-events: none;
+    }
+
+    .chen_header_content {
+      position: relative;
+      z-index: 1;
+      max-width: 820px;
+    }
+
+    .chen_header_top {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .chen_badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 6px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.09);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      color: #d1fae5;
+    }
+
+    .chen_badge_dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #5eead4;
+      box-shadow: 0 0 0 5px rgba(94, 234, 212, 0.16);
+    }
+
+    .chen_nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chen_nav_link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 999px;
+      color: #d1fae5;
+      font-size: 0.84rem;
+      text-decoration: none;
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+    }
+
+    .chen_nav_link:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.55);
+      color: #ffffff;
+    }
+
+    .chen_nav_link_active {
+      background: #ffffff;
+      border-color: #ffffff;
+      color: #065f46;
+      font-weight: 600;
+    }
+
+    .chen_nav_link_active:hover {
+      background: #ffffff;
+      color: #065f46;
+    }
+
+    .chen_nav_link svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+    }
+
+    .chen_title {
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      line-height: 1.14;
+      letter-spacing: -0.02em;
+      font-weight: 800;
+    }
+
+    .chen_title_mark {
+      color: #6ee7b7;
+    }
+
+    .chen_subtitle {
+      max-width: 690px;
+      margin-top: 15px;
+      font-size: clamp(0.96rem, 1.6vw, 1.1rem);
+      color: rgba(236, 253, 245, 0.86);
+    }
+
+    .chen_chip_row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 26px;
+    }
+
+    .chen_chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #d1fae5;
+      font-size: 0.82rem;
+    }
+
+    .chen_chip svg {
+      width: 16px;
+      height: 16px;
+      color: #5eead4;
+      stroke-width: 2;
+    }
+
+    .chen_header_icon {
+      position: absolute;
+      right: 7%;
+      top: 50%;
+      z-index: 0;
+      transform: translateY(-50%) rotate(-10deg);
+      color: #ffffff;
+      opacity: 0.1;
+      pointer-events: none;
+    }
+
+    .chen_header_icon svg {
+      width: clamp(150px, 18vw, 250px);
+      height: clamp(150px, 18vw, 250px);
+      stroke-width: 1;
+    }
+
+    /* ---------- 主体 ---------- */
+    .chen_main {
+      display: grid;
+      gap: 24px;
+      margin-top: 28px;
+    }
+
+    .chen_card {
+      min-width: 0;
+      padding: clamp(20px, 3.4vw, 36px);
+      border: 1px solid var(--chen_border);
+      border-radius: var(--chen_radius);
+      background: var(--chen_surface);
+      box-shadow: var(--chen_shadow);
+    }
+
+    .chen_section_head {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .chen_section_num {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--chen_primary_soft);
+      color: var(--chen_primary);
+      font-size: 0.86rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .chen_section_title {
+      font-size: clamp(1.16rem, 2.4vw, 1.48rem);
+      line-height: 1.32;
+    }
+
+    .chen_section_desc {
+      margin-top: 4px;
+      color: var(--chen_muted);
+      font-size: 0.94rem;
+    }
+
+    .chen_feature_grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .chen_feature {
+      padding: 18px;
+      border: 1px solid var(--chen_border);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff, #f7fdfa);
+    }
+
+    .chen_feature_icon {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      margin-bottom: 12px;
+      border-radius: 13px;
+      background: var(--chen_primary_soft);
+      color: var(--chen_primary);
+    }
+
+    .chen_feature_icon svg {
+      width: 22px;
+      height: 22px;
+      stroke-width: 2;
+    }
+
+    .chen_feature_title {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .chen_feature_text {
+      margin-top: 6px;
+      color: var(--chen_muted);
+      font-size: 0.9rem;
+    }
+
+    /* ---------- 交互预览 ---------- */
+    .chen_playground {
+      display: grid;
+      grid-template-columns: minmax(260px, 1.08fr) minmax(280px, 0.92fr);
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    .chen_preview {
+      --chen_demo_size: 96px;
+      --chen_demo_color: #059669;
+      --chen_demo_stroke: 2;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      min-height: 290px;
+      padding: 22px;
+      overflow: hidden;
+      border: 1px dashed #a7f3d0;
+      border-radius: 18px;
+      background: radial-gradient(circle at 50% 38%, #ecfdf5, #f8fffc 72%);
+    }
+
+    .chen_preview::before {
+      content: "";
+      position: absolute;
+      width: 210px;
+      height: 210px;
+      border: 1px solid rgba(5, 150, 105, 0.12);
+      border-radius: 50%;
+    }
+
+    .chen_preview::after {
+      content: "";
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border: 1px solid rgba(5, 150, 105, 0.07);
+      border-radius: 50%;
+    }
+
+    .chen_demo_icon {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      color: var(--chen_demo_color);
+      filter: drop-shadow(0 14px 20px rgba(5, 150, 105, 0.22));
+      transition: color 0.18s ease;
+    }
+
+    .chen_demo_icon svg {
+      width: var(--chen_demo_size);
+      height: var(--chen_demo_size);
+      stroke-width: var(--chen_demo_stroke);
+      transform-origin: center;
+      transition: width 0.18s ease, height 0.18s ease, stroke-width 0.18s ease;
+    }
+
+    .chen_preview_label {
+      position: relative;
+      z-index: 1;
+      padding: 5px 12px;
+      border: 1px solid var(--chen_border);
+      border-radius: 999px;
+      background: #ffffff;
+      color: var(--chen_text_soft);
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.78rem;
+    }
+
+    .chen_controls {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .chen_control {
+      display: block;
+    }
+
+    .chen_control_row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--chen_text_soft);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .chen_control_value {
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: var(--chen_primary_soft);
+      color: var(--chen_primary);
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.78rem;
+    }
+
+    .chen_range {
+      width: 100%;
+      margin-top: 9px;
+      accent-color: var(--chen_primary);
+      cursor: pointer;
+    }
+
+    .chen_color_row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .chen_color {
+      width: 56px;
+      height: 36px;
+      padding: 0;
+      border: 1px solid var(--chen_border);
+      border-radius: 9px;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .chen_btn_row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chen_btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border: 1px solid transparent;
+      border-radius: 11px;
+      background: var(--chen_primary);
+      color: #ffffff;
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease,
+        border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .chen_btn:hover {
+      transform: translateY(-1px);
+      background: #047857;
+      box-shadow: 0 12px 26px -16px rgba(4, 120, 87, 0.9);
+    }
+
+    .chen_btn:focus-visible {
+      outline: 3px solid rgba(5, 150, 105, 0.35);
+      outline-offset: 2px;
+    }
+
+    .chen_btn svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2;
+    }
+
+    .chen_btn_ghost {
+      border-color: var(--chen_border);
+      background: #ffffff;
+      color: var(--chen_text_soft);
+    }
+
+    .chen_btn_ghost:hover {
+      background: #f7fdfa;
+      color: var(--chen_primary);
+    }
+
+    .chen_btn_active {
+      border-color: #0f172a;
+      background: #0f172a;
+      color: #ffffff;
+    }
+
+    .chen_status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--chen_muted);
+      font-size: 0.88rem;
+    }
+
+    .chen_status_value {
+      padding: 2px 9px;
+      border-radius: 6px;
+      background: var(--chen_primary_soft);
+      color: var(--chen_primary);
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.78rem;
+    }
+
+    @keyframes chen_spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .chen_is_spinning svg {
+      animation: chen_spin 2s linear infinite;
+    }
+
+    /* ---------- 图标墙 ---------- */
+    .chen_icon_group + .chen_icon_group {
+      margin-top: 26px;
+    }
+
+    .chen_icon_group_head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .chen_icon_group_title {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .chen_icon_group_tag {
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: var(--chen_primary_soft);
+      color: var(--chen_primary);
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.72rem;
+    }
+
+    .chen_icon_grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+      gap: 10px;
+    }
+
+    .chen_icon_item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 8px 12px;
+      border: 1px solid var(--chen_border);
+      border-radius: 14px;
+      background: #ffffff;
+      color: var(--chen_text_soft);
+      font: inherit;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease,
+        box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .chen_icon_item:hover {
+      transform: translateY(-3px);
+      border-color: #6ee7b7;
+      background: #f7fdfa;
+      box-shadow: 0 14px 30px -20px rgba(5, 150, 105, 0.55);
+    }
+
+    .chen_icon_item:focus-visible {
+      outline: 3px solid rgba(5, 150, 105, 0.35);
+      outline-offset: 2px;
+    }
+
+    .chen_icon_box {
+      display: grid;
+      place-items: center;
+      color: var(--chen_primary);
+    }
+
+    .chen_icon_box svg {
+      width: 26px;
+      height: 26px;
+      stroke-width: 1.8;
+    }
+
+    .chen_icon_name {
+      overflow-wrap: anywhere;
+      word-break: normal;
+      color: var(--chen_muted);
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.68rem;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    /* ---------- 代码与文件 ---------- */
+    .chen_code_inline {
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: var(--chen_primary_soft);
+      color: var(--chen_primary_deep);
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.86em;
+    }
+
+    .chen_code_block {
+      margin-top: 16px;
+      padding: 20px 22px;
+      overflow-x: auto;
+      border-radius: 16px;
+      background: #0b1f1b;
+      color: #e2f5ee;
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.84rem;
+      line-height: 1.85;
+      tab-size: 2;
+    }
+
+    .chen_code_comment {
+      color: #7f9f95;
+    }
+
+    .chen_code_tag {
+      color: #5eead4;
+    }
+
+    .chen_code_attr {
+      color: #c4b5fd;
+    }
+
+    .chen_code_str {
+      color: #86efac;
+    }
+
+    .chen_file_list {
+      display: grid;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .chen_file_row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 11px 14px;
+      border: 1px solid var(--chen_border);
+      border-radius: 10px;
+      background: #f7fdfa;
+      font-size: 0.86rem;
+    }
+
+    .chen_file_path {
+      word-break: break-all;
+      color: #33574c;
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+    }
+
+    .chen_file_desc {
+      flex: 0 0 auto;
+      color: var(--chen_muted);
+      font-size: 0.8rem;
+    }
+
+    .chen_note {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border: 1px solid #a7f3d0;
+      border-radius: 14px;
+      background: #ecfdf5;
+      color: #064e3b;
+      font-size: 0.9rem;
+    }
+
+    .chen_note svg {
+      flex: 0 0 auto;
+      width: 18px;
+      height: 18px;
+      margin-top: 4px;
+      color: #059669;
+      stroke-width: 2;
+    }
+
+    .chen_footer {
+      margin-top: 30px;
+      padding: 24px 10px 8px;
+      border-top: 1px solid rgba(100, 116, 139, 0.28);
+      color: var(--chen_muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .chen_footer_title {
+      color: var(--chen_text_soft);
+      font-weight: 700;
+    }
+
+    .chen_footer_meta {
+      margin-top: 6px;
+    }
+
+    @media (max-width: 820px) {
+      .chen_playground {
+        grid-template-columns: 1fr;
+      }
+
+      .chen_header_icon {
+        display: none;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .chen_file_row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+
+      .chen_icon_grid {
+        grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chen_page">
+    <header class="chen_header">
+      <div class="chen_header_top">
+        <span class="chen_badge"><span class="chen_badge_dot"></span>第 13 周 · 图标库</span>
+        <nav class="chen_nav" aria-label="页面导航">
+          <a class="chen_nav_link" href="13-1.html">
+            <i data-lucide="type"></i>Font Awesome
+          </a>
+          <a class="chen_nav_link chen_nav_link_active" href="13-2.html" aria-current="page">
+            <i data-lucide="shapes"></i>Lucide SVG
+          </a>
+        </nav>
+      </div>
+
+      <div class="chen_header_content">
+        <h1 class="chen_title">Lucide <span class="chen_title_mark">SVG 图标</span></h1>
+        <p class="chen_subtitle">
+          Lucide 把每个图标输出成真正的内联 <span class="chen_code_inline">&lt;svg&gt;</span>：
+          既能跟着文字颜色走，也能单独调整描边粗细、尺寸和动画。本页资源同样来自本地
+          <span class="chen_code_inline">cdn</span> 目录。
+        </p>
+        <div class="chen_chip_row">
+          <span class="chen_chip"><i data-lucide="pen-tool"></i>内联 SVG</span>
+          <span class="chen_chip"><i data-lucide="palette"></i>currentColor</span>
+          <span class="chen_chip"><i data-lucide="sparkles"></i>可调描边</span>
+        </div>
+      </div>
+
+      <div class="chen_header_icon" aria-hidden="true">
+        <i data-lucide="sparkles"></i>
+      </div>
+    </header>
+
+    <main class="chen_main">
+      <section class="chen_card" aria-labelledby="chen_intro_title">
+        <div class="chen_section_head">
+          <span class="chen_section_num">01</span>
+          <div>
+            <h2 class="chen_section_title" id="chen_intro_title">什么是 Lucide SVG 图标</h2>
+            <p class="chen_section_desc">
+              Lucide 是一套开源线性图标库。页面里先写
+              <span class="chen_code_inline">&lt;i data-lucide="rocket"&gt;&lt;/i&gt;</span>，
+              脚本运行后它会变成一个完整的 <span class="chen_code_inline">&lt;svg&gt;</span> 元素。
+              和字体图标不同，SVG 的每条路径都是页面 DOM 的一部分。
+            </p>
+          </div>
+        </div>
+
+        <div class="chen_feature_grid">
+          <article class="chen_feature">
+            <div class="chen_feature_icon"><i data-lucide="pen-tool"></i></div>
+            <h3 class="chen_feature_title">真正的矢量图形</h3>
+            <p class="chen_feature_text">SVG 由路径描述，不依赖字体文件，放大、缩小都保持清晰。</p>
+          </article>
+          <article class="chen_feature">
+            <div class="chen_feature_icon"><i data-lucide="palette"></i></div>
+            <h3 class="chen_feature_title">继承文字颜色</h3>
+            <p class="chen_feature_text">图标默认使用 currentColor，父元素的 color 改变后图标同步变色。</p>
+          </article>
+          <article class="chen_feature">
+            <div class="chen_feature_icon"><i data-lucide="sparkles"></i></div>
+            <h3 class="chen_feature_title">描边自由调节</h3>
+            <p class="chen_feature_text">通过 stroke-width 控制线条粗细，1 到 3 之间可以做出不同气质。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="chen_card" aria-labelledby="chen_play_title">
+        <div class="chen_section_head">
+          <span class="chen_section_num">02</span>
+          <div>
+            <h2 class="chen_section_title" id="chen_play_title">动手试一试</h2>
+            <p class="chen_section_desc">
+              调整尺寸、颜色和描边宽度，观察 SVG 的实时变化。点击图标墙里的图标，也能把它换到预览区。
+            </p>
+          </div>
+        </div>
+
+        <div class="chen_playground">
+          <div class="chen_preview" id="chen_preview">
+            <div class="chen_demo_icon" id="chen_demo">
+              <i data-lucide="rocket"></i>
+            </div>
+            <span class="chen_preview_label" id="chen_preview_label">lucide: rocket</span>
+          </div>
+
+          <div class="chen_controls">
+            <label class="chen_control" for="chen_size">
+              <span class="chen_control_row">
+                <span>图标尺寸</span>
+                <output class="chen_control_value" id="chen_size_out" for="chen_size">96 px</output>
+              </span>
+              <input class="chen_range" id="chen_size" type="range" min="24" max="160" step="4" value="96">
+            </label>
+
+            <div class="chen_control">
+              <div class="chen_control_row">
+                <label for="chen_color">图标颜色</label>
+                <input class="chen_color" id="chen_color" type="color" value="#059669" aria-label="选择图标颜色">
+              </div>
+            </div>
+
+            <label class="chen_control" for="chen_stroke">
+              <span class="chen_control_row">
+                <span>描边粗细</span>
+                <output class="chen_control_value" id="chen_stroke_out" for="chen_stroke">2</output>
+              </span>
+              <input class="chen_range" id="chen_stroke" type="range" min="1" max="3" step="0.25" value="2">
+            </label>
+
+            <div class="chen_btn_row">
+              <button class="chen_btn chen_btn_ghost" id="chen_spin_btn" type="button" aria-pressed="false">
+                <i data-lucide="rotate-cw"></i>
+                <span>旋转动画</span>
+              </button>
+              <button class="chen_btn chen_btn_ghost" id="chen_reset_btn" type="button">
+                <i data-lucide="rotate-ccw"></i>
+                重置
+              </button>
+            </div>
+
+            <p class="chen_status">
+              当前图标：<span class="chen_status_value" id="chen_status_name">rocket</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="chen_card" aria-labelledby="chen_wall_title">
+        <div class="chen_section_head">
+          <span class="chen_section_num">03</span>
+          <div>
+            <h2 class="chen_section_title" id="chen_wall_title">图标墙</h2>
+            <p class="chen_section_desc">
+              图标名对应 HTML 里的 <span class="chen_code_inline">data-lucide</span> 属性。
+              点击任意图标，可以把预览区切换成它。
+            </p>
+          </div>
+        </div>
+
+        <div class="chen_icon_group">
+          <div class="chen_icon_group_head">
+            <h3 class="chen_icon_group_title">常用图标</h3>
+            <span class="chen_icon_group_tag">12 个</span>
+          </div>
+          <div class="chen_icon_grid">
+            <button class="chen_icon_item" type="button" data-chen-lucide="home" aria-label="预览 home 图标">
+              <span class="chen_icon_box"><i data-lucide="home"></i></span>
+              <span class="chen_icon_name">home</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="user" aria-label="预览 user 图标">
+              <span class="chen_icon_box"><i data-lucide="user"></i></span>
+              <span class="chen_icon_name">user</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="heart" aria-label="预览 heart 图标">
+              <span class="chen_icon_box"><i data-lucide="heart"></i></span>
+              <span class="chen_icon_name">heart</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="star" aria-label="预览 star 图标">
+              <span class="chen_icon_box"><i data-lucide="star"></i></span>
+              <span class="chen_icon_name">star</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="settings" aria-label="预览 settings 图标">
+              <span class="chen_icon_box"><i data-lucide="settings"></i></span>
+              <span class="chen_icon_name">settings</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="search" aria-label="预览 search 图标">
+              <span class="chen_icon_box"><i data-lucide="search"></i></span>
+              <span class="chen_icon_name">search</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="bell" aria-label="预览 bell 图标">
+              <span class="chen_icon_box"><i data-lucide="bell"></i></span>
+              <span class="chen_icon_name">bell</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="camera" aria-label="预览 camera 图标">
+              <span class="chen_icon_box"><i data-lucide="camera"></i></span>
+              <span class="chen_icon_name">camera</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="mail" aria-label="预览 mail 图标">
+              <span class="chen_icon_box"><i data-lucide="mail"></i></span>
+              <span class="chen_icon_name">mail</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="calendar" aria-label="预览 calendar 图标">
+              <span class="chen_icon_box"><i data-lucide="calendar"></i></span>
+              <span class="chen_icon_name">calendar</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="map-pin" aria-label="预览 map-pin 图标">
+              <span class="chen_icon_box"><i data-lucide="map-pin"></i></span>
+              <span class="chen_icon_name">map-pin</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="clock" aria-label="预览 clock 图标">
+              <span class="chen_icon_box"><i data-lucide="clock"></i></span>
+              <span class="chen_icon_name">clock</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="chen_icon_group">
+          <div class="chen_icon_group_head">
+            <h3 class="chen_icon_group_title">开发与文件</h3>
+            <span class="chen_icon_group_tag">12 个</span>
+          </div>
+          <div class="chen_icon_grid">
+            <button class="chen_icon_item" type="button" data-chen-lucide="file" aria-label="预览 file 图标">
+              <span class="chen_icon_box"><i data-lucide="file"></i></span>
+              <span class="chen_icon_name">file</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="folder" aria-label="预览 folder 图标">
+              <span class="chen_icon_box"><i data-lucide="folder"></i></span>
+              <span class="chen_icon_name">folder</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="download" aria-label="预览 download 图标">
+              <span class="chen_icon_box"><i data-lucide="download"></i></span>
+              <span class="chen_icon_name">download</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="upload" aria-label="预览 upload 图标">
+              <span class="chen_icon_box"><i data-lucide="upload"></i></span>
+              <span class="chen_icon_name">upload</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="trash" aria-label="预览 trash 图标">
+              <span class="chen_icon_box"><i data-lucide="trash"></i></span>
+              <span class="chen_icon_name">trash</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="code" aria-label="预览 code 图标">
+              <span class="chen_icon_box"><i data-lucide="code"></i></span>
+              <span class="chen_icon_name">code</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="terminal" aria-label="预览 terminal 图标">
+              <span class="chen_icon_box"><i data-lucide="terminal"></i></span>
+              <span class="chen_icon_name">terminal</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="git-branch" aria-label="预览 git-branch 图标">
+              <span class="chen_icon_box"><i data-lucide="git-branch"></i></span>
+              <span class="chen_icon_name">git-branch</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="database" aria-label="预览 database 图标">
+              <span class="chen_icon_box"><i data-lucide="database"></i></span>
+              <span class="chen_icon_name">database</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="server" aria-label="预览 server 图标">
+              <span class="chen_icon_box"><i data-lucide="server"></i></span>
+              <span class="chen_icon_name">server</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="cpu" aria-label="预览 cpu 图标">
+              <span class="chen_icon_box"><i data-lucide="cpu"></i></span>
+              <span class="chen_icon_name">cpu</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="bug" aria-label="预览 bug 图标">
+              <span class="chen_icon_box"><i data-lucide="bug"></i></span>
+              <span class="chen_icon_name">bug</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="chen_icon_group">
+          <div class="chen_icon_group_head">
+            <h3 class="chen_icon_group_title">生活与自然</h3>
+            <span class="chen_icon_group_tag">12 个</span>
+          </div>
+          <div class="chen_icon_grid">
+            <button class="chen_icon_item" type="button" data-chen-lucide="sun" aria-label="预览 sun 图标">
+              <span class="chen_icon_box"><i data-lucide="sun"></i></span>
+              <span class="chen_icon_name">sun</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="moon" aria-label="预览 moon 图标">
+              <span class="chen_icon_box"><i data-lucide="moon"></i></span>
+              <span class="chen_icon_name">moon</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="cloud" aria-label="预览 cloud 图标">
+              <span class="chen_icon_box"><i data-lucide="cloud"></i></span>
+              <span class="chen_icon_name">cloud</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="zap" aria-label="预览 zap 图标">
+              <span class="chen_icon_box"><i data-lucide="zap"></i></span>
+              <span class="chen_icon_name">zap</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="coffee" aria-label="预览 coffee 图标">
+              <span class="chen_icon_box"><i data-lucide="coffee"></i></span>
+              <span class="chen_icon_name">coffee</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="music" aria-label="预览 music 图标">
+              <span class="chen_icon_box"><i data-lucide="music"></i></span>
+              <span class="chen_icon_name">music</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="video" aria-label="预览 video 图标">
+              <span class="chen_icon_box"><i data-lucide="video"></i></span>
+              <span class="chen_icon_name">video</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="bike" aria-label="预览 bike 图标">
+              <span class="chen_icon_box"><i data-lucide="bike"></i></span>
+              <span class="chen_icon_name">bike</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="plane" aria-label="预览 plane 图标">
+              <span class="chen_icon_box"><i data-lucide="plane"></i></span>
+              <span class="chen_icon_name">plane</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="leaf" aria-label="预览 leaf 图标">
+              <span class="chen_icon_box"><i data-lucide="leaf"></i></span>
+              <span class="chen_icon_name">leaf</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="gift" aria-label="预览 gift 图标">
+              <span class="chen_icon_box"><i data-lucide="gift"></i></span>
+              <span class="chen_icon_name">gift</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="rocket" aria-label="预览 rocket 图标">
+              <span class="chen_icon_box"><i data-lucide="rocket"></i></span>
+              <span class="chen_icon_name">rocket</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="chen_icon_group">
+          <div class="chen_icon_group_head">
+            <h3 class="chen_icon_group_title">界面与工具</h3>
+            <span class="chen_icon_group_tag">18 个</span>
+          </div>
+          <div class="chen_icon_grid">
+            <button class="chen_icon_item" type="button" data-chen-lucide="layout-dashboard" aria-label="预览 layout-dashboard 图标">
+              <span class="chen_icon_box"><i data-lucide="layout-dashboard"></i></span>
+              <span class="chen_icon_name">layout-dashboard</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="pen-tool" aria-label="预览 pen-tool 图标">
+              <span class="chen_icon_box"><i data-lucide="pen-tool"></i></span>
+              <span class="chen_icon_name">pen-tool</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="mouse-pointer" aria-label="预览 mouse-pointer 图标">
+              <span class="chen_icon_box"><i data-lucide="mouse-pointer"></i></span>
+              <span class="chen_icon_name">mouse-pointer</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="keyboard" aria-label="预览 keyboard 图标">
+              <span class="chen_icon_box"><i data-lucide="keyboard"></i></span>
+              <span class="chen_icon_name">keyboard</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="printer" aria-label="预览 printer 图标">
+              <span class="chen_icon_box"><i data-lucide="printer"></i></span>
+              <span class="chen_icon_name">printer</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="wifi" aria-label="预览 wifi 图标">
+              <span class="chen_icon_box"><i data-lucide="wifi"></i></span>
+              <span class="chen_icon_name">wifi</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="battery" aria-label="预览 battery 图标">
+              <span class="chen_icon_box"><i data-lucide="battery"></i></span>
+              <span class="chen_icon_name">battery</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="globe" aria-label="预览 globe 图标">
+              <span class="chen_icon_box"><i data-lucide="globe"></i></span>
+              <span class="chen_icon_name">globe</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="wallet" aria-label="预览 wallet 图标">
+              <span class="chen_icon_box"><i data-lucide="wallet"></i></span>
+              <span class="chen_icon_name">wallet</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="book-open" aria-label="预览 book-open 图标">
+              <span class="chen_icon_box"><i data-lucide="book-open"></i></span>
+              <span class="chen_icon_name">book-open</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="graduation-cap" aria-label="预览 graduation-cap 图标">
+              <span class="chen_icon_box"><i data-lucide="graduation-cap"></i></span>
+              <span class="chen_icon_name">graduation-cap</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="smile" aria-label="预览 smile 图标">
+              <span class="chen_icon_box"><i data-lucide="smile"></i></span>
+              <span class="chen_icon_name">smile</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="shield" aria-label="预览 shield 图标">
+              <span class="chen_icon_box"><i data-lucide="shield"></i></span>
+              <span class="chen_icon_name">shield</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="palette" aria-label="预览 palette 图标">
+              <span class="chen_icon_box"><i data-lucide="palette"></i></span>
+              <span class="chen_icon_name">palette</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="monitor" aria-label="预览 monitor 图标">
+              <span class="chen_icon_box"><i data-lucide="monitor"></i></span>
+              <span class="chen_icon_name">monitor</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="smartphone" aria-label="预览 smartphone 图标">
+              <span class="chen_icon_box"><i data-lucide="smartphone"></i></span>
+              <span class="chen_icon_name">smartphone</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="shopping-cart" aria-label="预览 shopping-cart 图标">
+              <span class="chen_icon_box"><i data-lucide="shopping-cart"></i></span>
+              <span class="chen_icon_name">shopping-cart</span>
+            </button>
+            <button class="chen_icon_item" type="button" data-chen-lucide="circle-check" aria-label="预览 circle-check 图标">
+              <span class="chen_icon_box"><i data-lucide="circle-check"></i></span>
+              <span class="chen_icon_name">circle-check</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="chen_card" aria-labelledby="chen_code_title">
+        <div class="chen_section_head">
+          <span class="chen_section_num">04</span>
+          <div>
+            <h2 class="chen_section_title" id="chen_code_title">代码写法</h2>
+            <p class="chen_section_desc">
+              Lucide 1.x 的 UMD 版本需要把图标集合传给 <span class="chen_code_inline">createIcons</span>，
+              这样就不必逐个导入图标。
+            </p>
+          </div>
+        </div>
+
+        <pre class="chen_code_block"><code><span class="chen_code_comment">&lt;!-- 1. 引入本地 Lucide UMD 文件 --&gt;</span>
+&lt;<span class="chen_code_tag">script</span> <span class="chen_code_attr">src</span>=<span class="chen_code_str">"cdn/lucide/lucide.min.js"</span>&gt;&lt;/<span class="chen_code_tag">script</span>&gt;
+
+<span class="chen_code_comment">&lt;!-- 2. 先写占位标签，名称使用小写短横线 --&gt;</span>
+&lt;<span class="chen_code_tag">i</span> <span class="chen_code_attr">data-lucide</span>=<span class="chen_code_str">"rocket"</span>&gt;&lt;/<span class="chen_code_tag">i</span>&gt;
+
+<span class="chen_code_comment">&lt;!-- 3. 运行后生成完整的内联 SVG --&gt;</span>
+&lt;<span class="chen_code_tag">script</span>&gt;
+  lucide.createIcons({ icons: lucide.icons });
+&lt;/<span class="chen_code_tag">script</span>&gt;</code></pre>
+
+        <p class="chen_section_desc" style="margin-top: 18px;">
+          脚本执行完成后，上面那行占位标签会变成下面这样的真实 SVG（路径数据省略）：
+        </p>
+
+        <pre class="chen_code_block"><code>&lt;<span class="chen_code_tag">svg</span> <span class="chen_code_attr">xmlns</span>=<span class="chen_code_str">"http://www.w3.org/2000/svg"</span> <span class="chen_code_attr">width</span>=<span class="chen_code_str">"24"</span> <span class="chen_code_attr">height</span>=<span class="chen_code_str">"24"</span>
+     <span class="chen_code_attr">viewBox</span>=<span class="chen_code_str">"0 0 24 24"</span> <span class="chen_code_attr">fill</span>=<span class="chen_code_str">"none"</span> <span class="chen_code_attr">stroke</span>=<span class="chen_code_str">"currentColor"</span>
+     <span class="chen_code_attr">stroke-width</span>=<span class="chen_code_str">"2"</span> <span class="chen_code_attr">class</span>=<span class="chen_code_str">"lucide lucide-rocket"</span>&gt;
+  &lt;<span class="chen_code_tag">path</span> <span class="chen_code_attr">d</span>=<span class="chen_code_str">"..."</span>&gt;&lt;/<span class="chen_code_tag">path</span>&gt;
+&lt;/<span class="chen_code_tag">svg</span>&gt;</code></pre>
+
+        <div class="chen_note">
+          <i data-lucide="info"></i>
+          <p>
+            生成的 SVG 使用 <span class="chen_code_inline">stroke="currentColor"</span>，
+            所以只要给外层容器设置 <span class="chen_code_inline">color</span>，图标就会自动变色；
+            修改 <span class="chen_code_inline">stroke-width</span> 则可以控制线条粗细。
+          </p>
+        </div>
+      </section>
+
+      <section class="chen_card" aria-labelledby="chen_file_title">
+        <div class="chen_section_head">
+          <span class="chen_section_num">05</span>
+          <div>
+            <h2 class="chen_section_title" id="chen_file_title">本地 CDN 文件</h2>
+            <p class="chen_section_desc">
+              本页只需要一个本地脚本文件，图标数据全部包含在其中。双击 HTML 文件即可离线打开。
+            </p>
+          </div>
+        </div>
+
+        <div class="chen_file_list">
+          <div class="chen_file_row">
+            <span class="chen_file_path">cdn/lucide/lucide.min.js</span>
+            <span class="chen_file_desc">Lucide 1.59.0 UMD 图标库</span>
+          </div>
+        </div>
+
+        <div class="chen_note">
+          <i data-lucide="info"></i>
+          <p>
+            如果以后要更换图标版本，只需要替换这一个 JS 文件。
+            图标名可以在 Lucide 官方的图标搜索页查询，写进
+            <span class="chen_code_inline">data-lucide</span> 属性即可。
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="chen_footer">
+      <p class="chen_footer_title">© 2026 13-2.html · Lucide SVG 图标</p>
+      <p class="chen_footer_meta">学号：24001010722 · 姓名：陈弘毅</p>
+    </footer>
+  </div>
+
+  <script src="cdn/lucide/lucide.min.js"></script>
+  <script>
+    const chen_lucide = window.lucide;
+    const chen_preview = document.getElementById("chen_preview");
+    const chen_demo = document.getElementById("chen_demo");
+    const chen_preview_label = document.getElementById("chen_preview_label");
+    const chen_status_name = document.getElementById("chen_status_name");
+    const chen_size = document.getElementById("chen_size");
+    const chen_size_out = document.getElementById("chen_size_out");
+    const chen_color = document.getElementById("chen_color");
+    const chen_stroke = document.getElementById("chen_stroke");
+    const chen_stroke_out = document.getElementById("chen_stroke_out");
+    const chen_spin_btn = document.getElementById("chen_spin_btn");
+    const chen_reset_btn = document.getElementById("chen_reset_btn");
+    let chen_spinning = false;
+
+    function chen_drawIcons() {
+      chen_lucide.createIcons({
+        icons: chen_lucide.icons,
+        attrs: { "aria-hidden": "true" }
+      });
+    }
+
+    function chen_applySize() {
+      chen_preview.style.setProperty("--chen_demo_size", chen_size.value + "px");
+      chen_size_out.textContent = chen_size.value + " px";
+    }
+
+    function chen_applyColor() {
+      chen_preview.style.setProperty("--chen_demo_color", chen_color.value);
+    }
+
+    function chen_applyStroke() {
+      chen_preview.style.setProperty("--chen_demo_stroke", chen_stroke.value);
+      chen_stroke_out.textContent = chen_stroke.value;
+    }
+
+    function chen_setSpin(chen_on) {
+      chen_spinning = chen_on;
+      chen_demo.classList.toggle("chen_is_spinning", chen_spinning);
+      chen_spin_btn.setAttribute("aria-pressed", String(chen_spinning));
+      chen_spin_btn.classList.toggle("chen_btn_active", chen_spinning);
+      chen_spin_btn.querySelector("span").textContent = chen_spinning ? "停止旋转" : "旋转动画";
+    }
+
+    function chen_showIcon(chen_name) {
+      chen_demo.innerHTML = '<i data-lucide="' + chen_name + '"></i>';
+      chen_drawIcons();
+      chen_preview_label.textContent = "lucide: " + chen_name;
+      chen_status_name.textContent = chen_name;
+    }
+
+    chen_size.addEventListener("input", chen_applySize);
+    chen_color.addEventListener("input", chen_applyColor);
+    chen_stroke.addEventListener("input", chen_applyStroke);
+
+    chen_spin_btn.addEventListener("click", function () {
+      chen_setSpin(!chen_spinning);
+    });
+
+    chen_reset_btn.addEventListener("click", function () {
+      chen_size.value = "96";
+      chen_color.value = "#059669";
+      chen_stroke.value = "2";
+      chen_preview.style.removeProperty("--chen_demo_size");
+      chen_preview.style.removeProperty("--chen_demo_color");
+      chen_preview.style.removeProperty("--chen_demo_stroke");
+      chen_size_out.textContent = "96 px";
+      chen_stroke_out.textContent = "2";
+      chen_setSpin(false);
+      chen_showIcon("rocket");
+    });
+
+    document.addEventListener("click", function (chen_event) {
+      const chen_target = chen_event.target.closest("[data-chen-lucide]");
+      if (!chen_target) {
+        return;
+      }
+      chen_showIcon(chen_target.getAttribute("data-chen-lucide"));
+    });
+
+    chen_drawIcons();
+    chen_applySize();
+    chen_applyColor();
+    chen_applyStroke();
+  </script>
+</body>
+
+</html>
