@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-10-22
+功能名称：JavaScript 六种基础数据类型演示
+    -->
+    <title>14-2 JavaScript 六种数据类型</title>
+    <link rel="stylesheet" href="font/font_5244855_fm8s0yq40te/iconfont.css">
+    <style>
+        :root {
+            --chen_bg: #eef2ff;
+            --chen_surface: #ffffff;
+            --chen_text: #1e293b;
+            --chen_text_soft: #475569;
+            --chen_muted: #64748b;
+            --chen_primary: #4f46e5;
+            --chen_primary_soft: #e0e7ff;
+            --chen_border: #dbe3f2;
+            --chen_radius: 18px;
+            --chen_shadow: 0 22px 55px -30px rgba(30, 64, 175, 0.45);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 12% 0%, rgba(99, 102, 241, 0.16), transparent 34rem),
+                radial-gradient(circle at 88% 12%, rgba(14, 165, 233, 0.14), transparent 30rem),
+                var(--chen_bg);
+            color: var(--chen_text);
+            line-height: 1.65;
+            min-height: 100vh;
+        }
+
+        .chen_page {
+            width: min(1100px, 100%);
+            margin: 0 auto;
+            padding: clamp(16px, 2.6vw, 34px);
+        }
+
+        .chen_header {
+            border-radius: var(--chen_radius);
+            padding: clamp(24px, 4vw, 48px);
+            color: #ffffff;
+            background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 48%, #0369a1 100%);
+            box-shadow: 0 30px 70px -35px rgba(30, 27, 75, 0.75);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chen_header_badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.09);
+            font-size: 0.8rem;
+            letter-spacing: 0.06em;
+            color: #e0e7ff;
+        }
+
+        .chen_title {
+            font-size: clamp(1.8rem, 4.5vw, 3rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-top: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .chen_title_mark {
+            color: #7dd3fc;
+        }
+
+        .chen_subtitle {
+            margin-top: 12px;
+            font-size: clamp(0.95rem, 1.6vw, 1.1rem);
+            color: rgba(238, 242, 255, 0.86);
+            max-width: 640px;
+        }
+
+        .chen_main {
+            display: grid;
+            gap: 22px;
+            margin-top: 26px;
+        }
+
+        .chen_card {
+            padding: clamp(18px, 3vw, 30px);
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            background: var(--chen_surface);
+            box-shadow: var(--chen_shadow);
+        }
+
+        .chen_section_head {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .chen_section_num {
+            flex: 0 0 auto;
+            display: grid;
+            place-items: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 11px;
+            background: var(--chen_primary_soft);
+            color: var(--chen_primary);
+            font-weight: 800;
+            font-size: 0.85rem;
+        }
+
+        .chen_section_title {
+            font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+            line-height: 1.3;
+        }
+
+        .chen_section_desc {
+            margin-top: 3px;
+            color: var(--chen_muted);
+            font-size: 0.9rem;
+        }
+
+        .chen_type_grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 14px;
+        }
+
+        .chen_type_card {
+            padding: 18px;
+            border: 1px solid var(--chen_border);
+            border-radius: 14px;
+            background: linear-gradient(180deg, #ffffff, #f8faff);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .chen_type_card:hover {
+            transform: translateY(-3px);
+            border-color: #a5b4fc;
+            box-shadow: 0 14px 30px -20px rgba(79, 70, 229, 0.6);
+        }
+
+        .chen_type_tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        .chen_type_tag_string { background: #fef3c7; color: #92400e; }
+        .chen_type_tag_number { background: #dbeafe; color: #1e40af; }
+        .chen_type_tag_boolean { background: #dcfce7; color: #166534; }
+        .chen_type_tag_undefined { background: #fce7f3; color: #9d174d; }
+        .chen_type_tag_null { background: #f1f5f9; color: #475569; }
+        .chen_type_tag_object { background: #ede9fe; color: #5b21b6; }
+
+        .chen_type_name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        .chen_type_desc {
+            color: var(--chen_muted);
+            font-size: 0.86rem;
+            margin-top: 4px;
+        }
+
+        .chen_type_val {
+            margin-top: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+            font-size: 0.78rem;
+            word-break: break-all;
+            min-height: 28px;
+        }
+
+        .chen_code_block {
+            margin-top: 16px;
+            padding: 18px 20px;
+            border-radius: 14px;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+            font-size: 0.82rem;
+            line-height: 1.9;
+            overflow-x: auto;
+        }
+
+        .chen_code_comment { color: #94a3b8; }
+        .chen_code_kw { color: #c084fc; }
+        .chen_code_str { color: #86efac; }
+        .chen_code_num { color: #fbbf24; }
+        .chen_code_op { color: #f472b6; }
+
+        .chen_output_area {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border: 1px solid var(--chen_border);
+            border-radius: 12px;
+            background: #f8fafc;
+        }
+
+        .chen_output_head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .chen_output_title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--chen_text_soft);
+        }
+
+        .chen_btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            background: var(--chen_primary);
+            color: #ffffff;
+            font: inherit;
+            font-size: 0.86rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .chen_btn:hover {
+            transform: translateY(-1px);
+            background: #4338ca;
+        }
+
+        .chen_btn_ghost {
+            border-color: var(--chen_border);
+            background: #ffffff;
+            color: var(--chen_text_soft);
+        }
+
+        .chen_btn_ghost:hover {
+            background: #f8faff;
+            color: var(--chen_primary);
+        }
+
+        .chen_output_list {
+            display: grid;
+            gap: 6px;
+        }
+
+        .chen_output_row {
+            display: grid;
+            grid-template-columns: 110px 1fr 80px;
+            gap: 10px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+            font-size: 0.78rem;
+            background: #ffffff;
+            border: 1px solid var(--chen_border);
+        }
+
+        .chen_output_var { color: var(--chen_primary); font-weight: 700; }
+        .chen_output_val { color: var(--chen_text); word-break: break-all; }
+        .chen_output_type { color: var(--chen_muted); font-size: 0.72rem; text-align: right; }
+
+        .chen_footer {
+            margin-top: 30px;
+            padding: 24px 10px 8px;
+            border-top: 1px solid rgba(148, 163, 184, 0.32);
+            color: var(--chen_muted);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .chen_footer_title {
+            color: var(--chen_text_soft);
+            font-weight: 700;
+        }
+
+        @media (max-width: 600px) {
+            .chen_output_row {
+                grid-template-columns: 1fr;
+                gap: 2px;
+            }
+            .chen_output_type {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chen_page">
+        <header class="chen_header">
+            <span class="chen_header_badge">第 14 周 · JavaScript 基础</span>
+            <h1 class="chen_title">JavaScript <span class="chen_title_mark">六种基础数据类型</span></h1>
+            <p class="chen_subtitle">
+                点击下方任一类型卡片查看示例，或点"运行演示"按钮一次性打印所有变量的值和类型。
+            </p>
+        </header>
+
+        <main class="chen_main">
+            <section class="chen_card">
+                <div class="chen_section_head">
+                    <span class="chen_section_num">01</span>
+                    <div>
+                        <h2 class="chen_section_title">六种数据类型一览</h2>
+                        <p class="chen_section_desc">点击卡片在下方输出区查看该类型的值与 typeof 结果</p>
+                    </div>
+                </div>
+
+                <div class="chen_type_grid" id="chen_type_grid">
+                    <!-- JS 动态生成 -->
+                </div>
+            </section>
+
+            <section class="chen_card">
+                <div class="chen_section_head">
+                    <span class="chen_section_num">02</span>
+                    <div>
+                        <h2 class="chen_section_title">代码实现</h2>
+                        <p class="chen_section_desc">用 var / let / const 声明六个变量，分别对应六种类型</p>
+                    </div>
+                </div>
+
+                <pre class="chen_code_block"><code><span class="chen_code_comment">// 1. String 字符串</span>
+<span class="chen_code_kw">let</span> <span class="chen_code_op">chen_name</span> <span class="chen_code_op">=</span> <span class="chen_code_str">"陈弘毅"</span>;
+
+<span class="chen_code_comment">// 2. Number 数值（整数和浮点数）</span>
+<span class="chen_code_kw">const</span> <span class="chen_code_op">chen_age</span> <span class="chen_code_op">=</span> <span class="chen_code_num">18</span>;
+<span class="chen_code_kw">var</span>  <span class="chen_code_op">chen_pi</span>   <span class="chen_code_op">=</span> <span class="chen_code_num">3.14</span>;
+
+<span class="chen_code_comment">// 3. Boolean 布尔（真或假）</span>
+<span class="chen_code_kw">let</span> <span class="chen_code_op">chen_isStudent</span> <span class="chen_code_op">=</span> <span class="chen_code_kw">true</span>;
+
+<span class="chen_code_comment">// 4. Undefined 未定义（声明但未赋值）</span>
+<span class="chen_code_kw">let</span> <span class="chen_code_op">chen_hobby</span>;
+
+<span class="chen_code_comment">// 5. Null 空值（主动赋空）</span>
+<span class="chen_code_kw">let</span> <span class="chen_code_op">chen_score</span> <span class="chen_code_op">=</span> <span class="chen_code_kw">null</span>;
+
+<span class="chen_code_comment">// 6. Object 对象（数组、函数等引用类型也归于此）</span>
+<span class="chen_code_kw">let</span> <span class="chen_code_op">chen_info</span> <span class="chen_code_op">=</span> <span class="chen_code_op">{</span> name<span class="chen_code_op">:</span> <span class="chen_code_str">"陈弘毅"</span>, age<span class="chen_code_op">:</span> <span class="chen_code_num">18</span> <span class="chen_code_op">}</span>;</code></pre>
+            </section>
+
+            <section class="chen_card">
+                <div class="chen_section_head">
+                    <span class="chen_section_num">03</span>
+                    <div>
+                        <h2 class="chen_section_title">运行演示</h2>
+                        <p class="chen_section_desc">点击按钮，下方列出每个变量的值和 typeof 返回的类型名</p>
+                    </div>
+                </div>
+
+                <div class="chen_output_head">
+                    <span class="chen_output_title">控制台输出</span>
+                    <div style="display:flex;gap:8px;">
+                        <button class="chen_btn chen_btn_ghost" id="chen_run_btn" type="button">运行演示</button>
+                        <button class="chen_btn chen_btn_ghost" id="chen_clear_btn" type="button">清空</button>
+                    </div>
+                </div>
+
+                <div class="chen_output_area">
+                    <div class="chen_output_list" id="chen_output_list">
+                        <div class="chen_output_row" style="color:var(--chen_muted);grid-template-columns:1fr;text-align:center;">
+                            点"运行演示"查看结果
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="chen_footer">
+            <p class="chen_footer_title">© 2026 14-2.html · JavaScript 六种数据类型</p>
+            <p class="chen_footer_meta">学号：24001010722 · 姓名：陈弘毅</p>
+        </footer>
+    </div>
+
+    <script>
+        /* ===== 六种基础数据类型定义 ===== */
+
+        // 1. String 字符串
+        let chen_name = "陈弘毅";
+
+        // 2. Number 数值
+        const chen_age = 18;
+        var chen_pi = 3.14;
+
+        // 3. Boolean 布尔
+        let chen_isStudent = true;
+
+        // 4. Undefined 未定义
+        let chen_hobby;
+
+        // 5. Null 空值
+        let chen_score = null;
+
+        // 6. Object 对象
+        let chen_info = { name: "陈弘毅", age: 18 };
+
+        /* ===== 类型卡片数据 ===== */
+        const chen_types = [
+            { tag: "string",  tagClass: "chen_type_tag_string", name: "String 字符串", desc: "用单引号、双引号或反引号包起来的文本", key: "chen_name" },
+            { tag: "number",  tagClass: "chen_type_tag_number", name: "Number 数值",    desc: "整数和浮点数，还有 NaN、Infinity", key: "chen_age" },
+            { tag: "boolean", tagClass: "chen_type_tag_boolean", name: "Boolean 布尔", desc: "只有 true 和 false 两个值", key: "chen_isStudent" },
+            { tag: "undefined", tagClass: "chen_type_tag_undefined", name: "Undefined 未定义", desc: "变量声明后未赋值的默认状态", key: "chen_hobby" },
+            { tag: "object",  tagClass: "chen_type_tag_null",    name: "Null 空值",     desc: "主动赋予的空引用，typeof null 是 object", key: "chen_score" },
+            { tag: "object",  tagClass: "chen_type_tag_object",  name: "Object 对象",   desc: "键值对集合，数组和函数也属于 object", key: "chen_info" }
+        ];
+
+        /* ===== 生成类型卡片 ===== */
+        const chen_grid = document.getElementById("chen_type_grid");
+        chen_types.forEach(function (chen_t, chen_i) {
+            const chen_card = document.createElement("div");
+            chen_card.className = "chen_type_card";
+            chen_card.setAttribute("tabindex", "0");
+            chen_card.innerHTML =
+                '<span class="chen_type_tag ' + chen_t.tagClass + '">' + chen_t.tag + '</span>' +
+                '<div class="chen_type_name">' + chen_t.name + '</div>' +
+                '<div class="chen_type_desc">' + chen_t.desc + '</div>' +
+                '<div class="chen_type_val" id="chen_val_' + chen_i + '">点我查看 →</div>';
+            chen_card.addEventListener("click", function () {
+                chen_showOne(chen_t.key, chen_i);
+            });
+            chen_card.addEventListener("keydown", function (chen_e) {
+                if (chen_e.key === "Enter") chen_showOne(chen_t.key, chen_i);
+            });
+            chen_grid.appendChild(chen_card);
+        });
+
+        /* ===== 显示单个变量 ===== */
+        function chen_showOne(chen_key, chen_cardIdx) {
+            const chen_val = eval(chen_key);
+            const chen_type = typeof chen_val;
+            const chen_display = chen_formatVal(chen_val);
+            const chen_cell = document.getElementById("chen_val_" + chen_cardIdx);
+            chen_cell.textContent = chen_display + "  → typeof " + chen_type;
+        }
+
+        /* ===== 格式化输出值 ===== */
+        function chen_formatVal(chen_v) {
+            if (chen_v === null) return "null";
+            if (chen_v === undefined) return "undefined";
+            if (typeof chen_v === "object") {
+                try { return JSON.stringify(chen_v); }
+                catch (chen_e) return String(chen_v);
+            }
+            if (typeof chen_v === "string") return '"' + chen_v + '"';
+            return String(chen_v);
+        }
+
+        /* ===== 一次性运行所有 ===== */
+        const chen_vars = [
+            { key: "chen_name",      label: "chen_name" },
+            { key: "chen_age",       label: "chen_age" },
+            { key: "chen_pi",        label: "chen_pi" },
+            { key: "chen_isStudent", label: "chen_isStudent" },
+            { key: "chen_hobby",     label: "chen_hobby" },
+            { key: "chen_score",     label: "chen_score" },
+            { key: "chen_info",      label: "chen_info" }
+        ];
+
+        const chen_list = document.getElementById("chen_output_list");
+
+        function chen_runAll() {
+            chen_list.innerHTML = "";
+            chen_vars.forEach(function (chen_item) {
+                const chen_v = eval(chen_item.key);
+                const chen_row = document.createElement("div");
+                chen_row.className = "chen_output_row";
+                chen_row.innerHTML =
+                    '<span class="chen_output_var">' + chen_item.label + '</span>' +
+                    '<span class="chen_output_val">' + chen_formatVal(chen_v) + '</span>' +
+                    '<span class="chen_output_type">typeof ' + typeof chen_v + '</span>';
+                chen_list.appendChild(chen_row);
+            });
+            console.log("===== JavaScript 六种数据类型演示 =====");
+            chen_vars.forEach(function (chen_item) {
+                const chen_v = eval(chen_item.key);
+                console.log(chen_item.label + " =", chen_v, "| typeof →", typeof chen_v);
+            });
+        }
+
+        document.getElementById("chen_run_btn").addEventListener("click", chen_runAll);
+        document.getElementById("chen_clear_btn").addEventListener("click", function () {
+            chen_list.innerHTML = '<div class="chen_output_row" style="color:var(--chen_muted);grid-template-columns:1fr;text-align:center;">点"运行演示"查看结果</div>';
+            chen_types.forEach(function (_, chen_i) {
+                document.getElementById("chen_val_" + chen_i).textContent = "点我查看 →";
+            });
+        });
+
+        // 页面加载自动运行一次
+        chen_runAll();
+    </script>
+</body>
+</html>
