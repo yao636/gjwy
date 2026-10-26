@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-10-26
+功能名称：JavaScript 条件语句与循环结构演示
+    -->
+    <title>15-2 JavaScript 条件与循环</title>
+    <link rel="stylesheet" href="font/font_5244855_fm8s0yq40te/iconfont.css">
+    <style>
+        :root {
+            --chen_bg: #eef2ff;
+            --chen_surface: #ffffff;
+            --chen_text: #1e293b;
+            --chen_text_soft: #475569;
+            --chen_muted: #64748b;
+            --chen_primary: #4f46e5;
+            --chen_primary_soft: #e0e7ff;
+            --chen_border: #dbe3f2;
+            --chen_radius: 14px;
+            --chen_shadow: 0 18px 45px -28px rgba(30, 64, 175, 0.55);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 12% 0%, rgba(99, 102, 241, 0.16), transparent 32rem),
+                radial-gradient(circle at 88% 12%, rgba(14, 165, 233, 0.14), transparent 28rem),
+                var(--chen_bg);
+            color: var(--chen_text);
+            line-height: 1.65;
+            min-height: 100vh;
+        }
+
+        .chen_page {
+            width: min(1080px, 100%);
+            margin: 0 auto;
+            padding: clamp(14px, 2.4vw, 30px);
+        }
+
+        .chen_header {
+            border-radius: var(--chen_radius);
+            padding: clamp(22px, 4vw, 44px);
+            color: #ffffff;
+            background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 48%, #0369a1 100%);
+            box-shadow: 0 26px 60px -30px rgba(30, 27, 75, 0.75);
+            text-align: center;
+        }
+
+        .chen_author { font-size: 0.88rem; letter-spacing: 0.18em; color: #a5b4fc; font-weight: 600; }
+        .chen_author_name {
+            font-size: 1.6rem; font-weight: 900; margin-top: 6px; letter-spacing: 0.14em;
+            background: linear-gradient(90deg, #7dd3fc, #fef3c7, #86efac);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .chen_title { font-size: clamp(1.6rem, 4.2vw, 2.6rem); font-weight: 800; margin-top: 14px; letter-spacing: -0.01em; }
+        .chen_subtitle { margin-top: 10px; font-size: 0.92rem; color: rgba(238, 242, 255, 0.82); }
+
+        .chen_main { margin-top: 24px; display: grid; gap: 22px; }
+        .chen_card {
+            padding: clamp(18px, 3vw, 32px);
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            background: var(--chen_surface);
+            box-shadow: var(--chen_shadow);
+        }
+
+        .chen_card_title { font-size: clamp(1.1rem, 2vw, 1.35rem); font-weight: 800; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+        .chen_badge {
+            display: inline-grid; place-items: center;
+            width: 30px; height: 30px; border-radius: 8px;
+            background: var(--chen_primary_soft); color: var(--chen_primary);
+            font-weight: 800; font-size: 0.85rem; flex-shrink: 0;
+        }
+
+        .chen_tabs {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;
+        }
+        .chen_tab {
+            padding: 7px 16px; border: 1px solid var(--chen_border); border-radius: 999px;
+            background: #ffffff; color: var(--chen_text_soft); font: inherit; font-size: 0.84rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .chen_tab:hover { color: var(--chen_primary); border-color: var(--chen_primary_soft); }
+        .chen_tab_active { background: var(--chen_primary); color: #ffffff; border-color: var(--chen_primary); }
+
+        .chen_tab_panel { display: none; }
+        .chen_tab_panel_active { display: block; }
+
+        .chen_code_block {
+            margin-top: 12px; padding: 16px 18px; border-radius: 12px;
+            background: #0f172a; color: #e2e8f0;
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 0.78rem; line-height: 1.9; overflow-x: auto;
+        }
+        .chen_code_comment { color: #94a3b8; }
+        .chen_code_kw { color: #c084fc; }
+        .chen_code_str { color: #86efac; }
+        .chen_code_num { color: #fbbf24; }
+        .chen_code_op { color: #f472b6; }
+        .chen_code_tag { color: #7dd3fc; }
+
+        .chen_output_area {
+            margin-top: 12px; padding: 12px 14px; border: 1px solid var(--chen_border);
+            border-radius: 10px; background: #f8fafc; min-height: 30px;
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 0.8rem; color: var(--chen_text);
+        }
+
+        .chen_btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 18px; border: 1px solid transparent; border-radius: 10px;
+            background: var(--chen_primary); color: #ffffff;
+            font: inherit; font-size: 0.86rem; font-weight: 600; cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+        .chen_btn:hover { transform: translateY(-1px); background: #4338ca; }
+        .chen_btn_ghost { border-color: var(--chen_border); background: #ffffff; color: var(--chen_text_soft); }
+        .chen_btn_ghost:hover { background: #f8faff; color: var(--chen_primary); }
+
+        .chen_controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+        .chen_input {
+            padding: 7px 12px; border: 1px solid var(--chen_border); border-radius: 8px;
+            font: inherit; font-size: 0.86rem; background: #ffffff;
+        }
+        .chen_label { font-size: 0.86rem; color: var(--chen_text_soft); display: flex; align-items: center; gap: 6px; }
+
+        .chen_footer {
+            margin-top: 28px; padding: 22px 10px 8px;
+            border-top: 1px solid rgba(148, 163, 184, 0.32);
+            color: var(--chen_muted); font-size: 0.85rem; text-align: center;
+        }
+        .chen_footer_title { color: var(--chen_text_soft); font-weight: 700; }
+
+        .chen_color_rows { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; margin-top: 8px; }
+        .chen_color_cell { padding: 6px 4px; border-radius: 6px; font-size: 0.78rem; text-align: center; font-family: ui-monospace, monospace; color: #ffffff; font-weight: 700; }
+
+        @media (max-width: 520px) {
+            .chen_tabs { gap: 6px; }
+            .chen_tab { padding: 5px 10px; font-size: 0.76rem; }
+            .chen_code_block { font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="chen_page">
+        <header class="chen_header">
+            <div class="chen_author">学生</div>
+            <div class="chen_author_name">陈弘毅</div>
+            <h1 class="chen_title">JavaScript <br><span style="color:#7dd3fc;">条件与循环</span></h1>
+            <p class="chen_subtitle">四种条件语句 × 四种循环，点击 tab 切换，点击运行看效果</p>
+        </header>
+
+        <main class="chen_main">
+            <!-- ======================== 条件语句 ======================== -->
+            <section class="chen_card">
+                <div class="chen_card_title"><span class="chen_badge">01</span>条件语句</div>
+
+                <div class="chen_tabs">
+                    <button class="chen_tab chen_tab_active" data-chen-tab="if">if / else</button>
+                    <button class="chen_tab" data-chen-tab="ifelse">if / else if / else</button>
+                    <button class="chen_tab" data-chen-tab="ternary">三元表达式</button>
+                    <button class="chen_tab" data-chen-tab="switch">switch</button>
+                </div>
+
+                <!-- if -->
+                <div class="chen_tab_panel chen_tab_panel_active" data-chen-panel="if">
+                    <div class="chen_controls">
+                        <label class="chen_label">输入年龄：</label>
+                        <input class="chen_input" id="chen_age_input" type="number" value="18" min="0">
+                        <button class="chen_btn" data-chen-run="if" type="button">运行</button>
+                    </div>
+                    <pre class="chen_code_block"><code><span class="chen_code_kw">let</span> <span class="chen_code_op">chen_age</span> <span class="chen_code_op">=</span> <span class="chen_code_num">18</span>;
+<span class="chen_code_kw">if</span> (chen_age <span class="chen_code_op">>=</span> <span class="chen_code_num">18</span>) {
+    <span class="chen_code_op">chen_output</span> <span class="chen_code_op">=</span> <span class="chen_code_str">"成年了"</span>;
+} <span class="chen_code_kw">else</span> {
+    <span class="chen_code_op">chen_output</span> <span class="chen_code_op">=</span> <span class="chen_code_str">"未成年"</span>;
+}</code></pre>
+                    <div class="chen_output_area" id="chen_if_out">等你运行…</div>
+                </div>
+
+                <!-- if else if else -->
+                <div class="chen_tab_panel" data-chen-panel="ifelse">
+                    <div class="chen_controls">
+                        <label class="chen_label">输入分数：</label>
+                        <input class="chen_input" id="chen_score_input" type="number" value="85" min="0" max="100">
+                        <button class="chen_btn" data-chen-run="ifelse" type="button">运行</button>
+                    </div>
+                    <pre class="chen_code_block"><code><span class="chen_code_kw">let</span> <span class="chen_code_op">chen_score</span> <span class="chen_code_op">=</span> <span class="chen_code_num">85</span>;
+<span class="chen_code_kw">if</span> (chen_score <span class="chen_code_op">>=</span> <span class="chen_code_num">90</span>)       <span class="chen_code_op">{</span> chen_grade <span class="chen_code_op">=</span> <span class="chen_code_str">"A"</span>; <span class="chen_code_op">}</span>
+<span class="chen_code_kw">else if</span> (chen_score <span class="chen_code_op">>=</span> <span class="chen_code_num">80</span>) <span class="chen_code_op">{</span> chen_grade <span class="chen_code_op">=</span> <span class="chen_code_str">"B"</span>; <span class="chen_code_op">}</span>
+<span class="chen_code_kw">else if</span> (chen_score <span class="chen_code_op">>=</span> <span class="chen_code_num">70</span>) <span class="chen_code_op">{</span> chen_grade <span class="chen_code_op">=</span> <span class="chen_code_str">"C"</span>; <span class="chen_code_op">}</span>
+<span class="chen_code_kw">else if</span> (chen_score <span class="chen_code_op">>=</span> <span class="chen_code_num">60</span>) <span class="chen_code_op">{</span> chen_grade <span class="chen_code_op">=</span> <span class="chen_code_str">"D"</span>; <span class="chen_code_op">}</span>
+<span class="chen_code_kw">else</span>                                                  <span class="chen_code_op">{</span> chen_grade <span class="chen_code_op">=</span> <span class="chen_code_str">"不及格"</span>; <span class="chen_code_op">}</span></code></pre>
+                    <div class="chen_output_area" id="chen_ifelse_out">等你运行…</div>
+                </div>
+
+                <!-- 三元 -->
+                <div class="chen_tab_panel" data-chen-panel="ternary">
+                    <div class="chen_controls">
+                        <label class="chen_label">输入年份：</label>
+                        <input class="chen_input" id="chen_year_input" type="number" value="2026" min="1900">
+                        <button class="chen_btn" data-chen-run="ternary" type="button">运行</button>
+                    </div>
+                    <pre class="chen_code_block"><code><span class="chen_code_kw">let</span> <span class="chen_code_op">chen_isLeap</span> <span class="chen_code_op">=</span>
+    (chen_year <span class="chen_code_op">%</span> <span class="chen_code_num">4</span> <span class="chen_code_op">===</span> <span class="chen_code_num">0</span> <span class="chen_code_op">&&</span> chen_year <span class="chen_code_op">%</span> <span class="chen_code_num">100</span> <span class="chen_code_op">!==</span> <span class="chen_code_num">0</span>)
+    <span class="chen_code_op">||</span> chen_year <span class="chen_code_op">%</span> <span class="chen_code_num">400</span> <span class="chen_code_op">===</span> <span class="chen_code_num">0</span>
+    <span class="chen_code_op">?</span> <span class="chen_code_str">"闰年"</span> <span class="chen_code_op">:</span> <span class="chen_code_str">"平年"</span>;</code></pre>
+                    <div class="chen_output_area" id="chen_ternary_out">等你运行…</div>
+                </div>
+
+                <!-- switch -->
+                <div class="chen_tab_panel" data-chen-panel="switch">
+                    <div class="chen_controls">
+                        <label class="chen_label">输入星期几（1~7）：</label>
+                        <input class="chen_input" id="chen_day_input" type="number" value="3" min="1" max="7">
+                        <button class="chen_btn" data-chen-run="switch" type="button">运行</button>
+                    </div>
+                    <pre class="chen_code_block"><code><span class="chen_code_kw">switch</span> (chen_day) {
+    <span class="chen_code_kw">case</span> <span class="chen_code_num">1</span>: chen_name <span class="chen_code_op">=</span> <span class="chen_code_str">"星期一"</span>; <span class="chen_code_kw">break</span>;
+    <span class="chen_code_kw">case</span> <span class="chen_code_num">2</span>: chen_name <span class="chen_code_op">=</span> <span class="chen_code_str">"星期二"</span>; <span class="chen_code_kw">break</span>;
+    <span class="chen_code_kw">case</span> <span class="chen_code_num">3</span>: chen_name <span class="chen_code_op">=</span> <span class="chen_code_str">"星期三"</span>; <span class="chen_code_kw">break</span>;
+    <span class="chen_code_kw">case</span> <span class="chen_code_num">4</span>: chen_name <span class="chen_code_op">=</span> <span class="chen_code_str">"星期四"</span>; <span class="chen_code_kw">break</span>;
+    <span class="chen_code_kw">case</span> <span class="chen_code_num">5</span>: chen_name <span class="chen_code_op">=</span> <span class="chen_code_str">"星期五"</span>; <span class="chen_code_kw">break</span>;
+    <span class="chen_code_kw">case</span> <span class="chen_code_num">6</span>: chen_name <span class="chen_code_op">=</span> <span class="chen_code_str">"星期六"</span>; <span class="chen_code_kw">break</span>;
+    <span class="chen_code_kw">case</span> <span class="chen_code_num">7</span>: chen_name <span class="chen_code_op">=</span> <span class="chen_code_str">"星期日"</span>; <span class="chen_code_kw">break</span>;
+    <span class="chen_code_kw">default</span>:      chen_name <span class="chen_code_op">=</span> <span class="chen_code_str">"无效"</span>;
+}</code></pre>
+                    <div class="chen_output_area" id="chen_switch_out">等你运行…</div>
+                </div>
+            </section>
+
+            <!-- ======================== 循环 ======================== -->
+            <section class="chen_card">
+                <div class="chen_card_title"><span class="chen_badge">02</span>循环结构</div>
+
+                <div class="chen_tabs">
+                    <button class="chen_tab chen_tab_active" data-chen-tab="for">for</button>
+                    <button class="chen_tab" data-chen-tab="while">while</button>
+                    <button class="chen_tab" data-chen-tab="dowhile">do ... while</button>
+                    <button class="chen_tab" data-chen-tab="forin">for ... of / in</button>
+                </div>
+
+                <!-- for -->
+                <div class="chen_tab_panel chen_tab_panel_active" data-chen-panel="for">
+                    <p style="font-size:0.88rem;color:var(--chen_text_soft);margin-bottom:10px;">用 <b>for</b> 循环输出 1~20 的偶数，并用不同颜色渲染（类似彩虹）。</p>
+                    <pre class="chen_code_block"><code><span class="chen_code_kw">let</span> <span class="chen_code_op">chen_colors</span> <span class="chen_code_op">=</span> <span class="chen_code_op">[</span><span class="chen_code_str">"#ef4444"</span>,<span class="chen_code_str">"#f97316"</span>,<span class="chen_code_str">"#eab308"</span>,<span class="chen_code_str">"#22c55e"</span>,<span class="chen_code_str">"#06b6d4"</span>,<span class="chen_code_str">"#3b82f6"</span>,<span class="chen_code_str">"#8b5cf6"</span>,<span class="chen_code_str">"#ec4899"</span><span class="chen_code_op">]</span>;
+<span class="chen_code_kw">for</span> (<span class="chen_code_kw">let</span> chen_i <span class="chen_code_op">=</span> <span class="chen_code_num">2</span>; chen_i <span class="chen_code_op"><=</span> <span class="chen_code_num">20</span>; chen_i <span class="chen_code_op">+=</span> <span class="chen_code_num">2</span>) {
+    <span class="chen_code_comment">// 取余数作为颜色索引</span>
+    <span class="chen_code_op">chen_paint</span>(chen_i, chen_colors[chen_i <span class="chen_code_op">%</span> chen_colors.length]);
+}</code></pre>
+                    <button class="chen_btn" data-chen-run="for" type="button" style="margin-top:12px;">运行</button>
+                    <div class="chen_color_rows" id="chen_for_out"></div>
+                </div>
+
+                <!-- while -->
+                <div class="chen_tab_panel" data-chen-panel="while">
+                    <p style="font-size:0.88rem;color:var(--chen_text_soft);margin-bottom:10px;">用 <b>while</b> 从 1 开始累加，直到总和超过 100 停止。</p>
+                    <pre class="chen_code_block"><code><span class="chen_code_kw">let</span> chen_sum <span class="chen_code_op">=</span> <span class="chen_code_num">0</span>, chen_n <span class="chen_code_op">=</span> <span class="chen_code_num">1</span>;
+<span class="chen_code_kw">while</span> (chen_sum <span class="chen_code_op"><=</span> <span class="chen_code_num">100</span>) {
+    chen_sum <span class="chen_code_op">+=</span> chen_n;
+    chen_n<span class="chen_code_op">++</span>;
+}
+<span class="chen_code_comment">// 停在多少？和是多少？</span></code></pre>
+                    <button class="chen_btn" data-chen-run="while" type="button" style="margin-top:12px;">运行</button>
+                    <div class="chen_output_area" id="chen_while_out">等你运行…</div>
+                </div>
+
+                <!-- do while -->
+                <div class="chen_tab_panel" data-chen-panel="dowhile">
+                    <p style="font-size:0.88rem;color:var(--chen_text_soft);margin-bottom:10px;">用 <b>do ... while</b> 模拟摇骰子，直到摇到 6 点才停。</p>
+                    <pre class="chen_code_block"><code><span class="chen_code_kw">let</span> chen_count <span class="chen_code_op">=</span> <span class="chen_code_num">0</span>, chen_roll;
+<span class="chen_code_kw">do</span> {
+    chen_roll <span class="chen_code_op">=</span> Math.floor(Math.random() <span class="chen_code_op">*</span> <span class="chen_code_num">6</span>) <span class="chen_code_op">+</span> <span class="chen_code_num">1</span>;
+    chen_count<span class="chen_code_op">++</span>;
+} <span class="chen_code_kw">while</span> (chen_roll <span class="chen_code_op">!==</span> <span class="chen_code_num">6</span>);
+<span class="chen_code_comment">// do while 至少执行一次，即使初始条件不满足</span></code></pre>
+                    <button class="chen_btn" data-chen-run="dowhile" type="button" style="margin-top:12px;">运行</button>
+                    <div class="chen_output_area" id="chen_dowhile_out">等你运行…</div>
+                </div>
+
+                <!-- for of -->
+                <div class="chen_tab_panel" data-chen-panel="forin">
+                    <p style="font-size:0.88rem;color:var(--chen_text_soft);margin-bottom:10px;"><b>for ... of</b> 遍历数组元素；<b>for ... in</b> 遍历对象的键名。</p>
+                    <pre class="chen_code_block"><code><span class="chen_code_kw">let</span> chen_names <span class="chen_code_op">=</span> <span class="chen_code_op">[</span><span class="chen_code_str">"小明"</span>, <span class="chen_code_str">"小红"</span>, <span class="chen_code_str">"小刚"</span><span class="chen_code_op">]</span>;
+
+<span class="chen_code_comment">// for ... of：遍历值</span>
+<span class="chen_code_kw">for</span> (<span class="chen_code_kw">let</span> chen_n <span class="chen_code_kw">of</span> chen_names) {
+    <span class="chen_code_op">console</span>.log(chen_n);
+}
+
+<span class="chen_code_comment">// for ... in：遍历键</span>
+<span class="chen_code_kw">let</span> chen_student <span class="chen_code_op">=</span> <span class="chen_code_op">{</span> name<span class="chen_code_op">:</span> <span class="chen_code_str">"陈弘毅"</span>, age<span class="chen_code_op">:</span> <span class="chen_code_num">18</span> <span class="chen_code_op">}</span>;
+<span class="chen_code_kw">for</span> (<span class="chen_code_kw">let</span> chen_k <span class="chen_code_kw">in</span> chen_student) {
+    <span class="chen_code_op">console</span>.log(chen_k, chen_student[chen_k]);
+}</code></pre>
+                    <button class="chen_btn" data-chen-run="forin" type="button" style="margin-top:12px;">运行</button>
+                    <div class="chen_output_area" id="chen_forin_out">等你运行…</div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="chen_footer">
+            <p class="chen_footer_title">© 2026 15-2.html · JavaScript 条件与循环</p>
+            <p class="chen_footer_meta">学号：24001010722 · 姓名：陈弘毅</p>
+        </footer>
+    </div>
+
+    <script>
+        /* ===== Tab 切换 ===== */
+        document.querySelectorAll(".chen_tab").forEach(function (chen_tab) {
+            chen_tab.addEventListener("click", function () {
+                var chen_group = chen_tab.parentElement;
+                var chen_panelName = chen_tab.getAttribute("data-chen-tab");
+                chen_group.querySelectorAll(".chen_tab").forEach(function (chen_t) { chen_t.classList.remove("chen_tab_active"); });
+                chen_tab.classList.add("chen_tab_active");
+                var chen_card = chen_tab.closest(".chen_card");
+                chen_card.querySelectorAll(".chen_tab_panel").forEach(function (chen_p) {
+                    chen_p.classList.toggle("chen_tab_panel_active", chen_p.getAttribute("data-chen-panel") === chen_panelName);
+                });
+            });
+        });
+
+        /* ===== 条件：if ===== */
+        document.querySelector('[data-chen-run="if"]').addEventListener("click", function () {
+            var chen_age = parseInt(document.getElementById("chen_age_input").value);
+            var chen_out = chen_age >= 18 ? "成年了 ✅" : "未成年 👶";
+            document.getElementById("chen_if_out").textContent = "年龄 " + chen_age + " → " + chen_out;
+        });
+
+        /* ===== 条件：if else if ===== */
+        document.querySelector('[data-chen-run="ifelse"]').addEventListener("click", function () {
+            var chen_score = parseInt(document.getElementById("chen_score_input").value);
+            var chen_grade;
+            if (chen_score >= 90) chen_grade = "A";
+            else if (chen_score >= 80) chen_grade = "B";
+            else if (chen_score >= 70) chen_grade = "C";
+            else if (chen_score >= 60) chen_grade = "D";
+            else chen_grade = "不及格";
+            document.getElementById("chen_ifelse_out").textContent = "分数 " + chen_score + " → 等级 " + chen_grade;
+        });
+
+        /* ===== 条件：三元 ===== */
+        document.querySelector('[data-chen-run="ternary"]').addEventListener("click", function () {
+            var chen_year = parseInt(document.getElementById("chen_year_input").value);
+            var chen_isLeap = ((chen_year % 4 === 0 && chen_year % 100 !== 0) || chen_year % 400 === 0) ? "闰年" : "平年";
+            document.getElementById("chen_ternary_out").textContent = chen_year + " 年 → " + chen_isLeap + " 🌟";
+        });
+
+        /* ===== 条件：switch ===== */
+        document.querySelector('[data-chen-run="switch"]').addEventListener("click", function () {
+            var chen_day = parseInt(document.getElementById("chen_day_input").value);
+            var chen_name;
+            switch (chen_day) {
+                case 1: chen_name = "星期一"; break;
+                case 2: chen_name = "星期二"; break;
+                case 3: chen_name = "星期三"; break;
+                case 4: chen_name = "星期四"; break;
+                case 5: chen_name = "星期五"; break;
+                case 6: chen_name = "星期六"; break;
+                case 7: chen_name = "星期日"; break;
+                default: chen_name = "无效";
+            }
+            document.getElementById("chen_switch_out").textContent = chen_day + " → " + chen_name;
+        });
+
+        /* ===== 循环：for ===== */
+        document.querySelector('[data-chen-run="for"]').addEventListener("click", function () {
+            var chen_colors = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899"];
+            var chen_out = document.getElementById("chen_for_out");
+            chen_out.innerHTML = "";
+            for (var chen_i = 2; chen_i <= 20; chen_i += 2) {
+                var chen_cell = document.createElement("div");
+                chen_cell.className = "chen_color_cell";
+                chen_cell.textContent = chen_i;
+                chen_cell.style.background = chen_colors[chen_i % chen_colors.length];
+                chen_out.appendChild(chen_cell);
+            }
+        });
+
+        /* ===== 循环：while ===== */
+        document.querySelector('[data-chen-run="while"]').addEventListener("click", function () {
+            var chen_sum = 0, chen_n = 1;
+            while (chen_sum <= 100) { chen_sum += chen_n; chen_n++; }
+            document.getElementById("chen_while_out").textContent =
+                "从 1 累加到 " + (chen_n - 1) + " 才超过 100。总和 = " + chen_sum;
+        });
+
+        /* ===== 循环：do while ===== */
+        document.querySelector('[data-chen-run="dowhile"]').addEventListener("click", function () {
+            var chen_results = [];
+            var chen_count = 0, chen_roll;
+            do {
+                chen_roll = Math.floor(Math.random() * 6) + 1;
+                chen_results.push(chen_roll);
+                chen_count++;
+            } while (chen_roll !== 6);
+            document.getElementById("chen_dowhile_out").textContent =
+                "摇了 " + chen_count + " 次才出 6 点 🎲 → " + chen_results.join(" → ");
+        });
+
+        /* ===== 循环：for of ===== */
+        document.querySelector('[data-chen-run="forin"]').addEventListener("click", function () {
+            var chen_names = ["小明", "小红", "小刚"];
+            var chen_student = { name: "陈弘毅", age: 18, studentId: "24001010722" };
+            var chen_text = "";
+            chen_text += "for ... of（数组值）: ";
+            for (var chen_n of chen_names) { chen_text += chen_n + " "; }
+            chen_text += "\nfor ... in（对象键值对）: ";
+            for (var chen_k in chen_student) { chen_text += chen_k + "=" + chen_student[chen_k] + " "; }
+            document.getElementById("chen_forin_out").style.whiteSpace = "pre-wrap";
+            document.getElementById("chen_forin_out").textContent = chen_text;
+            console.log("===== for of =====");
+            chen_names.forEach(function (chen_v) { console.log(chen_v); });
+            console.log("===== for in =====");
+            for (var chen_key in chen_student) { console.log(chen_key, "=", chen_student[chen_key]); }
+        });
+    </script>
+</body>
+</html>
