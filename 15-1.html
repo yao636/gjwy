@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-10-26
+功能名称：JavaScript 数7游戏——100个盒子按数7规则显示
+    -->
+    <title>15-1 数7游戏</title>
+    <link rel="stylesheet" href="font/font_5244855_fm8s0yq40te/iconfont.css">
+    <style>
+        :root {
+            --chen_bg: #eef2ff;
+            --chen_surface: #ffffff;
+            --chen_text: #1e293b;
+            --chen_text_soft: #475569;
+            --chen_muted: #64748b;
+            --chen_primary: #4f46e5;
+            --chen_primary_soft: #e0e7ff;
+            --chen_border: #dbe3f2;
+            --chen_radius: 14px;
+            --chen_shadow: 0 18px 45px -28px rgba(30, 64, 175, 0.55);
+            --chen_empty: #e2e8f0;
+            --chen_empty_border: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 12% 0%, rgba(99, 102, 241, 0.16), transparent 32rem),
+                radial-gradient(circle at 88% 12%, rgba(14, 165, 233, 0.14), transparent 28rem),
+                var(--chen_bg);
+            color: var(--chen_text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .chen_page {
+            width: min(960px, 100%);
+            margin: 0 auto;
+            padding: clamp(14px, 2.4vw, 30px);
+        }
+
+        .chen_header {
+            border-radius: var(--chen_radius);
+            padding: clamp(22px, 4vw, 44px);
+            color: #ffffff;
+            background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 48%, #0369a1 100%);
+            box-shadow: 0 26px 60px -30px rgba(30, 27, 75, 0.75);
+            text-align: center;
+        }
+
+        .chen_author {
+            font-size: 0.88rem;
+            letter-spacing: 0.18em;
+            color: #a5b4fc;
+            font-weight: 600;
+        }
+
+        .chen_author_name {
+            font-size: 1.6rem;
+            font-weight: 900;
+            margin-top: 6px;
+            letter-spacing: 0.14em;
+            background: linear-gradient(90deg, #7dd3fc, #fef3c7, #86efac);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .chen_title {
+            font-size: clamp(1.6rem, 4.2vw, 2.6rem);
+            font-weight: 800;
+            margin-top: 14px;
+            letter-spacing: -0.01em;
+        }
+
+        .chen_subtitle {
+            margin-top: 10px;
+            font-size: 0.92rem;
+            color: rgba(238, 242, 255, 0.82);
+        }
+
+        .chen_main {
+            margin-top: 24px;
+            display: grid;
+            gap: 18px;
+        }
+
+        .chen_card {
+            padding: clamp(16px, 2.8vw, 28px);
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            background: var(--chen_surface);
+            box-shadow: var(--chen_shadow);
+        }
+
+        .chen_rules {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 14px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background: var(--chen_primary_soft);
+            color: #4338ca;
+            font-size: 0.88rem;
+        }
+
+        .chen_rules strong { color: #312e81; }
+
+        .chen_grid {
+            margin-top: 18px;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+        }
+
+        .chen_box {
+            aspect-ratio: 1 / 1;
+            display: grid;
+            place-items: center;
+            border: 1.5px solid var(--chen_border);
+            border-radius: 10px;
+            background: linear-gradient(180deg, #ffffff, #f8faff);
+            font-size: clamp(0.72rem, 2.4vw, 1rem);
+            font-weight: 700;
+            color: var(--chen_primary);
+            font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            user-select: none;
+        }
+
+        .chen_box:hover {
+            transform: scale(1.08);
+            border-color: var(--chen_primary);
+            box-shadow: 0 6px 14px -6px rgba(79, 70, 229, 0.5);
+        }
+
+        /* 满足数7规则 → 空盒子样式 */
+        .chen_box_empty {
+            background: repeating-linear-gradient(
+                45deg,
+                var(--chen_surface),
+                var(--chen_surface) 4px,
+                var(--chen_empty) 4px,
+                var(--chen_empty) 8px
+            );
+            border-color: var(--chen_empty_border);
+            color: transparent;
+            cursor: default;
+        }
+
+        .chen_box_empty:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: var(--chen_empty_border);
+        }
+
+        .chen_stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .chen_stat {
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 0.86rem;
+            background: #f8fafc;
+            border: 1px solid var(--chen_border);
+        }
+
+        .chen_stat strong {
+            color: var(--chen_primary);
+            font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+            font-size: 1rem;
+        }
+
+        .chen_footer {
+            margin-top: 28px;
+            padding: 22px 10px 8px;
+            border-top: 1px solid rgba(148, 163, 184, 0.32);
+            color: var(--chen_muted);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .chen_footer_title {
+            color: var(--chen_text_soft);
+            font-weight: 700;
+        }
+
+        @media (max-width: 520px) {
+            .chen_grid {
+                gap: 5px;
+            }
+            .chen_box {
+                font-size: 0.65rem;
+                border-radius: 6px;
+                border-width: 1px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chen_page">
+        <header class="chen_header">
+            <div class="chen_author">学生</div>
+            <div class="chen_author_name">陈弘毅</div>
+            <h1 class="chen_title">数 7 游 戏</h1>
+            <p class="chen_subtitle">1 ~ 100 共 100 个盒子 · 符合规则的留空</p>
+        </header>
+
+        <main class="chen_main">
+            <section class="chen_card">
+                <div class="chen_rules" id="chen_rules">
+                    <span><strong>规则：</strong></span>
+                    <span>① 7 的倍数</span>
+                    <span>② 个位是 7</span>
+                    <span>③ 包含数字 7</span>
+                    <span>→ 以上任一满足，盒子留空</span>
+                </div>
+
+                <div class="chen_grid" id="chen_grid">
+                    <!-- JS 动态生成 100 个盒子 -->
+                </div>
+
+                <div class="chen_stats" id="chen_stats">
+                    <div class="chen_stat">共 <strong id="chen_total_count">0</strong> 个盒子</div>
+                    <div class="chen_stat">空盒子 <strong id="chen_empty_count">0</strong> 个 · 有数字 <strong id="chen_num_count">0</strong> 个</div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="chen_footer">
+            <p class="chen_footer_title">© 2026 15-1.html · 数7游戏</p>
+            <p class="chen_footer_meta">学号：24001010722 · 姓名：陈弘毅</p>
+        </footer>
+    </div>
+
+    <script>
+        /* ===== 数7规则判断 ===== */
+        function chen_isEmptyBox(chen_n) {
+            // 规则：7 的倍数 / 个位是 7 / 数字里含 7 → 留空
+            var chen_contains7 = String(chen_n).indexOf("7") !== -1;
+            return (chen_n % 7 === 0) || chen_contains7;
+        }
+
+        /* ===== 生成 100 个盒子 ===== */
+        var chen_grid = document.getElementById("chen_grid");
+        var chen_emptyNum = 0;
+
+        for (var chen_i = 1; chen_i <= 100; chen_i++) {
+            var chen_box = document.createElement("div");
+            chen_box.className = "chen_box";
+
+            if (chen_isEmptyBox(chen_i)) {
+                chen_box.classList.add("chen_box_empty");
+                chen_box.setAttribute("title", chen_i + " 符合数7规则（空）");
+                chen_emptyNum++;
+            } else {
+                chen_box.textContent = chen_i;
+                chen_box.setAttribute("title", chen_i);
+            }
+
+            chen_grid.appendChild(chen_box);
+        }
+
+        /* ===== 统计 ===== */
+        document.getElementById("chen_total_count").textContent = "100";
+        document.getElementById("chen_empty_count").textContent = String(chen_emptyNum);
+        document.getElementById("chen_num_count").textContent = String(100 - chen_emptyNum);
+
+        /* ===== 控制台输出所有空盒子编号 ===== */
+        var chen_emptyList = [];
+        for (var chen_j = 1; chen_j <= 100; chen_j++) {
+            if (chen_isEmptyBox(chen_j)) chen_emptyList.push(chen_j);
+        }
+        console.log("===== 数7游戏（1~100） =====");
+        console.log("空盒子编号共 " + chen_emptyList.length + " 个：");
+        console.log(chen_emptyList.join(", "));
+    </script>
+</body>
+</html>
