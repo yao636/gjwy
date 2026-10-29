@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-10-29
+功能名称：JavaScript 对象与字符串形象化演示
+    -->
+    <title>16-2 JavaScript 对象与字符串演示</title>
+    <link rel="stylesheet" href="font/font_5244855_fm8s0yq40te/iconfont.css">
+    <style>
+        :root {
+            --chen_bg: #eef2ff;
+            --chen_surface: #ffffff;
+            --chen_text: #1e293b;
+            --chen_text_soft: #475569;
+            --chen_muted: #64748b;
+            --chen_primary: #4f46e5;
+            --chen_primary_soft: #e0e7ff;
+            --chen_accent: #0ea5e9;
+            --chen_border: #dbe3f2;
+            --chen_radius: 14px;
+            --chen_shadow: 0 18px 45px -28px rgba(30, 64, 175, 0.55);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 12% 0%, rgba(99, 102, 241, 0.16), transparent 32rem),
+                radial-gradient(circle at 88% 12%, rgba(14, 165, 233, 0.14), transparent 28rem),
+                var(--chen_bg);
+            color: var(--chen_text);
+            line-height: 1.65;
+            min-height: 100vh;
+        }
+
+        .chen_page {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 34px 22px 40px;
+        }
+
+        /* ---------- 头部 ---------- */
+        .chen_header {
+            background: linear-gradient(135deg, #0891b2, #4f46e5 55%, #7c3aed);
+            color: #fff;
+            border-radius: var(--chen_radius);
+            padding: 26px 30px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            box-shadow: var(--chen_shadow);
+        }
+        .chen_header_icon {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.18);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+            flex: none;
+        }
+        .chen_header h1 { font-size: 24px; letter-spacing: 1px; }
+        .chen_header p { font-size: 13.5px; opacity: .92; margin-top: 4px; }
+
+        /* ---------- 布局 ---------- */
+        .chen_layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 18px;
+            margin-top: 18px;
+            align-items: start;
+        }
+        @media (max-width: 860px) {
+            .chen_layout { grid-template-columns: 1fr; }
+        }
+
+        .chen_card {
+            background: var(--chen_surface);
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            box-shadow: var(--chen_shadow);
+        }
+
+        /* ---------- 方法列表 ---------- */
+        .chen_list { padding: 12px; max-height: 560px; overflow: auto; }
+        .chen_group_title {
+            font-size: 12px;
+            color: var(--chen_muted);
+            padding: 10px 10px 6px;
+            letter-spacing: .5px;
+        }
+        .chen_item {
+            width: 100%;
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 12px;
+            border: none; background: transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--chen_text_soft);
+            font-family: inherit;
+            text-align: left;
+            transition: background .18s, color .18s;
+        }
+        .chen_item .iconfont { font-size: 16px; color: var(--chen_muted); }
+        .chen_item:hover { background: var(--chen_primary_soft); }
+        .chen_item.chen_active {
+            background: var(--chen_primary);
+            color: #fff;
+            font-weight: 600;
+        }
+        .chen_item.chen_active .iconfont { color: #fff; }
+        .chen_item code { font-family: Consolas, Monaco, monospace; }
+
+        /* ---------- 舞台 ---------- */
+        .chen_main { padding: 22px 24px; }
+        .chen_method_head {
+            display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+        }
+        .chen_method_head h2 {
+            font-size: 20px;
+            font-family: Consolas, Monaco, monospace;
+            color: var(--chen_primary);
+        }
+        .chen_tag { font-size: 12px; padding: 2px 10px; border-radius: 999px; }
+        .chen_tag.chen_mut { background: #fee2e2; color: #b91c1c; }
+        .chen_tag.chen_immut { background: #d1fae5; color: #047857; }
+        .chen_desc { color: var(--chen_text_soft); font-size: 14px; margin-top: 8px; }
+
+        .chen_stage_label {
+            font-size: 12px; color: var(--chen_muted);
+            margin: 18px 0 8px; letter-spacing: .5px;
+        }
+        .chen_stage {
+            min-height: 108px;
+            border: 1.5px dashed var(--chen_border);
+            border-radius: 12px;
+            background: #f8faff;
+            display: flex; align-items: center;
+            gap: 10px;
+            padding: 14px 16px;
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+        .chen_box {
+            flex: none;
+            min-width: 62px; height: 62px;
+            padding: 0 8px;
+            border-radius: 12px;
+            background: linear-gradient(160deg, #eef2ff, #e0e7ff);
+            border: 1.5px solid #c7d2fe;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            position: relative;
+        }
+        .chen_box strong {
+            font-size: 17px;
+            font-family: Consolas, Monaco, monospace;
+            color: var(--chen_text);
+            word-break: break-all;
+            line-height: 1.2;
+            text-align: center;
+        }
+        .chen_box span {
+            position: absolute;
+            bottom: -21px;
+            font-size: 11px;
+            color: var(--chen_muted);
+            font-family: Consolas, monospace;
+            white-space: nowrap;
+        }
+        .chen_box.chen_in { animation: chen_pop_in .45s cubic-bezier(.34,1.56,.64,1) both; }
+        .chen_box.chen_flash {
+            border-color: var(--chen_primary);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(79,70,229,.18);
+        }
+        .chen_box.chen_space { background: #f1f5f9; border-style: dashed; }
+        .chen_box.chen_space strong { color: #94a3b8; }
+
+        /* 对象行 */
+        .chen_obj_row {
+            display: flex; align-items: center; gap: 10px;
+            position: relative;
+            padding-bottom: 20px;
+        }
+        .chen_obj_row .chen_k {
+            padding: 8px 14px;
+            border-radius: 10px;
+            background: #fef3c7;
+            border: 1.5px solid #fcd34d;
+            color: #92400e;
+            font-family: Consolas, monospace;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .chen_obj_row .chen_v {
+            padding: 8px 14px;
+            border-radius: 10px;
+            background: linear-gradient(160deg, #eef2ff, #e0e7ff);
+            border: 1.5px solid #c7d2fe;
+            color: var(--chen_text);
+            font-family: Consolas, monospace;
+            font-size: 14px;
+            max-width: 220px;
+            word-break: break-all;
+        }
+        .chen_obj_row .chen_colon { color: #a5b4fc; font-weight: 700; }
+        .chen_obj_row .chen_row_idx {
+            position: absolute;
+            bottom: 0; left: 4px;
+            font-size: 11px;
+            color: var(--chen_muted);
+            font-family: Consolas, monospace;
+        }
+        .chen_obj_row.chen_in { animation: chen_pop_in .45s cubic-bezier(.34,1.56,.64,1) both; }
+        .chen_obj_row.chen_flash .chen_k,
+        .chen_obj_row.chen_flash .chen_v {
+            border-color: var(--chen_primary);
+            box-shadow: 0 0 0 4px rgba(79,70,229,.18);
+        }
+        @keyframes chen_pop_in {
+            from { transform: scale(.3); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+        .chen_empty {
+            display: flex; align-items: center; gap: 8px;
+            color: var(--chen_muted); font-size: 13px;
+        }
+
+        /* ---------- 参数与按钮 ---------- */
+        .chen_controls {
+            margin-top: 24px;
+            display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap;
+        }
+        .chen_field { display: flex; flex-direction: column; gap: 5px; }
+        .chen_field label { font-size: 12px; color: var(--chen_muted); }
+        .chen_field input, .chen_field select {
+            width: 140px;
+            padding: 8px 10px;
+            border: 1px solid var(--chen_border);
+            border-radius: 9px;
+            font-size: 14px;
+            font-family: Consolas, monospace;
+            background: #fbfcff;
+            color: var(--chen_text);
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .chen_field input:focus, .chen_field select:focus {
+            border-color: var(--chen_primary);
+            box-shadow: 0 0 0 3px rgba(79,70,229,.14);
+        }
+        .chen_btn {
+            padding: 10px 20px;
+            border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #0891b2, #4f46e5);
+            color: #fff;
+            font-size: 14.5px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            display: inline-flex; align-items: center; gap: 7px;
+            transition: transform .15s, box-shadow .15s;
+        }
+        .chen_btn:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -10px rgba(79,70,229,.7); }
+        .chen_btn:active { transform: translateY(0); }
+        .chen_btn.chen_ghost {
+            background: var(--chen_surface);
+            color: var(--chen_primary);
+            border: 1px solid #c7d2fe;
+        }
+
+        /* ---------- 结果 ---------- */
+        .chen_console {
+            margin-top: 22px;
+            background: #1e1b4b;
+            border-radius: 12px;
+            padding: 16px 18px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 13.5px;
+            color: #c7d2fe;
+            min-height: 96px;
+        }
+        .chen_console .chen_c_code { color: #fef08a; }
+        .chen_console .chen_c_ret  { color: #6ee7b7; }
+        .chen_console .chen_c_dim  { color: #818cf8; }
+        .chen_console .chen_c_note { color: #f0abfc; }
+        .chen_console div { margin: 3px 0; }
+
+        .chen_ret_stage {
+            display: flex; align-items: center; gap: 8px;
+            flex-wrap: wrap; margin-top: 12px;
+        }
+        .chen_ret_box {
+            padding: 7px 13px;
+            border-radius: 9px;
+            background: #ecfdf5;
+            border: 1.5px solid #6ee7b7;
+            color: #047857;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+            font-weight: 600;
+            animation: chen_pop_in .45s cubic-bezier(.34,1.56,.64,1) both;
+            max-width: 320px;
+            word-break: break-all;
+        }
+
+        /* ---------- 编辑区 ---------- */
+        .chen_editor {
+            margin-top: 18px;
+            padding: 14px 16px;
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+        .chen_editor .chen_field input { width: 280px; }
+        .chen_editor span.chen_edit_icon { font-size: 18px; color: var(--chen_primary); }
+
+        /* ---------- 页脚 ---------- */
+        .chen_footer {
+            margin-top: 30px;
+            text-align: center;
+            color: var(--chen_muted);
+            font-size: 13px;
+            padding: 14px 0 4px;
+            border-top: 1px solid var(--chen_border);
+        }
+    </style>
+</head>
+<body>
+    <div class="chen_page">
+        <header class="chen_header">
+            <div class="chen_header_icon"><span class="iconfont icon-shouye1"></span></div>
+            <div>
+                <h1>JavaScript 对象与字符串可视化演示</h1>
+                <p>左侧选择方法 → 填写参数 → 点击运行，直观观察对象与字符串的变化</p>
+            </div>
+        </header>
+
+        <div class="chen_layout">
+            <!-- 方法列表 -->
+            <nav class="chen_card chen_list" id="chen_list"></nav>
+
+            <!-- 演示舞台 -->
+            <main class="chen_card chen_main">
+                <div class="chen_method_head">
+                    <h2 id="chen_method_name"></h2>
+                    <span class="chen_tag chen_immut" id="chen_method_tag"></span>
+                </div>
+                <p class="chen_desc" id="chen_method_desc"></p>
+
+                <p class="chen_stage_label" id="chen_stage_label"></p>
+                <div class="chen_stage" id="chen_stage"></div>
+
+                <div class="chen_controls" id="chen_controls"></div>
+
+                <div class="chen_console" id="chen_console">
+                    <div class="chen_c_dim">// 控制台输出：点击"运行演示"查看结果</div>
+                </div>
+                <div class="chen_ret_stage" id="chen_ret_stage"></div>
+
+                <div class="chen_card chen_editor">
+                    <span class="iconfont icon-shezhi chen_edit_icon"></span>
+                    <div class="chen_field">
+                        <label>自定义字符串（对象演示不受影响）</label>
+                        <input type="text" id="chen_str_input" value="Hello JavaScript">
+                    </div>
+                    <button class="chen_btn chen_ghost" id="chen_apply_str">
+                        <span class="iconfont icon-bianji"></span>应用
+                    </button>
+                    <button class="chen_btn chen_ghost" id="chen_reset_str">
+                        <span class="iconfont icon-kongshuju"></span>恢复默认
+                    </button>
+                </div>
+            </main>
+        </div>
+
+        <footer class="chen_footer">学号 24001010722 &nbsp;|&nbsp; 姓名 陈弘毅</footer>
+    </div>
+
+    <script>
+        "use strict";
+
+        /* ================= 状态 ================= */
+        var chen_obj = { brand: "Apple", model: "iPhone 15", price: 6999 };
+        var chen_default_obj = { brand: "Apple", model: "iPhone 15", price: 6999 };
+        var chen_str = "Hello JavaScript";
+        var chen_default_str = "Hello JavaScript";
+        var chen_selected = null;
+
+        /* ================= 工具函数 ================= */
+        function chenParse(v) {
+            var s = String(v).trim();
+            if (s === "") return s;
+            var n = Number(s);
+            return !isNaN(n) ? n : s;
+        }
+
+        function chenFormat(v) {
+            if (v === undefined) return "undefined";
+            if (v === null) return "null";
+            if (Array.isArray(v)) return "[" + v.map(chenFormat).join(", ") + "]";
+            if (typeof v === "string") return "'" + v + "'";
+            if (typeof v === "object") {
+                var parts = [];
+                for (var k in v) parts.push(k + ": " + chenFormat(v[k]));
+                return "{ " + parts.join(", ") + " }";
+            }
+            return String(v);
+        }
+
+        // 字符在舞台上展示时的可见形式
+        function chenShowChar(c) {
+            return c === " " ? "␣" : c;
+        }
+
+        function chenGetAllMethods() {
+            var all = [];
+            CHEN_METHODS.forEach(function (g) { g.items.forEach(function (m) { all.push(m); }); });
+            return all;
+        }
+
+        /* ================= 方法定义 ================= */
+        var CHEN_METHODS = [
+            {
+                group: "对象操作",
+                items: [
+                    {
+                        name: "obj.key = 值", icon: "icon-bianji", view: "obj", mut: true,
+                        desc: "给对象【添加新属性】或【修改已有属性】。点语法 obj.key 适合写死的名字，方括号 obj[key] 适合变量。",
+                        params: [
+                            { key: "key", label: "属性名", def: "color" },
+                            { key: "val", label: "属性值", def: "蓝色" }
+                        ],
+                        run: function (o, p) {
+                            var existed = Object.prototype.hasOwnProperty.call(o, p.key);
+                            o[p.key] = chenParse(p.val);
+                            return {
+                                ret: o[p.key],
+                                code: 'obj["' + p.key + '"] = ' + chenFormat(o[p.key]),
+                                note: existed ? "属性已存在，执行的是【修改】" : "属性不存在，执行的是【新增】",
+                                flashKeys: [p.key], newKey: existed ? null : p.key
+                            };
+                        }
+                    },
+                    {
+                        name: "delete obj.key", icon: "icon-shanchu", view: "obj", mut: true,
+                        desc: "从对象中【删除】指定属性，成功返回 true。删除后该属性变为 undefined。",
+                        params: [{ key: "key", label: "属性名", type: "keySelect" }],
+                        run: function (o, p) {
+                            var existed = Object.prototype.hasOwnProperty.call(o, p.key);
+                            delete o[p.key];
+                            return {
+                                ret: true,
+                                code: 'delete obj["' + p.key + '"]',
+                                note: existed ? "属性已被移除" : "对象中本就没有这个属性",
+                                goneKey: p.key
+                            };
+                        }
+                    },
+                    {
+                        name: "for...in", icon: "icon-gengduo", view: "obj", mut: false,
+                        desc: "依次遍历对象的每一个【属性名】，配合方括号即可拿到对应的值。",
+                        params: [],
+                        run: function (o) {
+                            var logs = [];
+                            for (var k in o) logs.push(k + " → " + chenFormat(o[k]));
+                            return { ret: undefined, code: "for (var key in obj) { ... }", logs: logs, flashAllKeys: true };
+                        }
+                    },
+                    {
+                        name: "Object.keys", icon: "icon-dingdan", view: "obj", mut: false,
+                        desc: "把对象所有【属性名】收集成一个数组返回。",
+                        params: [],
+                        run: function (o) {
+                            return { ret: Object.keys(o), code: "Object.keys(obj)", flashAllKeys: true };
+                        }
+                    },
+                    {
+                        name: "Object.values", icon: "icon-shoucang", view: "obj", mut: false,
+                        desc: "把对象所有【属性值】收集成一个数组返回。",
+                        params: [],
+                        run: function (o) {
+                            return { ret: Object.keys(o).map(function (k) { return o[k]; }), code: "Object.values(obj)", flashAllKeys: true };
+                        }
+                    },
+                    {
+                        name: "Object.entries", icon: "icon-rili", view: "obj", mut: false,
+                        desc: "把每个【属性名-属性值】打包成 [key, value] 小数组，再组成一个大数组返回。",
+                        params: [],
+                        run: function (o) {
+                            return { ret: Object.keys(o).map(function (k) { return [k, o[k]]; }), code: "Object.entries(obj)", flashAllKeys: true };
+                        }
+                    }
+                ]
+            },
+            {
+                group: "字符串方法（不改变原字符串）",
+                items: [
+                    {
+                        name: "str.length", icon: "icon-jinggao", view: "str", mut: false,
+                        desc: "属性：返回字符串的【长度】（字符个数），空格也计算在内。",
+                        params: [],
+                        run: function (s) {
+                            return { ret: s.length, code: "str.length", flashAll: true };
+                        }
+                    },
+                    {
+                        name: "charAt", icon: "icon-dingwei", view: "str", mut: false,
+                        desc: "返回指定【索引】位置的字符，索引从 0 开始，越界返回空字符串。",
+                        params: [{ key: "i", label: "索引 index", def: "4" }],
+                        run: function (s, p) {
+                            var i = Number(p.i) || 0;
+                            return { ret: s.charAt(i), code: "str.charAt(" + p.i + ")", flashIdx: [i] };
+                        }
+                    },
+                    {
+                        name: "indexOf", icon: "icon-sousuo", view: "str", mut: false,
+                        desc: "查找子串第一次出现的位置，找不到返回 -1。",
+                        params: [{ key: "sub", label: "查找内容", def: "Script" }],
+                        run: function (s, p) {
+                            var idx = s.indexOf(p.sub);
+                            var flash = [];
+                            if (idx >= 0) for (var i = 0; i < p.sub.length; i++) flash.push(idx + i);
+                            return { ret: idx, code: "str.indexOf('" + p.sub + "')", flashIdx: flash };
+                        }
+                    },
+                    {
+                        name: "includes", icon: "icon-sousuo", view: "str", mut: false,
+                        desc: "判断字符串是否【包含】某个子串，返回 true / false。",
+                        params: [{ key: "sub", label: "查找内容", def: "Java" }],
+                        run: function (s, p) {
+                            var has = s.includes(p.sub);
+                            var idx = s.indexOf(p.sub);
+                            var flash = [];
+                            if (has) for (var i = 0; i < p.sub.length; i++) flash.push(idx + i);
+                            return { ret: has, code: "str.includes('" + p.sub + "')", flashIdx: flash };
+                        }
+                    },
+                    {
+                        name: "slice", icon: "icon-gengduo", view: "str", mut: false,
+                        desc: "截取 [start, end) 范围的字符并返回【新字符串】，支持负数（从末尾倒数）。",
+                        params: [
+                            { key: "s", label: "开始索引", def: "6" },
+                            { key: "e", label: "结束索引(不含)", def: "10" }
+                        ],
+                        run: function (s, p) {
+                            var a = p.s.trim() === "" ? undefined : Number(p.s);
+                            var b = p.e.trim() === "" ? undefined : Number(p.e);
+                            var ret = s.slice(a, b);
+                            var idx = s.indexOf(ret);
+                            var flash = [];
+                            if (ret) for (var i = 0; i < ret.length; i++) flash.push(idx + i);
+                            return { ret: ret, code: "str.slice(" + p.s + ", " + p.e + ")", flashIdx: flash };
+                        }
+                    },
+                    {
+                        name: "substring", icon: "icon-gengduo", view: "str", mut: false,
+                        desc: "与 slice 类似，但【不接受负数】，且开始大于结束时会自动交换两个参数。",
+                        params: [
+                            { key: "s", label: "开始索引", def: "10" },
+                            { key: "e", label: "结束索引(不含)", def: "6" }
+                        ],
+                        run: function (s, p) {
+                            var a = Number(p.s) || 0, b = Number(p.e) || 0;
+                            var ret = s.substring(a, b);
+                            var idx = s.indexOf(ret);
+                            var flash = [];
+                            if (ret) for (var i = 0; i < ret.length; i++) flash.push(idx + i);
+                            return { ret: ret, code: "str.substring(" + p.s + ", " + p.e + ")", flashIdx: flash, note: "10 和 6 被自动交换成 substring(6, 10)" };
+                        }
+                    },
+                    {
+                        name: "toUpperCase", icon: "icon-chenggong", view: "str", mut: false,
+                        desc: "把所有字母转换成【大写】并返回新字符串，原字符串不变。",
+                        params: [],
+                        run: function (s) {
+                            return { ret: s.toUpperCase(), code: "str.toUpperCase()", flashAll: true };
+                        }
+                    },
+                    {
+                        name: "toLowerCase", icon: "icon-chenggong", view: "str", mut: false,
+                        desc: "把所有字母转换成【小写】并返回新字符串，原字符串不变。",
+                        params: [],
+                        run: function (s) {
+                            return { ret: s.toLowerCase(), code: "str.toLowerCase()", flashAll: true };
+                        }
+                    },
+                    {
+                        name: "trim", icon: "icon-shanchu", view: "str", mut: false,
+                        desc: "去掉字符串【首尾的空格】并返回新字符串。提示：在下方输入框给字符串加上前后空格再试！",
+                        params: [],
+                        run: function (s) {
+                            return { ret: s.trim(), code: "str.trim()", note: "需要字符串首尾有空格才能看出效果" };
+                        }
+                    },
+                    {
+                        name: "replace", icon: "icon-bianji", view: "str", mut: false,
+                        desc: "把【第一个】匹配的子串替换成新内容并返回新字符串（只替换第一处）。",
+                        params: [
+                            { key: "old", label: "被替换内容", def: "JavaScript" },
+                            { key: "new", label: "替换为", def: "JS" }
+                        ],
+                        run: function (s, p) {
+                            var ret = s.replace(p.old, p["new"]);
+                            var idx = s.indexOf(p.old);
+                            var flash = [];
+                            if (idx >= 0) for (var i = 0; i < p.old.length; i++) flash.push(idx + i);
+                            return { ret: ret, code: "str.replace('" + p.old + "', '" + p["new"] + "')", flashIdx: flash };
+                        }
+                    },
+                    {
+                        name: "split", icon: "icon-fenxiang", view: "str", mut: false,
+                        desc: "按分隔符把字符串【拆分成数组】，分隔符本身不会出现在结果中。",
+                        params: [{ key: "sep", label: "分隔符", def: " " }],
+                        run: function (s, p) {
+                            return { ret: s.split(p.sep), code: "str.split('" + p.sep + "')" };
+                        }
+                    },
+                    {
+                        name: "repeat", icon: "icon-rili", view: "str", mut: false,
+                        desc: "把字符串【重复】指定次数后返回，0 次返回空字符串。",
+                        params: [{ key: "n", label: "重复次数", def: "3" }],
+                        run: function (s, p) {
+                            var n = Math.max(0, Math.min(Number(p.n) || 0, 5));
+                            return { ret: s.repeat(n), code: "str.repeat(" + p.n + ")", note: "演示时最多重复 5 次，避免刷屏" };
+                        }
+                    },
+                    {
+                        name: "concat", icon: "icon-dingdan", view: "str", mut: false,
+                        desc: "把其他字符串【拼接】到末尾，效果与 + 号相同。",
+                        params: [{ key: "other", label: "拼接内容", def: "!" }],
+                        run: function (s, p) {
+                            return { ret: s.concat(p.other), code: "str.concat('" + p.other + "')" };
+                        }
+                    }
+                ]
+            }
+        ];
+
+        /* ================= 渲染方法列表 ================= */
+        function chenRenderList() {
+            var list = document.getElementById("chen_list");
+            list.innerHTML = "";
+            CHEN_METHODS.forEach(function (g) {
+                var t = document.createElement("div");
+                t.className = "chen_group_title";
+                t.textContent = g.group;
+                list.appendChild(t);
+                g.items.forEach(function (m) {
+                    var btn = document.createElement("button");
+                    btn.className = "chen_item" + (chen_selected === m ? " chen_active" : "");
+                    btn.innerHTML = '<span class="iconfont ' + m.icon + '"></span><code>' + m.name + '</code>';
+                    btn.addEventListener("click", function () {
+                        chen_selected = m;
+                        chenRenderList();
+                        chenRenderMethod();
+                    });
+                    list.appendChild(btn);
+                });
+            });
+        }
+
+        /* ================= 渲染当前方法面板 ================= */
+        function chenRenderMethod() {
+            var m = chen_selected;
+            document.getElementById("chen_method_name").textContent = m.name;
+            var tag = document.getElementById("chen_method_tag");
+            if (m.view === "obj") {
+                tag.textContent = m.mut ? "改变原对象" : "不改变原对象";
+            } else {
+                tag.textContent = m.mut ? "改变原字符串" : "返回新字符串，原字符串不变";
+            }
+            tag.className = "chen_tag " + (m.mut ? "chen_mut" : "chen_immut");
+            document.getElementById("chen_method_desc").textContent = m.desc;
+            document.getElementById("chen_stage_label").textContent =
+                m.view === "obj" ? "当前对象 obj（下方小字为属性在内存中的示意）" : "当前字符串 str（␣ 代表空格，小数字为索引 index）";
+
+            // 重建参数输入区
+            var controls = document.getElementById("chen_controls");
+            controls.innerHTML = "";
+            m.params.forEach(function (p) {
+                var field = document.createElement("div");
+                field.className = "chen_field";
+                var label = document.createElement("label");
+                label.textContent = p.label;
+                field.appendChild(label);
+                var input;
+                if (p.type === "keySelect") {
+                    input = document.createElement("select");
+                    var keys = Object.keys(chen_obj);
+                    if (!keys.length) keys = ["（对象已空）"];
+                    keys.forEach(function (k) {
+                        var opt = document.createElement("option");
+                        opt.value = k; opt.textContent = k;
+                        input.appendChild(opt);
+                    });
+                } else if (p.type === "select") {
+                    input = document.createElement("select");
+                    p.options.forEach(function (o) {
+                        var opt = document.createElement("option");
+                        opt.value = o; opt.textContent = o;
+                        if (o === p.def) opt.selected = true;
+                        input.appendChild(opt);
+                    });
+                } else {
+                    input = document.createElement("input");
+                    input.type = "text";
+                    input.value = p.def;
+                }
+                input.id = "chen_p_" + p.key;
+                field.appendChild(input);
+                controls.appendChild(field);
+            });
+            var runBtn = document.createElement("button");
+            runBtn.className = "chen_btn";
+            runBtn.id = "chen_run_btn";
+            runBtn.innerHTML = '<span class="iconfont icon-chenggong"></span>运行演示';
+            runBtn.addEventListener("click", chenRunMethod);
+            controls.appendChild(runBtn);
+
+            chenRenderStage(new Set());
+            document.getElementById("chen_ret_stage").innerHTML = "";
+        }
+
+        /* ================= 渲染舞台 ================= */
+        function chenRenderStage(flashKeys, newKey) {
+            var stage = document.getElementById("chen_stage");
+            stage.innerHTML = "";
+            var m = chen_selected;
+
+            if (m.view === "obj") {
+                var keys = Object.keys(chen_obj);
+                if (!keys.length) {
+                    stage.innerHTML = '<div class="chen_empty"><span class="iconfont icon-kongshuju"></span>对象是空的 { }</div>';
+                    return;
+                }
+                keys.forEach(function (k, i) {
+                    if (i > 0) {
+                        var arrow = document.createElement("span");
+                        arrow.className = "chen_colon";
+                        arrow.style.color = "#a5b4fc";
+                        arrow.style.fontWeight = "700";
+                        arrow.textContent = "·";
+                        stage.appendChild(arrow);
+                    }
+                    var row = document.createElement("div");
+                    row.className = "chen_obj_row";
+                    if (newKey && k === newKey) row.classList.add("chen_in");
+                    if (flashKeys && flashKeys.has(k)) row.classList.add("chen_flash");
+                    var kEl = document.createElement("span");
+                    kEl.className = "chen_k";
+                    kEl.textContent = k;
+                    var colon = document.createElement("span");
+                    colon.className = "chen_colon";
+                    colon.textContent = ":";
+                    var vEl = document.createElement("span");
+                    vEl.className = "chen_v";
+                    vEl.textContent = chenFormat(chen_obj[k]);
+                    var idx = document.createElement("span");
+                    idx.className = "chen_row_idx";
+                    idx.textContent = "属性 " + (i + 1);
+                    row.appendChild(kEl);
+                    row.appendChild(colon);
+                    row.appendChild(vEl);
+                    row.appendChild(idx);
+                    stage.appendChild(row);
+                });
+            } else {
+                if (!chen_str.length) {
+                    stage.innerHTML = '<div class="chen_empty"><span class="iconfont icon-kongshuju"></span>字符串是空的 ""</div>';
+                    return;
+                }
+                for (var i = 0; i < chen_str.length; i++) {
+                    var box = document.createElement("div");
+                    box.className = "chen_box";
+                    var c = chen_str[i];
+                    if (c === " ") box.classList.add("chen_space");
+                    if (flashKeys && flashKeys.has(i)) box.classList.add("chen_flash");
+                    var strong = document.createElement("strong");
+                    strong.textContent = chenShowChar(c);
+                    var idx = document.createElement("span");
+                    idx.textContent = "[" + i + "]";
+                    box.appendChild(strong);
+                    box.appendChild(idx);
+                    stage.appendChild(box);
+                }
+            }
+        }
+
+        /* ================= 运行演示 ================= */
+        function chenRunMethod() {
+            var m = chen_selected;
+            var params = {};
+            m.params.forEach(function (p) {
+                params[p.key] = document.getElementById("chen_p_" + p.key).value;
+            });
+
+            var before = m.view === "obj" ? chenFormat(chen_obj) : chen_str;
+            var res = m.run(m.view === "obj" ? chen_obj : chen_str, params);
+
+            // 计算需要高亮的属性名/索引
+            var flashSet = new Set(res.flashKeys || res.flashIdx || []);
+            if (res.flashAllKeys) {
+                Object.keys(chen_obj).forEach(function (k) { flashSet.add(k); });
+            }
+            if (res.flashAll) {
+                if (m.view === "obj") Object.keys(chen_obj).forEach(function (k) { flashSet.add(k); });
+                else for (var i = 0; i < chen_str.length; i++) flashSet.add(i);
+            }
+            chenRenderStage(flashSet, res.newKey);
+            chenShowResult(m, params, before, res);
+        }
+
+        /* ================= 显示结果 ================= */
+        function chenShowResult(m, params, before, res) {
+            var box = document.getElementById("chen_console");
+            var html = '<div class="chen_c_code">&gt; ' + res.code + '</div>';
+            html += '<div class="chen_c_ret">← 返回值: ' + chenFormat(res.ret) + '</div>';
+            if (m.view === "obj") {
+                html += '<div class="chen_c_dim">运行前: ' + before + '</div>';
+                html += '<div class="chen_c_dim">当前: ' + chenFormat(chen_obj) +
+                    ' <span class="chen_c_note">// ' + (m.mut ? "对象内容已变化" : "对象保持不变") + '</span></div>';
+            } else {
+                html += '<div class="chen_c_dim">原字符串: ' + chenFormat(chen_str) +
+                    ' <span class="chen_c_note">// 字符串不可变，任何方法都返回新字符串</span></div>';
+            }
+            (res.logs || []).forEach(function (l) {
+                html += '<div class="chen_c_ret">  console: ' + l + '</div>';
+            });
+            if (res.note) html += '<div class="chen_c_note">💡 ' + res.note + '</div>';
+            box.innerHTML = html;
+
+            // 返回值展示
+            var retStage = document.getElementById("chen_ret_stage");
+            retStage.innerHTML = "";
+            if (Array.isArray(res.ret) && res.ret.length) {
+                var lbl = document.createElement("span");
+                lbl.className = "chen_stage_label";
+                lbl.style.margin = "0";
+                lbl.textContent = "返回的结果：";
+                retStage.appendChild(lbl);
+                res.ret.forEach(function (v) {
+                    var chip = document.createElement("span");
+                    chip.className = "chen_ret_box";
+                    chip.textContent = chenFormat(v);
+                    retStage.appendChild(chip);
+                });
+            } else if (typeof res.ret === "string" && res.ret.length && res.ret !== chen_str) {
+                var chip2 = document.createElement("span");
+                chip2.className = "chen_ret_box";
+                chip2.textContent = chenFormat(res.ret);
+                retStage.appendChild(chip2);
+            }
+        }
+
+        /* ================= 字符串编辑 ================= */
+        function chenApplyStr(id, fallback) {
+            chen_str = document.getElementById(id).value;
+            chenRenderStage(new Set());
+            document.getElementById("chen_ret_stage").innerHTML = "";
+            document.getElementById("chen_console").innerHTML =
+                '<div class="chen_c_code">str = ' + chenFormat(chen_str) + '</div><div class="chen_c_dim">// 字符串已更新，选择方法继续实验</div>';
+        }
+
+        /* ================= 初始化 ================= */
+        (function chenInit() {
+            chen_selected = chenGetAllMethods()[0]; // 默认：对象设置属性
+            chenRenderList();
+            chenRenderMethod();
+
+            document.getElementById("chen_apply_str").addEventListener("click", function () {
+                chenApplyStr("chen_str_input");
+            });
+            document.getElementById("chen_reset_str").addEventListener("click", function () {
+                document.getElementById("chen_str_input").value = chen_default_str;
+                chenApplyStr("chen_str_input");
+            });
+            document.addEventListener("keydown", function (e) {
+                if (e.key === "Enter" && document.activeElement &&
+                    document.activeElement.tagName === "INPUT" &&
+                    document.activeElement.id.indexOf("chen_p_") === 0) {
+                    chenRunMethod();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

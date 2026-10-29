@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-10-29
+功能名称：热搜榜页面（仿原图：百度/微博切换排行列表）
+    -->
+    <title>16-3 热搜榜</title>
+    <style>
+        :root {
+            --chen_bg: #f2f3f5;
+            --chen_card: #ffffff;
+            --chen_text_main: #333333;
+            --chen_text_dark: #1f1f1f;
+            --chen_text_gray: #999999;
+            --chen_hover: #f7f8fa;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+                "Microsoft YaHei", "Noto Sans SC", sans-serif;
+            background: var(--chen_bg);
+            color: var(--chen_text_main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 16px 40px;
+        }
+
+        /* ---------- 卡片 ---------- */
+        .chen_card {
+            width: 100%;
+            max-width: 483px;
+            background: var(--chen_card);
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+            padding: 36px 40px 30px;
+        }
+
+        /* ---------- 头部 ---------- */
+        .chen_header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .chen_title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--chen_text_dark);
+            letter-spacing: 1px;
+        }
+        .chen_tabs {
+            display: flex;
+            gap: 28px;
+            align-items: flex-end;
+        }
+        .chen_tab {
+            position: relative;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 17px;
+            color: var(--chen_text_gray);
+            padding: 0 2px 10px;
+            transition: color .2s;
+        }
+        .chen_tab:hover { color: var(--chen_text_main); }
+        .chen_tab.chen_active {
+            color: var(--chen_text_dark);
+            font-weight: 700;
+        }
+        .chen_tab.chen_active::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 0;
+            width: 28px;
+            height: 3px;
+            border-radius: 2px;
+            background: var(--chen_text_dark);
+        }
+
+        /* ---------- 列表 ---------- */
+        .chen_list { list-style: none; }
+        .chen_item {
+            display: flex;
+            align-items: center;
+            gap: 26px;
+            padding: 19px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background .18s;
+        }
+        .chen_item:hover { background: var(--chen_hover); }
+        .chen_rank {
+            flex: none;
+            width: 26px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: Consolas, "Segoe UI", sans-serif;
+            color: var(--chen_text_dark);
+            line-height: 1;
+        }
+        .chen_item_text {
+            font-size: 17px;
+            color: var(--chen_text_main);
+            line-height: 1.5;
+        }
+
+        /* ---------- 页脚 ---------- */
+        .chen_footer {
+            margin-top: 26px;
+            color: #b0b3b8;
+            font-size: 13px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <main class="chen_card">
+        <header class="chen_header">
+            <h1 class="chen_title">热搜榜</h1>
+            <nav class="chen_tabs">
+                <button class="chen_tab chen_active" id="chen_tab_baidu" type="button">百度</button>
+                <button class="chen_tab" id="chen_tab_weibo" type="button">微博</button>
+            </nav>
+        </header>
+
+        <ul class="chen_list" id="chen_list"></ul>
+    </main>
+
+    <footer class="chen_footer">学号 24001010722，姓名 陈弘毅</footer>
+
+    <script>
+        "use strict";
+
+        var chen_data = {
+            baidu: [
+                "驰而不息推进全面从严治党",
+                "三丽鸥在日本官网发布致歉声明",
+                "早上五点的机场全是家长和孩子",
+                "坚持党的领导 加强党的建设",
+                "老外想去赏秋被司机拉到商丘",
+                "姆巴佩的“天价”账单才刚刚开始",
+                "奥斯卡：我深知要尊重中国人",
+                "男子钓鱼时被58斤大青鱼拽入池塘",
+                "王子铭兴奋剂检测阳性 禁赛2年",
+                "探寻“中国之治”的成功密码"
+            ],
+            weibo: [
+                "全国秋粮收获已过八成",
+                "新一股冷空气即将影响中东部",
+                "国产大飞机再获百架订单",
+                "高校科研成果转化提速",
+                "城市一刻钟便民生活圈扩容",
+                "新能源汽车出口持续增长",
+                "冬季旅游预订量明显上升",
+                "青年职业技能大赛开赛",
+                "多地推出敬老月暖心服务",
+                "全民健身场地设施持续完善"
+            ]
+        };
+
+        function chenRenderList(key) {
+            var ul = document.getElementById("chen_list");
+            ul.innerHTML = "";
+            chen_data[key].forEach(function (text, i) {
+                var li = document.createElement("li");
+                li.className = "chen_item";
+
+                var rank = document.createElement("span");
+                rank.className = "chen_rank";
+                rank.textContent = String(i + 1);
+
+                var title = document.createElement("span");
+                title.className = "chen_item_text";
+                title.textContent = text;
+
+                li.appendChild(rank);
+                li.appendChild(title);
+                ul.appendChild(li);
+            });
+        }
+
+        function chenBindTabs() {
+            var tabBaidu = document.getElementById("chen_tab_baidu");
+            var tabWeibo = document.getElementById("chen_tab_weibo");
+
+            tabBaidu.addEventListener("click", function () {
+                tabBaidu.classList.add("chen_active");
+                tabWeibo.classList.remove("chen_active");
+                chenRenderList("baidu");
+            });
+            tabWeibo.addEventListener("click", function () {
+                tabWeibo.classList.add("chen_active");
+                tabBaidu.classList.remove("chen_active");
+                chenRenderList("weibo");
+            });
+        }
+
+        (function chenInit() {
+            chenBindTabs();
+            chenRenderList("baidu");
+        })();
+    </script>
+</body>
+</html>

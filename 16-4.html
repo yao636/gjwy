@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-10-29
+功能名称：课堂测试2 点击排行侧栏（像素级还原，标签与列表可点击）
+    -->
+    <title>16-4 点击排行</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #ffffff;
+            font-family: "Microsoft YaHei", "微软雅黑", SimSun, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* ---------- 画布：内容区 280px，左 27px，上 9px，下 29px ---------- */
+        .chen_panel {
+            width: 280px;
+            margin: 9px 0 29px 27px;
+        }
+
+        /* ---------- 一、标题区 ---------- */
+        .chen_title img { display: block; }
+        /* 标题图下方 6px 处的 1px #999 实线（宽 280px），标签栏紧接灰线 */
+        .chen_tabs {
+            margin-top: 6px;
+            border-top: 1px solid #999999;
+            height: 30px;
+            display: flex;
+            position: relative;
+        }
+        /* 灰线在标签栏底部的延续（被活动标签的橙色线盖住） */
+        .chen_tabs::before {
+            content: "";
+            position: absolute;
+            left: 0; right: 0;
+            top: 100%;
+            height: 1px;
+            background: #999999;
+            z-index: 0;
+        }
+
+        /* ---------- 二、标签栏 ---------- */
+        .chen_tab {
+            height: 30px;
+            border: none;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 30px;
+            text-align: center;
+            cursor: pointer;
+            padding: 0;
+        }
+        /* 左标签「实时点击」：宽 150px，灰底 */
+        .chen_tab_off {
+            width: 150px;
+            background: #E4E4E4;
+            color: #666666;
+            font-weight: normal;
+        }
+        /* 右标签「24小时排行」：宽 130px，白底，橙字加粗 */
+        .chen_tab_on {
+            width: 130px;
+            background: transparent;
+            color: #FF5C00;
+            font-weight: bold;
+            position: relative;
+        }
+        /* 活动标签底部：lin.jpg 裁切出橙色下划线 + 居中下尖缺口
+           图片 150x41：底部对齐时元素内可见第 30~40 行（白 5px + 橙线 1px + 缺口 5px）
+           元素顶部 = 标签底部 - 5px，使橙线正好压在标签栏底线上 */
+        .chen_tab_on::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: calc(100% - 5px);
+            width: 100%;
+            height: 11px;
+            background: url(img/lin.jpg) no-repeat center bottom;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ---------- 三、列表 ---------- */
+        .chen_list {
+            list-style: none;
+            padding-top: 16px; /* 第一行文字顶部距标签栏约 23px */
+        }
+        .chen_row {
+            position: relative;
+            height: 32px;
+            cursor: pointer;
+        }
+        /* 序号列：左起 27px（面板内 x=0），宽 16px */
+        .chen_rank {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            text-align: center;
+            color: #ED5C03;
+        }
+        /* 第 1–3 名：16x16 橙色方框 */
+        .chen_rank_box {
+            border: 1px solid #ED5C03;
+            font-size: 12px;
+            line-height: 14px;
+        }
+        /* 第 4–8 名：无方框，与方框同列对齐 */
+        .chen_rank_plain {
+            font-size: 13px;
+            line-height: 16px;
+        }
+        /* 标题列：面板内 x=30（页面 x=57），固定宽 195px，超出直接裁掉 */
+        .chen_text {
+            position: absolute;
+            left: 30px;
+            top: 0;
+            width: 195px;
+            height: 32px;
+            line-height: 32px;
+            font-size: 14px;
+            color: #676767;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        /* 点击数：右对齐到页面 x=305（面板内右边距 2px） */
+        .chen_count {
+            position: absolute;
+            right: 2px;
+            top: 0;
+            height: 32px;
+            line-height: 32px;
+            font-size: 12px;
+            color: #949494;
+        }
+        /* 点击行时数字短暂变橙（无 hover 背景色） */
+        .chen_count_hit { color: #ED5C03; }
+    </style>
+</head>
+<body>
+    <div class="chen_panel">
+        <h2 class="chen_title">
+            <img src="img/tit06.jpg" width="300" height="33" alt="点击排行">
+        </h2>
+
+        <div class="chen_tabs">
+            <button type="button" class="chen_tab chen_tab_off" id="chen_tab_real">实时点击</button>
+            <button type="button" class="chen_tab chen_tab_on" id="chen_tab_day">24小时排行</button>
+        </div>
+
+        <ul class="chen_list" id="chen_list"></ul>
+    </div>
+
+    <script>
+        "use strict";
+
+        /* 文案逐字照抄原图（含截断态），不允许补全 */
+        var chen_data = {
+            day: [
+                { text: "灯塔水母: 地球上唯一不死生物", count: 356322 },
+                { text: "阿里巴巴全资收购UC 俞永福称U", count: 311246 },
+                { text: "亚马逊惊现三米长巨滑舌鱼用肺", count: 295883 },
+                { text: "奉化男子上山抓野味 遭遇极濒", count: 266061 },
+                { text: "大白鲨深海失踪 或被大型生物", count: 243936 },
+                { text: "南非小犀牛目睹母亲被猎杀不肯", count: 224346 },
+                { text: "余额宝周岁: 收益率“过山车”", count: 172694 },
+                { text: "“尸油入餐桌”纯属无稽之谈", count: 128789 }
+            ],
+            real: [
+                { text: "阿里巴巴全资收购UC 俞永福称U", count: 312445 },
+                { text: "灯塔水母: 地球上唯一不死生物", count: 298310 },
+                { text: "奉化男子上山抓野味 遭遇极濒", count: 271069 },
+                { text: "亚马逊惊现三米长巨滑舌鱼用肺", count: 253882 },
+                { text: "南非小犀牛目睹母亲被猎杀不肯", count: 237415 },
+                { text: "大白鲨深海失踪 或被大型生物", count: 214920 },
+                { text: "“尸油入餐桌”纯属无稽之谈", count: 183376 },
+                { text: "余额宝周岁: 收益率“过山车”", count: 149250 }
+            ]
+        };
+        var chen_current = "day";
+
+        function chenRenderList(key) {
+            var ul = document.getElementById("chen_list");
+            ul.innerHTML = "";
+            chen_data[key].forEach(function (item, i) {
+                var li = document.createElement("li");
+                li.className = "chen_row";
+
+                var rank = document.createElement("span");
+                rank.className = "chen_rank " + (i < 3 ? "chen_rank_box" : "chen_rank_plain");
+                rank.textContent = String(i + 1);
+
+                var title = document.createElement("span");
+                title.className = "chen_text";
+                title.textContent = item.text;
+
+                var count = document.createElement("span");
+                count.className = "chen_count";
+                count.textContent = String(item.count);
+
+                li.appendChild(rank);
+                li.appendChild(title);
+                li.appendChild(count);
+
+                /* 可点击：点击某行，点击数 +1，数字短暂变橙 */
+                li.addEventListener("click", function () {
+                    item.count += 1;
+                    count.textContent = String(item.count);
+                    count.classList.add("chen_count_hit");
+                    setTimeout(function () { count.classList.remove("chen_count_hit"); }, 350);
+                });
+
+                ul.appendChild(li);
+            });
+        }
+
+        function chenBindTabs() {
+            var tabReal = document.getElementById("chen_tab_real");
+            var tabDay = document.getElementById("chen_tab_day");
+
+            function chenSwitch(key, onTab, offTab) {
+                if (chen_current === key) return;
+                chen_current = key;
+                onTab.classList.remove("chen_tab_off");
+                onTab.classList.add("chen_tab_on");
+                offTab.classList.remove("chen_tab_on");
+                offTab.classList.add("chen_tab_off");
+                chenRenderList(key);
+            }
+
+            tabReal.addEventListener("click", function () { chenSwitch("real", tabReal, tabDay); });
+            tabDay.addEventListener("click", function () { chenSwitch("day", tabDay, tabReal); });
+        }
+
+        (function chenInit() {
+            chenBindTabs();
+            chenRenderList("day");
+        })();
+    </script>
+</body>
+</html>
