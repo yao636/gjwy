@@ -222,8 +222,53 @@
         .chen_console .chen_c_note { color: #f0abfc; }
         .chen_console div { margin: 2px 0; }
 
+        /* ---------- Promise.race 抢购 ---------- */
+        .chen_shops {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 10px;
+        }
+        .chen_shop {
+            background: #f8faff;
+            border: 1.5px solid var(--chen_border);
+            border-radius: 12px;
+            padding: 13px 14px 11px;
+            text-align: center;
+            transition: border-color .25s, background .25s, opacity .25s, transform .2s;
+        }
+        .chen_shop_name { font-size: 14px; font-weight: 700; color: var(--chen_text_soft); }
+        .chen_shop_est { font-size: 11.5px; color: var(--chen_muted); font-family: Consolas, monospace; }
+        .chen_shop_state {
+            display: inline-block;
+            margin-top: 7px;
+            font-size: 11.5px;
+            padding: 1px 10px;
+            border-radius: 999px;
+            background: #f1f5f9; color: var(--chen_muted);
+            transition: background .25s, color .25s;
+        }
+        .chen_shop.chen_doing { border-color: var(--chen_warn); background: #fffbeb; }
+        .chen_shop.chen_doing .chen_shop_state { background: #fde68a; color: #92400e; }
+        .chen_shop.chen_winner {
+            border-color: var(--chen_ok);
+            background: #f0fdf9;
+            transform: translateY(-3px);
+            box-shadow: 0 14px 26px -18px rgba(5, 150, 105, .8);
+        }
+        .chen_shop.chen_winner .chen_shop_state { background: #d1fae5; color: var(--chen_ok); font-weight: 700; }
+        .chen_shop.chen_loser, .chen_shop.chen_late { opacity: .55; }
+        .chen_shop.chen_loser .chen_shop_state, .chen_shop.chen_late .chen_shop_state {
+            background: #e2e8f0; color: var(--chen_muted);
+        }
+        .chen_race_options {
+            margin-top: 12px;
+            font-size: 13px; color: var(--chen_text_soft);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .chen_race_options input { width: 16px; height: 16px; accent-color: var(--chen_primary); }
+
         /* ---------- 代码对比 ---------- */
-        .chen_code_two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .chen_code_two { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 14px; }
         @media (max-width: 860px) { .chen_code_two { grid-template-columns: 1fr; } }
         .chen_code_box {
             border-radius: 12px;
@@ -335,6 +380,25 @@
             <div class="chen_console" id="chen_console"><span class="chen_c_dim">// 选择一种写法开始，每一步的开始与完成都会记录在这里</span></div>
         </section>
 
+        <!-- Promise.race 演示 -->
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-sousuo"></span>进阶：<code>Promise.race</code> 谁先到用谁</h2>
+            <p class="chen_card_note">买原料也可以"货比三家"：三家店同时下单，<b>谁先送到就采用谁</b>，其余店铺的结果直接忽略（race 只认第一个完成的）。</p>
+
+            <div class="chen_shops" id="chen_shops"></div>
+
+            <div class="chen_race_options">
+                <input type="checkbox" id="chen_race_timeout_check">
+                <label for="chen_race_timeout_check">加入 2.8 秒超时兜底（都不送达就提示超时）——这是 Promise.race 最经典的用法</label>
+            </div>
+
+            <div class="chen_btn_row">
+                <button class="chen_btn chen_amber" id="chen_race_start" type="button">
+                    <span class="iconfont icon-fenxiang"></span>开始抢购原料
+                </button>
+            </div>
+        </section>
+
         <!-- 代码对比 -->
         <section class="chen_card">
             <h2 class="chen_card_title"><span class="iconfont icon-bianji"></span>两种写法核心代码</h2>
@@ -363,6 +427,18 @@
   <span class="chen_kw">await</span> <span class="chen_fn">chenSleep</span>(5000); <span class="cm">/* 包饺子 */</span>
   <span class="chen_kw">await</span> <span class="chen_fn">chenSleep</span>(3000); <span class="cm">/* 吃饺子 */</span>
 }</div>
+                </div>
+                <div>
+                    <p class="chen_code_head">进阶：Promise.race（含超时兜底）</p>
+                    <div class="chen_code_box"><span class="chen_cm">/* 三家店同时下单，谁先送到用谁 */</span>
+<span class="chen_kw">var</span> chenWinner = <span class="chen_kw">await</span> <span class="chen_kw">Promise</span>.<span class="chen_fn">race</span>([
+  <span class="chen_fn">orderFrom</span>(<span class="chen_str">"社区超市"</span>),
+  <span class="chen_fn">orderFrom</span>(<span class="chen_str">"批发市场"</span>),
+  <span class="chen_fn">orderFrom</span>(<span class="chen_str">"网购配送"</span>),
+  <span class="chen_fn">chenSleep</span>(2800).<span class="chen_fn">then</span>(() => <span class="chen_str">"超时"</span>)
+]);
+<span class="chen_cm">/* race 只认第一个完成的，
+   其余结果（哪怕后来也到了）全部忽略 */</span></div>
                 </div>
             </div>
         </section>
@@ -547,6 +623,124 @@
             chenResetSteps();
             chenEl.console.innerHTML = '<span class="chen_c_dim">// 已重置，选择一种写法开始包饺子</span>';
         }
+
+        /* ================= Promise.race：谁先到用谁 ================= */
+        var CHEN_SHOPS = [
+            { key: "shop1", name: "社区超市", min: 1600, max: 3400 },
+            { key: "shop2", name: "批发市场", min: 2400, max: 4600 },
+            { key: "shop3", name: "网购配送", min: 900, max: 5600 }
+        ];
+        var CHEN_RACE_TIMEOUT = 2800;
+        var chenRaceRunning = false;
+        var chenRaceStart = 0;
+
+        function chenRaceStamp() {
+            var chenSec = (performance.now() - chenRaceStart) / 1000;
+            return "[" + chenSec.toFixed(1).padStart(4, "0") + "s]";
+        }
+
+        function chenRenderShops() {
+            var box = document.getElementById("chen_shops");
+            box.innerHTML = "";
+            CHEN_SHOPS.forEach(function (shop) {
+                var card = chenNode("div", "chen_shop");
+                card.id = "chen_shop_" + shop.key;
+                card.appendChild(chenNode("div", "chen_shop_name", shop.name));
+                card.appendChild(chenNode("div", "chen_shop_est",
+                    "耗时随机 " + (shop.min / 1000).toFixed(1) + "~" + (shop.max / 1000).toFixed(1) + " 秒"));
+                card.appendChild(chenNode("div", "chen_shop_state", "待下单"));
+                box.appendChild(card);
+            });
+        }
+
+        function chenMarkShop(key, state) {
+            var card = document.getElementById("chen_shop_" + key);
+            if (!card) return;
+            card.classList.remove("chen_doing");
+            var stateEl = card.querySelector(".chen_shop_state");
+            if (state === "doing") {
+                card.classList.add("chen_doing");
+                stateEl.textContent = "配送中…";
+            } else if (state === "winner") {
+                card.classList.add("chen_winner");
+                stateEl.textContent = "★ 采用这家";
+            } else if (state === "loser") {
+                card.classList.add("chen_loser");
+                stateEl.textContent = "结果被忽略";
+            } else if (state === "arrived") {
+                stateEl.textContent = "已送达";
+            } else if (state === "late") {
+                card.classList.add("chen_late");
+                stateEl.textContent = "后到 · 未采用";
+            } else {
+                stateEl.textContent = "待下单";
+            }
+        }
+
+        function chenStartRace() {
+            if (chenRaceRunning || chenRunning) return;
+            chenRaceRunning = true;
+            document.getElementById("chen_race_start").disabled = true;
+            chenRenderShops();
+            chenRaceStart = performance.now();
+
+            var chenUseTimeout = document.getElementById("chen_race_timeout_check").checked;
+            chenLog('<span class="chen_c_note">▶ Promise.race 开始：三家店同时下单' +
+                (chenUseTimeout ? "，并加入 " + (CHEN_RACE_TIMEOUT / 1000) + " 秒超时兜底" : "") + '</span>');
+
+            /* 记录每家店"送达"的先后，方便把赢家之后才到的标记为落选 */
+            var chenWinnerKey = null;
+            var chenArrived = [];
+
+            function chenMarkArrived(key, name) {
+                chenArrived.push(key);
+                chenMarkShop(key, "arrived");
+                chenLog('<span class="chen_c_ok">✓ 「' + name + '」送达 —— ' + chenRaceStamp() + '</span>');
+            }
+
+            var chenTasks = CHEN_SHOPS.map(function (shop) {
+                var chenMs = shop.min + Math.random() * (shop.max - shop.min);
+                chenMarkShop(shop.key, "doing");
+                return chenSleep(chenMs).then(function () {
+                    if (chenWinnerKey) {
+                        chenMarkShop(shop.key, "late");
+                        chenLog('<span class="chen_c_dim">✗ 「' + shop.name + '」后到，结果被忽略</span>');
+                    } else {
+                        chenMarkArrived(shop.key, shop.name);
+                    }
+                    return shop.key;
+                });
+            });
+
+            if (chenUseTimeout) {
+                chenTasks.push(chenSleep(CHEN_RACE_TIMEOUT).then(function () {
+                    return "__timeout__";
+                }));
+            }
+
+            Promise.race(chenTasks).then(function (chenFirst) {
+                if (chenFirst === "__timeout__") {
+                    chenLog('<span class="chen_c_err">⏰ 超时兜底生效：' +
+                        (CHEN_RACE_TIMEOUT / 1000) + ' 秒内没有任何店铺送达，改用备用方案！</span>');
+                    chenArrived.forEach(function (key) { chenMarkShop(key, "late"); });
+                    chenWinnerKey = "__timeout__";
+                } else {
+                    chenWinnerKey = chenFirst;
+                    var chenWinner = CHEN_SHOPS.filter(function (s) { return s.key === chenFirst; })[0];
+                    chenMarkShop(chenFirst, "winner");
+                    chenArrived.forEach(function (key) {
+                        if (key !== chenFirst) chenMarkShop(key, "loser");
+                    });
+                    chenLog('<span class="chen_c_ok">🏆 Promise.race 选中「' + chenWinner.name +
+                        '」，其余店铺的结果全部忽略</span>');
+                }
+                chenRaceRunning = false;
+                document.getElementById("chen_race_start").disabled = false;
+            });
+        }
+
+        chenRenderShops();
+        document.getElementById("chen_race_start").addEventListener("click", chenStartRace);
 
         /* ================= 绑定与初始化 ================= */
         chenEl.runPromise.addEventListener("click", chenRunWithPromise);
