@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-11-02
+功能名称：包饺子异步流程演示（Promise 链与 async/await 两种写法，setTimeout 模拟各步骤耗时）
+    -->
+    <title>17-6 包饺子 · 异步流程演示</title>
+    <link rel="stylesheet" href="font/font_5244855_fm8s0yq40te/iconfont.css">
+    <style>
+        :root {
+            --chen_bg: #eef2ff;
+            --chen_surface: #ffffff;
+            --chen_text: #1e293b;
+            --chen_text_soft: #475569;
+            --chen_muted: #64748b;
+            --chen_primary: #4f46e5;
+            --chen_primary_soft: #e0e7ff;
+            --chen_border: #dbe3f2;
+            --chen_danger: #dc2626;
+            --chen_ok: #059669;
+            --chen_warn: #d97706;
+            --chen_radius: 14px;
+            --chen_shadow: 0 18px 45px -28px rgba(30, 64, 175, 0.55);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(99, 102, 241, 0.16), transparent 32rem),
+                radial-gradient(circle at 90% 10%, rgba(217, 119, 6, 0.13), transparent 28rem),
+                var(--chen_bg);
+            color: var(--chen_text);
+            line-height: 1.65;
+            min-height: 100vh;
+        }
+
+        .chen_page { max-width: 1080px; margin: 0 auto; padding: 32px 22px 40px; }
+
+        /* ---------- 头部 ---------- */
+        .chen_header {
+            background: linear-gradient(135deg, #d97706, #ef4444 55%, #4f46e5);
+            color: #fff;
+            border-radius: var(--chen_radius);
+            padding: 24px 28px;
+            box-shadow: var(--chen_shadow);
+        }
+        .chen_header h1 { font-size: 22px; letter-spacing: .5px; }
+        .chen_header p { font-size: 13.5px; opacity: .94; margin-top: 3px; }
+        .chen_header code { font-family: Consolas, monospace; background: rgba(255,255,255,.16); padding: 1px 6px; border-radius: 5px; }
+
+        /* ---------- 卡片 ---------- */
+        .chen_card {
+            background: var(--chen_surface);
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            box-shadow: var(--chen_shadow);
+            padding: 20px 24px;
+            margin-top: 18px;
+        }
+        .chen_card_title {
+            font-size: 16px; color: var(--chen_primary);
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .chen_card_title code {
+            font-family: Consolas, monospace;
+            background: var(--chen_primary_soft);
+            padding: 1px 8px; border-radius: 6px;
+        }
+        .chen_card_note { font-size: 12.5px; color: var(--chen_muted); margin-bottom: 14px; }
+
+        /* ---------- 控制区 ---------- */
+        .chen_controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .chen_btn {
+            padding: 9px 18px;
+            border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #4f46e5, #6d28d9);
+            color: #fff;
+            font-size: 14px; font-weight: 600; font-family: inherit;
+            cursor: pointer;
+            display: inline-flex; align-items: center; gap: 7px;
+            transition: transform .15s, box-shadow .15s, opacity .15s;
+        }
+        .chen_btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 22px -10px rgba(79,70,229,.7); }
+        .chen_btn:disabled { opacity: .45; cursor: not-allowed; }
+        .chen_btn.chen_ghost {
+            background: #fff; color: var(--chen_primary);
+            border: 1px solid #c7d2fe;
+        }
+        .chen_btn.chen_ghost:hover:not(:disabled) { background: var(--chen_primary_soft); }
+        .chen_btn.chen_amber {
+            background: linear-gradient(135deg, #d97706, #b45309);
+        }
+        .chen_mode_pill {
+            margin-left: auto;
+            font-size: 12.5px;
+            font-family: Consolas, monospace;
+            padding: 4px 14px;
+            border-radius: 999px;
+            background: #f1f5f9; color: var(--chen_muted);
+        }
+        .chen_mode_pill.chen_running { background: #fef3c7; color: var(--chen_warn); font-weight: 700; }
+        .chen_mode_pill.chen_done { background: #d1fae5; color: var(--chen_ok); font-weight: 700; }
+
+        /* ---------- 流程图 ---------- */
+        .chen_flow {
+            display: flex; align-items: stretch; gap: 10px;
+            margin-top: 6px;
+            overflow-x: auto;
+            padding: 6px 2px 10px;
+        }
+        .chen_arrow {
+            flex: none;
+            display: flex; align-items: center;
+            color: #a5b4fc; font-size: 22px; font-weight: 700;
+        }
+        .chen_step {
+            flex: 1 1 128px;
+            min-width: 118px;
+            background: #f8faff;
+            border: 1.5px solid var(--chen_border);
+            border-radius: 12px;
+            padding: 12px 12px 10px;
+            text-align: center;
+            position: relative;
+            transition: transform .2s, border-color .25s, box-shadow .25s, background .25s;
+        }
+        .chen_step_icon {
+            width: 44px; height: 44px;
+            margin: 0 auto 6px;
+            border-radius: 12px;
+            background: #eef2ff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 21px; color: #94a3b8;
+            transition: background .25s, color .25s;
+        }
+        .chen_step_name { font-size: 14px; font-weight: 700; color: var(--chen_text_soft); }
+        .chen_step_time { font-size: 11.5px; color: var(--chen_muted); font-family: Consolas, monospace; }
+        .chen_step_state {
+            display: inline-block;
+            margin-top: 6px;
+            font-size: 11.5px;
+            padding: 1px 10px;
+            border-radius: 999px;
+            background: #f1f5f9; color: var(--chen_muted);
+            transition: background .25s, color .25s;
+        }
+        .chen_step.chen_doing {
+            border-color: var(--chen_warn);
+            background: #fffbeb;
+            transform: translateY(-3px);
+            box-shadow: 0 14px 26px -18px rgba(217, 119, 6, .8);
+        }
+        .chen_step.chen_doing .chen_step_icon { background: #fef3c7; color: var(--chen_warn); animation: chen_wobble 1s ease infinite; }
+        .chen_step.chen_doing .chen_step_state { background: #fde68a; color: #92400e; }
+        .chen_step.chen_done { border-color: #6ee7b7; background: #f0fdf9; }
+        .chen_step.chen_done .chen_step_icon { background: #d1fae5; color: var(--chen_ok); }
+        .chen_step.chen_done .chen_step_state { background: #d1fae5; color: var(--chen_ok); }
+        @keyframes chen_wobble {
+            0%, 100% { transform: rotate(0); }
+            25% { transform: rotate(-8deg); }
+            75% { transform: rotate(8deg); }
+        }
+
+        /* 并行块 */
+        .chen_parallel {
+            flex: 1.6 1 220px;
+            border: 1.5px dashed #c7d2fe;
+            border-radius: 12px;
+            padding: 8px;
+            display: flex; flex-direction: column; gap: 8px;
+            transition: border-color .25s;
+        }
+        .chen_parallel.chen_doing { border-color: var(--chen_warn); }
+        .chen_parallel_label {
+            font-size: 11.5px;
+            font-family: Consolas, monospace;
+            color: var(--chen_primary);
+            text-align: center;
+        }
+        .chen_parallel_inner { display: flex; gap: 8px; }
+        .chen_parallel_inner .chen_step { flex: 1; }
+
+        /* ---------- 总耗时 ---------- */
+        .chen_total_row {
+            display: flex; align-items: baseline; gap: 10px;
+            justify-content: center;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .chen_total_label { font-size: 13px; color: var(--chen_muted); }
+        .chen_total_time {
+            font-family: Consolas, monospace;
+            font-size: 26px; font-weight: 700;
+            color: var(--chen_primary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ---------- 控制台 ---------- */
+        .chen_console {
+            background: #1e1b4b;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 13.5px;
+            color: #c7d2fe;
+            min-height: 200px;
+            max-height: 300px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .chen_console .chen_c_code { color: #fef08a; }
+        .chen_console .chen_c_ok { color: #6ee7b7; }
+        .chen_console .chen_c_dim { color: #818cf8; }
+        .chen_console .chen_c_note { color: #f0abfc; }
+        .chen_console div { margin: 2px 0; }
+
+        /* ---------- 代码对比 ---------- */
+        .chen_code_two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media (max-width: 860px) { .chen_code_two { grid-template-columns: 1fr; } }
+        .chen_code_box {
+            border-radius: 12px;
+            background: #1e1b4b;
+            color: #e0e7ff;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 12.5px;
+            line-height: 1.65;
+            padding: 14px 16px;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .chen_code_head { font-size: 12.5px; color: var(--chen_muted); margin-bottom: 6px; font-family: inherit; }
+        .chen_code_box .chen_kw { color: #f0abfc; }
+        .chen_code_box .chen_fn { color: #93c5fd; }
+        .chen_code_box .chen_str { color: #6ee7b7; }
+        .chen_code_box .chen_cm { color: #818cf8; }
+
+        /* ---------- 页脚 ---------- */
+        .chen_footer {
+            margin-top: 28px; text-align: center;
+            color: var(--chen_muted); font-size: 13px;
+            padding: 14px 0 4px;
+            border-top: 1px solid var(--chen_border);
+        }
+    </style>
+</head>
+<body>
+    <div class="chen_page">
+        <header class="chen_header">
+            <h1>包饺子 · 异步流程演示</h1>
+            <p>买原料 → 取原料 → <b>同时</b>和面、和馅 → 包饺子 → 吃饺子；每一步用 <code>setTimeout</code> 模拟耗时</p>
+        </header>
+
+        <!-- 控制区 -->
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-shezhi"></span>开始包饺子</h2>
+            <p class="chen_card_note">同一套流程提供两种写法：<b>Promise 链</b>用 <code>.then()</code> 串联，<b>async/await</b> 用 <code>await</code> 顺序书写；并行步骤都用 <code>Promise.all</code>。选择一种运行，观察流程图与日志。</p>
+
+            <div class="chen_controls">
+                <button class="chen_btn" id="chen_run_promise" type="button">
+                    <span class="iconfont icon-fenxiang"></span>用 Promise 链执行
+                </button>
+                <button class="chen_btn chen_amber" id="chen_run_async" type="button">
+                    <span class="iconfont icon-chenggong"></span>用 async/await 执行
+                </button>
+                <button class="chen_btn chen_ghost" id="chen_reset" type="button" disabled>重置</button>
+                <span class="chen_mode_pill" id="chen_mode_pill">尚未开始</span>
+            </div>
+
+            <!-- 流程图 -->
+            <div class="chen_flow">
+                <div class="chen_step" id="chen_step_buy">
+                    <div class="chen_step_icon"><span class="iconfont icon-qianbao"></span></div>
+                    <div class="chen_step_name">买原料</div>
+                    <div class="chen_step_time">约 6 秒</div>
+                    <div class="chen_step_state">等待中</div>
+                </div>
+                <div class="chen_arrow">›</div>
+                <div class="chen_step" id="chen_step_take">
+                    <div class="chen_step_icon"><span class="iconfont icon-dingwei"></span></div>
+                    <div class="chen_step_name">取原料</div>
+                    <div class="chen_step_time">约 2 秒</div>
+                    <div class="chen_step_state">等待中</div>
+                </div>
+                <div class="chen_arrow">›</div>
+                <div class="chen_parallel" id="chen_parallel_box">
+                    <div class="chen_parallel_label">Promise.all 同时进行</div>
+                    <div class="chen_parallel_inner">
+                        <div class="chen_step" id="chen_step_dough">
+                            <div class="chen_step_icon"><span class="iconfont icon-shezhi"></span></div>
+                            <div class="chen_step_name">和面</div>
+                            <div class="chen_step_time">约 4 秒</div>
+                            <div class="chen_step_state">等待中</div>
+                        </div>
+                        <div class="chen_step" id="chen_step_filling">
+                            <div class="chen_step_icon"><span class="iconfont icon-shoucang"></span></div>
+                            <div class="chen_step_name">和馅</div>
+                            <div class="chen_step_time">约 3 秒</div>
+                            <div class="chen_step_state">等待中</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chen_arrow">›</div>
+                <div class="chen_step" id="chen_step_wrap">
+                    <div class="chen_step_icon"><span class="iconfont icon-bianji"></span></div>
+                    <div class="chen_step_name">包饺子</div>
+                    <div class="chen_step_time">约 5 秒</div>
+                    <div class="chen_step_state">等待中</div>
+                </div>
+                <div class="chen_arrow">›</div>
+                <div class="chen_step" id="chen_step_eat">
+                    <div class="chen_step_icon"><span class="iconfont icon-chenggong"></span></div>
+                    <div class="chen_step_name">吃饺子</div>
+                    <div class="chen_step_time">约 3 秒</div>
+                    <div class="chen_step_state">等待中</div>
+                </div>
+            </div>
+
+            <div class="chen_total_row">
+                <span class="chen_total_label">总耗时（并行步骤只计最长的一段）：</span>
+                <span class="chen_total_time" id="chen_total_time">0.0s</span>
+            </div>
+        </section>
+
+        <!-- 日志 -->
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-xiaoxi"></span>流程日志</h2>
+            <div class="chen_console" id="chen_console"><span class="chen_c_dim">// 选择一种写法开始，每一步的开始与完成都会记录在这里</span></div>
+        </section>
+
+        <!-- 代码对比 -->
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-bianji"></span>两种写法核心代码</h2>
+            <div class="chen_code_two">
+                <div>
+                    <p class="chen_code_head">写法一：Promise 链</p>
+                    <div class="chen_code_box"><span class="chen_fn">chenSleep</span>(6000)
+  .<span class="chen_fn">then</span>(() => { <span class="cm">/* 买原料完成 */</span> })
+  .<span class="chen_fn">then</span>(() => <span class="chen_fn">chenSleep</span>(2000)) <span class="cm">/* 取原料 */</span>
+  .<span class="chen_fn">then</span>(() => <span class="chen_kw">Promise</span>.<span class="chen_fn">all</span>([
+      <span class="chen_fn">chenSleep</span>(4000), <span class="cm">/* 和面 */</span>
+      <span class="chen_fn">chenSleep</span>(3000)  <span class="cm">/* 和馅 */</span>
+  ]))
+  .<span class="chen_fn">then</span>(() => <span class="chen_fn">chenSleep</span>(5000)) <span class="cm">/* 包饺子 */</span>
+  .<span class="chen_fn">then</span>(() => <span class="chen_fn">chenSleep</span>(3000)); <span class="cm">/* 吃饺子 */</span></div>
+                </div>
+                <div>
+                    <p class="chen_code_head">写法二：async/await</p>
+                    <div class="chen_code_box"><span class="chen_kw">async function</span> <span class="chen_fn">makeDumplings</span>() {
+  <span class="chen_kw">await</span> <span class="chen_fn">chenSleep</span>(6000); <span class="cm">/* 买原料 */</span>
+  <span class="chen_kw">await</span> <span class="chen_fn">chenSleep</span>(2000); <span class="cm">/* 取原料 */</span>
+  <span class="chen_kw">await</span> <span class="chen_kw">Promise</span>.<span class="chen_fn">all</span>([
+    <span class="chen_fn">chenSleep</span>(4000), <span class="cm">/* 和面 */</span>
+    <span class="chen_fn">chenSleep</span>(3000)  <span class="cm">/* 和馅 */</span>
+  ]);
+  <span class="chen_kw">await</span> <span class="chen_fn">chenSleep</span>(5000); <span class="cm">/* 包饺子 */</span>
+  <span class="chen_kw">await</span> <span class="chen_fn">chenSleep</span>(3000); <span class="cm">/* 吃饺子 */</span>
+}</div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="chen_footer">学号 24001010722 &nbsp;|&nbsp; 姓名 陈弘毅</footer>
+    </div>
+
+    <script>
+        "use strict";
+
+        /* ================= 步骤定义（setTimeout 模拟耗时） ================= */
+        var CHEN_STEPS = {
+            buy:     { name: "买原料", ms: 6000 },
+            take:    { name: "取原料", ms: 2000 },
+            dough:   { name: "和面",   ms: 4000 },
+            filling: { name: "和馅",   ms: 3000 },
+            wrap:    { name: "包饺子", ms: 5000 },
+            eat:     { name: "吃饺子", ms: 3000 }
+        };
+
+        var chenEl = {
+            runPromise: document.getElementById("chen_run_promise"),
+            runAsync: document.getElementById("chen_run_async"),
+            reset: document.getElementById("chen_reset"),
+            modePill: document.getElementById("chen_mode_pill"),
+            parallelBox: document.getElementById("chen_parallel_box"),
+            totalTime: document.getElementById("chen_total_time"),
+            console: document.getElementById("chen_console")
+        };
+
+        var chenRunning = false;
+        var chenTotalTimer = null;
+        var chenStartStamp = 0;
+
+        /* ================= 工具 ================= */
+        /* 核心：用 setTimeout 把耗时操作包装成 Promise */
+        function chenSleep(ms) {
+            return new Promise(function (resolve) {
+                setTimeout(resolve, ms);
+            });
+        }
+
+        function chenNowStamp() {
+            var chenSec = (performance.now() - chenStartStamp) / 1000;
+            return "[" + chenSec.toFixed(1).padStart(4, "0") + "s]";
+        }
+
+        function chenLog(html) {
+            var line = chenNode("div", "", "");
+            line.innerHTML = chenNowStamp() + " " + html;
+            chenEl.console.appendChild(line);
+            chenEl.console.scrollTop = chenEl.console.scrollHeight;
+        }
+
+        function chenNode(tag, className, text) {
+            var el = document.createElement(tag);
+            if (className) el.className = className;
+            if (text) el.textContent = text;
+            return el;
+        }
+
+        /* 步骤状态：idle / doing / done */
+        function chenSetStep(key, state) {
+            var box = document.getElementById("chen_step_" + key);
+            box.classList.remove("chen_doing", "chen_done");
+            var stateEl = box.querySelector(".chen_step_state");
+            var step = CHEN_STEPS[key];
+            if (state === "doing") {
+                box.classList.add("chen_doing");
+                stateEl.textContent = "进行中…";
+            } else if (state === "done") {
+                box.classList.add("chen_done");
+                stateEl.textContent = "✓ 完成";
+            } else {
+                stateEl.textContent = "等待中";
+            }
+            if (key === "dough" || key === "filling") {
+                var chenDoing = document.getElementById("chen_step_dough").classList.contains("chen_doing");
+                var chenFilling = document.getElementById("chen_step_filling").classList.contains("chen_doing");
+                chenEl.parallelBox.classList.toggle("chen_doing", chenDoing && chenFilling);
+            }
+        }
+
+        function chenResetSteps() {
+            Object.keys(CHEN_STEPS).forEach(function (key) {
+                chenSetStep(key, "idle");
+            });
+            chenEl.modePill.className = "chen_mode_pill";
+            chenEl.modePill.textContent = "尚未开始";
+            chenEl.totalTime.textContent = "0.0s";
+        }
+
+        /* 一个步骤：开始 → 等 ms → 完成 */
+        function chenDoStep(key) {
+            var step = CHEN_STEPS[key];
+            chenSetStep(key, "doing");
+            chenLog('<span class="chen_c_code">开始「' + step.name + '」（预计 ' + (step.ms / 1000) + ' 秒）…</span>');
+            return chenSleep(step.ms).then(function () {
+                chenSetStep(key, "done");
+                chenLog('<span class="chen_c_ok">✓ 「' + step.name + '」完成</span>');
+            });
+        }
+
+        function chenStartTotalTimer() {
+            chenStartStamp = performance.now();
+            chenTotalTimer = setInterval(function () {
+                chenEl.totalTime.textContent = ((performance.now() - chenStartStamp) / 1000).toFixed(1) + "s";
+            }, 100);
+        }
+
+        function chenStopTotalTimer() {
+            clearInterval(chenTotalTimer);
+            var chenSec = (performance.now() - chenStartStamp) / 1000;
+            chenEl.totalTime.textContent = chenSec.toFixed(1) + "s";
+            return chenSec;
+        }
+
+        function chenSetRunning(running, modeText, doneText) {
+            chenRunning = running;
+            chenEl.runPromise.disabled = running;
+            chenEl.runAsync.disabled = running;
+            chenEl.reset.disabled = running;
+            chenEl.modePill.className = "chen_mode_pill " + (running ? "chen_running" : "chen_done");
+            chenEl.modePill.textContent = running ? modeText : doneText;
+        }
+
+        /* ================= 写法一：Promise 链 ================= */
+        function chenRunWithPromise() {
+            if (chenRunning) return;
+            chenResetSteps();
+            chenEl.console.innerHTML = "";
+            chenStartTotalTimer();
+            chenSetRunning(true, "运行中 · Promise 链");
+
+            chenLog('<span class="chen_c_note">▶ 采用写法一：Promise 链（.then 一层层往下接）</span>');
+
+            chenDoStep("buy")
+                .then(function () { return chenDoStep("take"); })
+                .then(function () {
+                    chenLog('<span class="chen_c_dim">原料齐了，和面、和馅同时开工（Promise.all）…</span>');
+                    return Promise.all([chenDoStep("dough"), chenDoStep("filling")]);
+                })
+                .then(function () { return chenDoStep("wrap"); })
+                .then(function () { return chenDoStep("eat"); })
+                .then(function () {
+                    var chenSec = chenStopTotalTimer();
+                    chenLog('<span class="chen_c_ok">🎉 全部完成！Promise 链总耗时 ' + chenSec.toFixed(1) + ' 秒</span>');
+                    chenSetRunning(false, "", "Promise 链 · 已完成");
+                });
+        }
+
+        /* ================= 写法二：async/await ================= */
+        async function chenRunWithAsync() {
+            if (chenRunning) return;
+            chenResetSteps();
+            chenEl.console.innerHTML = "";
+            chenStartTotalTimer();
+            chenSetRunning(true, "运行中 · async/await");
+
+            chenLog('<span class="chen_c_note">▶ 采用写法二：async/await（像同步代码一样顺序书写）</span>');
+
+            await chenDoStep("buy");   /* 买原料 6s */
+            await chenDoStep("take");  /* 取原料 2s */
+
+            chenLog('<span class="chen_c_dim">原料齐了，和面、和馅同时开工（await Promise.all）…</span>');
+            await Promise.all([
+                chenDoStep("dough"),   /* 和面 4s */
+                chenDoStep("filling")  /* 和馅 3s */
+            ]);
+
+            await chenDoStep("wrap");  /* 包饺子 5s */
+            await chenDoStep("eat");   /* 吃饺子 3s */
+
+            var chenSec = chenStopTotalTimer();
+            chenLog('<span class="chen_c_ok">🎉 全部完成！async/await 总耗时 ' + chenSec.toFixed(1) + ' 秒</span>');
+            chenSetRunning(false, "", "async/await · 已完成");
+        }
+
+        /* ================= 重置 ================= */
+        function chenResetAll() {
+            if (chenRunning) return;
+            chenResetSteps();
+            chenEl.console.innerHTML = '<span class="chen_c_dim">// 已重置，选择一种写法开始包饺子</span>';
+        }
+
+        /* ================= 绑定与初始化 ================= */
+        chenEl.runPromise.addEventListener("click", chenRunWithPromise);
+        chenEl.runAsync.addEventListener("click", chenRunWithAsync);
+        chenEl.reset.addEventListener("click", chenResetAll);
+    </script>
+</body>
+</html>

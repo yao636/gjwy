@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-11-02
+功能名称：JavaScript 两种定时器演示（setTimeout 一次性 / setInterval 周期性，含清除、事件循环顺序实验）
+    -->
+    <title>17-5 JavaScript 定时器演示</title>
+    <link rel="stylesheet" href="font/font_5244855_fm8s0yq40te/iconfont.css">
+    <style>
+        :root {
+            --chen_bg: #eef2ff;
+            --chen_surface: #ffffff;
+            --chen_text: #1e293b;
+            --chen_text_soft: #475569;
+            --chen_muted: #64748b;
+            --chen_primary: #4f46e5;
+            --chen_primary_soft: #e0e7ff;
+            --chen_border: #dbe3f2;
+            --chen_danger: #dc2626;
+            --chen_ok: #059669;
+            --chen_warn: #d97706;
+            --chen_radius: 14px;
+            --chen_shadow: 0 18px 45px -28px rgba(30, 64, 175, 0.55);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(99, 102, 241, 0.16), transparent 32rem),
+                radial-gradient(circle at 90% 10%, rgba(217, 119, 6, 0.13), transparent 28rem),
+                var(--chen_bg);
+            color: var(--chen_text);
+            line-height: 1.65;
+            min-height: 100vh;
+        }
+
+        .chen_page { max-width: 1140px; margin: 0 auto; padding: 32px 22px 40px; }
+
+        /* ---------- 头部 ---------- */
+        .chen_header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed 55%, #d97706);
+            color: #fff;
+            border-radius: var(--chen_radius);
+            padding: 24px 28px;
+            box-shadow: var(--chen_shadow);
+        }
+        .chen_header h1 { font-size: 22px; letter-spacing: .5px; }
+        .chen_header p { font-size: 13.5px; opacity: .92; margin-top: 3px; }
+        .chen_header code { font-family: Consolas, monospace; background: rgba(255,255,255,.16); padding: 1px 6px; border-radius: 5px; }
+
+        /* ---------- 卡片 ---------- */
+        .chen_card {
+            background: var(--chen_surface);
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            box-shadow: var(--chen_shadow);
+            padding: 20px 24px;
+            margin-top: 18px;
+        }
+        .chen_card_title {
+            font-size: 16px; color: var(--chen_primary);
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 4px;
+        }
+        .chen_card_title code {
+            font-family: Consolas, monospace;
+            background: var(--chen_primary_soft);
+            padding: 1px 8px; border-radius: 6px;
+        }
+        .chen_card_note { font-size: 12.5px; color: var(--chen_muted); margin-bottom: 14px; }
+
+        /* ---------- 双栏 ---------- */
+        .chen_two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        @media (max-width: 860px) { .chen_two { grid-template-columns: 1fr; } }
+
+        /* ---------- 按钮 ---------- */
+        .chen_btn {
+            padding: 9px 18px;
+            border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #4f46e5, #6d28d9);
+            color: #fff;
+            font-size: 14px; font-weight: 600; font-family: inherit;
+            cursor: pointer;
+            display: inline-flex; align-items: center; gap: 7px;
+            transition: transform .15s, box-shadow .15s, opacity .15s;
+        }
+        .chen_btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 22px -10px rgba(79,70,229,.7); }
+        .chen_btn:disabled { opacity: .5; cursor: not-allowed; }
+        .chen_btn.chen_ghost {
+            background: #fff; color: var(--chen_primary);
+            border: 1px solid #c7d2fe;
+        }
+        .chen_btn.chen_ghost:hover:not(:disabled) { background: var(--chen_primary_soft); }
+        .chen_btn.chen_danger_btn {
+            background: #fff; color: var(--chen_danger);
+            border: 1px solid #fecaca;
+        }
+        .chen_btn.chen_danger_btn:hover:not(:disabled) { background: #fef2f2; }
+        .chen_btn_row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+
+        /* ---------- 状态条 ---------- */
+        .chen_status {
+            display: flex; align-items: center; gap: 8px;
+            background: #f8faff;
+            border: 1px solid var(--chen_border);
+            border-radius: 10px;
+            padding: 9px 14px;
+            font-size: 13.5px;
+            font-family: Consolas, monospace;
+            min-height: 42px;
+            word-break: break-all;
+        }
+        .chen_status .chen_dot_icon {
+            width: 9px; height: 9px; border-radius: 50%;
+            background: #cbd5e1; flex: none;
+            transition: background .2s;
+        }
+        .chen_status.chen_waiting .chen_dot_icon { background: var(--chen_warn); animation: chen_blink 1s ease infinite; }
+        .chen_status.chen_done .chen_dot_icon { background: var(--chen_ok); }
+        .chen_status.chen_stopped .chen_dot_icon { background: var(--chen_danger); }
+        @keyframes chen_blink { 50% { opacity: .3; } }
+
+        /* ---------- setTimeout 演示 ---------- */
+        .chen_progress_track {
+            height: 10px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+        .chen_progress_bar {
+            height: 100%; width: 0;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #4f46e5, #d97706);
+        }
+        .chen_progress_bar.chen_run { animation: chen_fill 3s linear forwards; }
+        @keyframes chen_fill { to { width: 100%; } }
+
+        /* ---------- 秒表 ---------- */
+        .chen_clock {
+            font-family: Consolas, monospace;
+            font-size: 44px;
+            font-weight: 700;
+            color: var(--chen_primary);
+            text-align: center;
+            padding: 14px 0 6px;
+            letter-spacing: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+        .chen_clock small { font-size: 18px; color: var(--chen_muted); font-weight: 400; }
+
+        /* ---------- 控制台 ---------- */
+        .chen_console {
+            background: #1e1b4b;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 13.5px;
+            color: #c7d2fe;
+            min-height: 120px;
+            max-height: 220px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .chen_console .chen_c_code { color: #fef08a; }
+        .chen_console .chen_c_ok { color: #6ee7b7; }
+        .chen_console .chen_c_err { color: #fca5a5; }
+        .chen_console .chen_c_dim { color: #818cf8; }
+        .chen_console .chen_c_note { color: #f0abfc; }
+        .chen_console div { margin: 2px 0; }
+
+        /* ---------- 执行顺序按钮排 ---------- */
+        .chen_order_lines { margin-top: 10px; }
+        .chen_order_line {
+            display: flex; align-items: center; gap: 8px;
+            font-family: Consolas, monospace; font-size: 13.5px;
+            padding: 7px 12px;
+            border-radius: 9px;
+            margin: 4px 0;
+            background: #f8faff;
+            border: 1px solid var(--chen_border);
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity .3s, transform .3s;
+        }
+        .chen_order_line.chen_show { opacity: 1; transform: none; }
+        .chen_order_line b { color: var(--chen_primary); }
+
+        /* ---------- 表格 ---------- */
+        .chen_table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        .chen_table th, .chen_table td {
+            border: 1px solid var(--chen_border);
+            padding: 9px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+        .chen_table th { background: var(--chen_primary_soft); color: var(--chen_primary); }
+        .chen_table code { font-family: Consolas, monospace; background: #f1f5f9; padding: 1px 5px; border-radius: 4px; }
+
+        /* ---------- 知识卡 ---------- */
+        .chen_tips { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+        .chen_tip {
+            background: #f8faff;
+            border: 1px solid var(--chen_border);
+            border-radius: 12px;
+            padding: 13px 15px;
+        }
+        .chen_tip h4 {
+            font-size: 14px; display: flex; align-items: center; gap: 7px;
+            margin-bottom: 4px;
+        }
+        .chen_tip h4 .iconfont { color: var(--chen_warn); }
+        .chen_tip p { font-size: 12.5px; color: var(--chen_text_soft); }
+        .chen_tip code { font-family: Consolas, monospace; background: var(--chen_primary_soft); color: var(--chen_primary); padding: 0 5px; border-radius: 4px; }
+
+        /* ---------- 弹出提醒 ---------- */
+        .chen_toast {
+            position: fixed;
+            top: 24px; right: 24px;
+            background: #1e1b4b;
+            color: #fff;
+            padding: 14px 20px;
+            border-radius: 12px;
+            box-shadow: 0 20px 45px -20px rgba(15, 23, 42, .8);
+            display: flex; align-items: center; gap: 10px;
+            font-size: 14px;
+            z-index: 100;
+            transform: translateX(120%);
+            transition: transform .35s cubic-bezier(.34,1.4,.64,1);
+        }
+        .chen_toast.chen_show { transform: none; }
+        .chen_toast .iconfont { color: #fbbf24; font-size: 19px; }
+
+        /* ---------- 页脚 ---------- */
+        .chen_footer {
+            margin-top: 28px; text-align: center;
+            color: var(--chen_muted); font-size: 13px;
+            padding: 14px 0 4px;
+            border-top: 1px solid var(--chen_border);
+        }
+    </style>
+</head>
+<body>
+    <div class="chen_page">
+        <header class="chen_header">
+            <h1>JavaScript 两种定时器演示</h1>
+            <p><code>setTimeout</code>（到点执行一次）与 <code>setInterval</code>（每隔一段时间反复执行），以及对应的清除方法</p>
+        </header>
+
+        <!-- setTimeout -->
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-rili"></span>一次性定时器 <code>setTimeout</code></h2>
+            <p class="chen_card_note">3 秒后触发一次提醒；触发前可随时用 <b>clearTimeout</b> 取消。定时器返回一个编号（id），取消时就是用它。</p>
+
+            <div class="chen_status" id="chen_one_status">
+                <span class="chen_dot_icon"></span>
+                <span id="chen_one_text">空闲中，还没有定时器</span>
+            </div>
+            <div class="chen_progress_track"><div class="chen_progress_bar" id="chen_one_bar"></div></div>
+
+            <div class="chen_btn_row">
+                <button class="chen_btn" id="chen_one_start" type="button">启动 3 秒提醒</button>
+                <button class="chen_btn chen_danger_btn" id="chen_one_cancel" type="button" disabled>clearTimeout 取消</button>
+            </div>
+        </section>
+
+        <!-- setInterval -->
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-jiazaixiao"></span>周期性定时器 <code>setInterval</code></h2>
+            <p class="chen_card_note">每 100 毫秒刷新一次秒表，直到调用 <b>clearInterval</b> 才会停止。</p>
+
+            <div class="chen_clock"><span id="chen_clock_num">0.0</span><small> 秒</small></div>
+
+            <div class="chen_status" id="chen_tick_status">
+                <span class="chen_dot_icon"></span>
+                <span id="chen_tick_text">秒表未启动</span>
+            </div>
+
+            <div class="chen_btn_row">
+                <button class="chen_btn" id="chen_tick_start" type="button">启动秒表</button>
+                <button class="chen_btn chen_danger_btn" id="chen_tick_stop" type="button" disabled>clearInterval 暂停</button>
+                <button class="chen_btn chen_ghost" id="chen_tick_reset" type="button" disabled>清零</button>
+            </div>
+        </section>
+
+        <!-- 事件循环顺序 -->
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-sousuo"></span>实验：<code>setTimeout(fn, 0)</code> 真的立即执行吗？</h2>
+            <p class="chen_card_note">点击按钮，观察三行输出出现的先后顺序 —— 定时器回调永远要等同步代码和微任务都跑完。</p>
+
+            <div class="chen_btn_row" style="margin-top:0;">
+                <button class="chen_btn" id="chen_order_btn" type="button">运行顺序实验</button>
+            </div>
+            <div class="chen_order_lines" id="chen_order_lines"></div>
+            <div class="chen_console" id="chen_order_console"><span class="chen_c_dim">// 点击上方按钮，实际输出顺序会打印在这里</span></div>
+        </section>
+
+        <!-- 对比表 -->
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-dingdan"></span>两种定时器对比</h2>
+            <table class="chen_table">
+                <thead>
+                    <tr><th>对比项</th><th>setTimeout</th><th>setInterval</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>执行次数</td><td>延迟到期后执行 <b>1 次</b></td><td>每隔指定毫秒执行，直到清除</td></tr>
+                    <tr><td>清除方法</td><td><code>clearTimeout(id)</code></td><td><code>clearInterval(id)</code></td></tr>
+                    <tr><td>返回值</td><td colspan="2">都是数字编号 id（在浏览器里两套编号互相混用也能清除）</td></tr>
+                    <tr><td>典型用途</td><td>延迟提示、防抖、动画补帧</td><td>秒表、轮播图、倒计时、轮询</td></tr>
+                    <tr><td>常见坑</td><td>到点后若主线程忙碌，会顺延执行，不保证精确</td><td>回调耗时会堆积；建议用“链式 setTimeout”代替</td></tr>
+                </tbody>
+            </table>
+
+            <div class="chen_tips" style="margin-top:14px;">
+                <div class="chen_tip">
+                    <h4><span class="iconfont icon-jinggao"></span>id 一定要保存</h4>
+                    <p>想取消定时器，必须在启动时把返回值存下来：<code>chenId = setTimeout(...)</code>，否则无法停止。</p>
+                </div>
+                <div class="chen_tip">
+                    <h4><span class="iconfont icon-jinggao"></span>切换页面前记得清除</h4>
+                    <p>单页应用销毁页面组件时，若不清除 <code>setInterval</code>，回调会一直空跑造成内存泄漏。</p>
+                </div>
+                <div class="chen_tip">
+                    <h4><span class="iconfont icon-jinggao"></span>周期任务推荐写法</h4>
+                    <p>回调结束后再安排下一次：<code>function loop(){ 工作(); setTimeout(loop, 1000); }</code> 可避免任务堆积。</p>
+                </div>
+                <div class="chen_tip">
+                    <h4><span class="iconfont icon-jinggao"></span>最小间隔 4ms</h4>
+                    <p>规范规定嵌套 5 层以上的 <code>setTimeout</code> 最小间隔被强制为 4ms，写 0 也做不到真正“立即”。</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="chen_footer">学号 24001010722 &nbsp;|&nbsp; 姓名 陈弘毅</footer>
+    </div>
+
+    <!-- 触发提醒 -->
+    <div class="chen_toast" id="chen_toast">
+        <span class="iconfont icon-chenggong"></span>
+        <span id="chen_toast_text"></span>
+    </div>
+
+    <script>
+        "use strict";
+
+        var chenEl = {
+            oneStatus: document.getElementById("chen_one_status"),
+            oneText: document.getElementById("chen_one_text"),
+            oneBar: document.getElementById("chen_one_bar"),
+            oneStart: document.getElementById("chen_one_start"),
+            oneCancel: document.getElementById("chen_one_cancel"),
+            tickStatus: document.getElementById("chen_tick_status"),
+            tickText: document.getElementById("chen_tick_text"),
+            tickStart: document.getElementById("chen_tick_start"),
+            tickStop: document.getElementById("chen_tick_stop"),
+            tickReset: document.getElementById("chen_tick_reset"),
+            clockNum: document.getElementById("chen_clock_num"),
+            orderBtn: document.getElementById("chen_order_btn"),
+            orderLines: document.getElementById("chen_order_lines"),
+            orderConsole: document.getElementById("chen_order_console"),
+            toast: document.getElementById("chen_toast"),
+            toastText: document.getElementById("chen_toast_text")
+        };
+
+        /* ================= 工具 ================= */
+        function chenLog(id, html) {
+            document.getElementById(id).innerHTML = html;
+        }
+
+        function chenShowToast(text) {
+            chenEl.toastText.textContent = text;
+            chenEl.toast.classList.add("chen_show");
+            setTimeout(function () {
+                chenEl.toast.classList.remove("chen_show");
+            }, 2600);
+        }
+
+        function chenNow() {
+            return new Date().toLocaleTimeString("zh-CN", { hour12: false });
+        }
+
+        /* ================= 一、setTimeout ================= */
+        var chenOneTimerId = null;
+
+        function chenSetOneStatus(mode, text) {
+            chenEl.oneStatus.className = "chen_status " + mode;
+            chenEl.oneText.textContent = text;
+        }
+
+        chenEl.oneStart.addEventListener("click", function () {
+            if (chenOneTimerId !== null) {
+                clearTimeout(chenOneTimerId); /* 先清掉上一次，避免叠加 */
+            }
+            /* 重置进度条动画：先移除类，强制回流后再加回 */
+            chenEl.oneBar.classList.remove("chen_run");
+            void chenEl.oneBar.offsetWidth;
+            chenEl.oneBar.classList.add("chen_run");
+
+            chenOneTimerId = setTimeout(function () {
+                chenSetOneStatus("chen_done", "✓ 定时到点，回调已在 " + chenNow() + " 触发（id=" + chenOneTimerId + " 已自动失效）");
+                chenShowToast("3 秒时间到！setTimeout 回调执行完毕");
+                chenOneTimerId = null;
+                chenEl.oneStart.disabled = false;
+                chenEl.oneCancel.disabled = true;
+                chenEl.oneBar.classList.remove("chen_run");
+            }, 3000);
+
+            chenSetOneStatus("chen_waiting", "等待中… 定时器 id=" + chenOneTimerId + "，" + chenNow() + " 起计时 3 秒");
+            chenEl.oneStart.disabled = true;
+            chenEl.oneCancel.disabled = false;
+        });
+
+        chenEl.oneCancel.addEventListener("click", function () {
+            if (chenOneTimerId === null) return;
+            clearTimeout(chenOneTimerId);
+            chenSetOneStatus("chen_stopped", "✗ 已调用 clearTimeout(" + chenOneTimerId + ")，回调被取消，永远不会再执行");
+            chenOneTimerId = null;
+            chenEl.oneStart.disabled = false;
+            chenEl.oneCancel.disabled = true;
+            chenEl.oneBar.classList.remove("chen_run");
+        });
+
+        /* ================= 二、setInterval 秒表 ================= */
+        var chenTickId = null;
+        var chenTickMs = 0;
+
+        function chenSetTickStatus(mode, text) {
+            chenEl.tickStatus.className = "chen_status " + mode;
+            chenEl.tickText.textContent = text;
+        }
+
+        function chenRenderClock() {
+            chenEl.clockNum.textContent = (chenTickMs / 1000).toFixed(1);
+        }
+
+        chenEl.tickStart.addEventListener("click", function () {
+            if (chenTickId !== null) return; /* 防止重复启动 */
+            chenTickId = setInterval(function () {
+                chenTickMs += 100;
+                chenRenderClock();
+            }, 100);
+            chenSetTickStatus("chen_waiting", "秒表运行中… 定时器 id=" + chenTickId + "，每 100ms 累加一次");
+            chenEl.tickStart.disabled = true;
+            chenEl.tickStop.disabled = false;
+            chenEl.tickReset.disabled = true;
+        });
+
+        chenEl.tickStop.addEventListener("click", function () {
+            if (chenTickId === null) return;
+            clearInterval(chenTickId);
+            chenTickId = null;
+            chenSetTickStatus("chen_stopped", "已暂停：clearInterval(" + chenTickId + ") 已执行，当前 " + (chenTickMs / 1000).toFixed(1) + " 秒");
+            chenEl.tickStart.disabled = false;
+            chenEl.tickStop.disabled = true;
+            chenEl.tickReset.disabled = false;
+        });
+
+        chenEl.tickReset.addEventListener("click", function () {
+            chenTickMs = 0;
+            chenRenderClock();
+            chenSetTickStatus("", "秒表已清零，空闲中");
+            chenEl.tickReset.disabled = true;
+        });
+
+        /* ================= 三、执行顺序实验 ================= */
+        var chenOrderDefs = [
+            { cls: "", html: "<b>①</b> console.log('同步代码开始') —— 立即入队立即执行" },
+            { cls: "", html: "<b>②</b> Promise.then —— 微任务，同步代码一结束就执行" },
+            { cls: "", html: "<b>③</b> setTimeout(fn, 0) —— 宏任务，要等微任务都跑完" }
+        ];
+
+        chenEl.orderBtn.addEventListener("click", function () {
+            chenEl.orderBtn.disabled = true;
+            chenEl.orderLines.innerHTML = "";
+            chenLog("chen_order_console",
+                '<span class="chen_c_code">&gt; 实验开始：依次注册 同步代码 / Promise.then / setTimeout(fn, 0)</span>\n' +
+                '<span class="chen_c_dim">// 下面按真实执行顺序输出：</span>');
+
+            var chenLines = chenOrderDefs.map(function (d) {
+                var line = chenNode("div", "chen_order_line");
+                line.innerHTML = d.html;
+                chenEl.orderLines.appendChild(line);
+                return line;
+            });
+
+            function chenReveal(idx) {
+                chenLines[idx].classList.add("chen_show");
+            }
+
+            function chenAppendLog(html) {
+                chenLog("chen_order_console", chenEl.orderConsole.innerHTML + "\n" + html);
+            }
+
+            /* 同步代码：立即执行 */
+            console.log("① 同步代码");
+            chenReveal(0);
+            chenAppendLog('<span class="chen_c_code">① 同步代码执行 —— ' + chenNow() + '</span>');
+
+            /* 微任务：同步代码一结束就执行 */
+            Promise.resolve().then(function () {
+                console.log("② Promise.then 微任务");
+                chenReveal(1);
+                chenAppendLog('<span class="chen_c_ok">② 微任务 Promise.then 执行 —— ' + chenNow() + '</span>');
+            });
+
+            /* 宏任务：排在所有同步代码与微任务之后 */
+            setTimeout(function () {
+                console.log("③ setTimeout(fn, 0) 宏任务");
+                chenReveal(2);
+                chenAppendLog('<span class="chen_c_note">③ 宏任务 setTimeout(fn, 0) 执行 —— ' + chenNow() + '</span>\n' +
+                    '<span class="chen_c_err">结论：setTimeout(0) 并非立即执行，它排在所有同步代码和微任务之后！</span>');
+                chenEl.orderBtn.disabled = false;
+            }, 0);
+        });
+
+        /* 初始化 */
+        chenRenderClock();
+    </script>
+</body>
+</html>

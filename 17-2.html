@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-11-02
+功能名称：fetch + async/await 请求商品接口，响应式卡片网格 + 详情弹层（含加载/空/错误重试状态）
+    -->
+    <title>17-2 商品列表（fetch 异步请求）</title>
+    <link rel="stylesheet" href="font/font_5244855_fm8s0yq40te/iconfont.css">
+    <style>
+        :root {
+            --chen_bg: #eef2ff;
+            --chen_surface: #ffffff;
+            --chen_text: #1e293b;
+            --chen_text_soft: #475569;
+            --chen_muted: #64748b;
+            --chen_primary: #4f46e5;
+            --chen_primary_soft: #e0e7ff;
+            --chen_border: #dbe3f2;
+            --chen_danger: #dc2626;
+            --chen_ok: #059669;
+            --chen_star: #f59e0b;
+            --chen_radius: 14px;
+            --chen_shadow: 0 18px 45px -28px rgba(30, 64, 175, 0.55);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 8% 0%, rgba(99, 102, 241, 0.16), transparent 30rem),
+                radial-gradient(circle at 92% 8%, rgba(14, 165, 233, 0.14), transparent 26rem),
+                var(--chen_bg);
+            color: var(--chen_text);
+            line-height: 1.65;
+            min-height: 100vh;
+        }
+        body.chen_lock { overflow: hidden; }
+
+        .chen_page { max-width: 1180px; margin: 0 auto; padding: 32px 22px 40px; }
+
+        /* ---------- 头部 ---------- */
+        .chen_header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed 55%, #0ea5e9);
+            color: #fff;
+            border-radius: var(--chen_radius);
+            padding: 24px 28px;
+            display: flex; align-items: center; gap: 18px;
+            box-shadow: var(--chen_shadow);
+            flex-wrap: wrap;
+        }
+        .chen_header_icon {
+            width: 54px; height: 54px; border-radius: 16px;
+            background: rgba(255, 255, 255, 0.18);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px; flex: none;
+        }
+        .chen_header_text { flex: 1 1 260px; }
+        .chen_header h1 { font-size: 22px; letter-spacing: .5px; }
+        .chen_header p { font-size: 13px; opacity: .92; margin-top: 3px; word-break: break-all; }
+        .chen_header p code { font-family: Consolas, monospace; }
+
+        /* ---------- 按钮 ---------- */
+        .chen_btn {
+            padding: 9px 18px;
+            border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #4f46e5, #6d28d9);
+            color: #fff;
+            font-size: 14px; font-weight: 600; font-family: inherit;
+            cursor: pointer;
+            display: inline-flex; align-items: center; gap: 7px;
+            transition: transform .15s, box-shadow .15s, opacity .15s;
+        }
+        .chen_btn:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -10px rgba(79,70,229,.7); }
+        .chen_btn:active { transform: translateY(0); }
+        .chen_btn.chen_ghost {
+            background: #fff; color: var(--chen_primary);
+            border: 1px solid #c7d2fe;
+        }
+        .chen_btn.chen_ghost:hover { background: var(--chen_primary_soft); }
+        .chen_btn.chen_light {
+            background: rgba(255, 255, 255, .2);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, .45);
+        }
+        .chen_btn.chen_light:hover { background: rgba(255, 255, 255, .3); }
+
+        /* ---------- 工具条 ---------- */
+        .chen_toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; flex-wrap: wrap;
+            margin: 18px 0 4px;
+        }
+        .chen_toolbar h2 { font-size: 17px; }
+        .chen_status { font-size: 12.5px; color: var(--chen_muted); }
+        .chen_status b { color: var(--chen_primary); font-weight: 600; }
+
+        /* ---------- 卡片网格 ---------- */
+        .chen_grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+            gap: 16px;
+            margin-top: 14px;
+        }
+
+        .chen_card {
+            background: var(--chen_surface);
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            box-shadow: 0 14px 34px -30px rgba(30, 64, 175, 0.6);
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            cursor: pointer;
+            transition: transform .18s, box-shadow .18s, border-color .18s;
+        }
+        .chen_card:hover {
+            transform: translateY(-3px);
+            border-color: #b9c2f0;
+            box-shadow: 0 22px 40px -26px rgba(30, 64, 175, .65);
+        }
+        .chen_card:focus-visible { outline: 3px solid rgba(79,70,229,.45); outline-offset: 2px; }
+
+        .chen_thumb_wrap {
+            position: relative;
+            aspect-ratio: 4 / 3;
+            background: #f1f5ff;
+            overflow: hidden;
+        }
+        .chen_thumb {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+            background: #eef2ff;
+        }
+        .chen_thumb_wrap.chen_img_fail::after {
+            content: "图片加载失败";
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; color: var(--chen_muted);
+            background: #eef2ff;
+        }
+        .chen_badge {
+            position: absolute; left: 10px; top: 10px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            color: #fff;
+            font-size: 12px; font-weight: 700;
+            padding: 2px 9px; border-radius: 999px;
+        }
+
+        .chen_body { padding: 13px 15px 15px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
+        .chen_title {
+            font-size: 15px; font-weight: 700; line-height: 1.4;
+            display: -webkit-box; -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; overflow: hidden;
+            min-height: 42px;
+        }
+        .chen_brand { font-size: 12.5px; color: var(--chen_muted); }
+        .chen_price_row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+        .chen_price { font-size: 19px; font-weight: 700; color: #dc2626; font-family: Consolas, monospace; }
+        .chen_price_origin {
+            font-size: 12.5px; color: #94a3b8;
+            text-decoration: line-through;
+            font-family: Consolas, monospace;
+        }
+        .chen_meta_row {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 13px; color: var(--chen_text_soft);
+            margin-top: auto;
+        }
+        .chen_star { color: var(--chen_star); font-size: 13px; letter-spacing: 1px; }
+        .chen_stock_ok { color: var(--chen_ok); }
+        .chen_stock_low { color: #d97706; }
+        .chen_stock_out { color: var(--chen_danger); }
+        .chen_dot { color: #cbd5e1; }
+
+        /* ---------- 骨架屏 ---------- */
+        .chen_skeleton {
+            background: var(--chen_surface);
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            overflow: hidden;
+        }
+        .chen_sk_thumb { height: 174px; }
+        .chen_sk_body { padding: 14px 15px 16px; display: flex; flex-direction: column; gap: 9px; }
+        .chen_sk_line { height: 12px; border-radius: 6px; }
+        .chen_sk_short { width: 55%; }
+        .chen_sk_mid { width: 75%; }
+        .chen_shimmer {
+            background: linear-gradient(90deg, #eef2f7 25%, #f8fafc 37%, #eef2f7 63%);
+            background-size: 400% 100%;
+            animation: chen_shimmer 1.3s ease infinite;
+        }
+        @keyframes chen_shimmer {
+            0% { background-position: 100% 50%; }
+            100% { background-position: 0 50%; }
+        }
+
+        /* ---------- 状态块（空 / 错误） ---------- */
+        .chen_state {
+            grid-column: 1 / -1;
+            background: var(--chen_surface);
+            border: 1px dashed #c7d2fe;
+            border-radius: var(--chen_radius);
+            padding: 44px 24px;
+            text-align: center;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 8px;
+        }
+        .chen_state_icon {
+            width: 58px; height: 58px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px; margin-bottom: 4px;
+        }
+        .chen_state_icon.chen_empty_icon { background: #eef2ff; color: #8b8ff0; }
+        .chen_state_icon.chen_error_icon { background: #fee2e2; color: #dc2626; }
+        .chen_state h3 { font-size: 16px; }
+        .chen_state p { font-size: 13.5px; color: var(--chen_muted); max-width: 520px; word-break: break-all; }
+        .chen_state .chen_btn { margin-top: 8px; }
+
+        /* ---------- 弹层 ---------- */
+        .chen_overlay {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, .55);
+            backdrop-filter: blur(3px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .2s, visibility .2s;
+        }
+        .chen_overlay.chen_open { opacity: 1; visibility: visible; }
+
+        .chen_modal {
+            width: 100%;
+            max-width: 860px;
+            max-height: 88vh;
+            background: var(--chen_surface);
+            border-radius: 18px;
+            box-shadow: 0 30px 70px -30px rgba(15, 23, 42, .7);
+            position: relative;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            transform: translateY(14px) scale(.98);
+            transition: transform .22s ease;
+        }
+        .chen_overlay.chen_open .chen_modal { transform: translateY(0) scale(1); }
+
+        .chen_modal_head {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--chen_border);
+            flex: none;
+        }
+        .chen_modal_head h3 { font-size: 16px; }
+        .chen_close {
+            width: 34px; height: 34px; flex: none;
+            border: none; border-radius: 10px;
+            background: #f1f5f9; color: #475569;
+            font-size: 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background .15s, color .15s;
+        }
+        .chen_close:hover { background: #fee2e2; color: #dc2626; }
+
+        .chen_modal_body {
+            padding: 20px;
+            overflow: auto;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 22px;
+        }
+        @media (max-width: 720px) {
+            .chen_modal_body { grid-template-columns: 1fr; }
+        }
+
+        .chen_detail_img {
+            width: 100%; aspect-ratio: 1 / 1;
+            border-radius: 14px;
+            background: #f1f5ff;
+            object-fit: cover;
+            border: 1px solid var(--chen_border);
+        }
+
+        .chen_detail_info { display: flex; flex-direction: column; gap: 10px; }
+        .chen_detail_title { font-size: 19px; line-height: 1.4; }
+        .chen_chips { display: flex; gap: 8px; flex-wrap: wrap; }
+        .chen_chip {
+            font-size: 12px; padding: 2px 10px; border-radius: 999px;
+            background: var(--chen_primary_soft); color: var(--chen_primary);
+        }
+        .chen_chip.chen_chip_gray { background: #f1f5f9; color: #475569; }
+        .chen_detail_desc { font-size: 13.5px; color: var(--chen_text_soft); }
+        .chen_detail_price { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+        .chen_detail_price .chen_price { font-size: 26px; }
+        .chen_save { font-size: 12.5px; color: var(--chen_ok); font-weight: 600; }
+
+        .chen_specs {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            border-top: 1px dashed var(--chen_border);
+            padding-top: 12px;
+        }
+        .chen_spec {
+            background: #f8faff;
+            border: 1px solid var(--chen_border);
+            border-radius: 10px;
+            padding: 9px 12px;
+        }
+        .chen_spec span { display: block; font-size: 11.5px; color: var(--chen_muted); }
+        .chen_spec strong { font-size: 14px; font-weight: 600; word-break: break-all; }
+
+        /* 详情骨架 */
+        .chen_detail_skeleton { display: grid; grid-template-columns: 320px 1fr; gap: 22px; width: 100%; }
+        @media (max-width: 720px) { .chen_detail_skeleton { grid-template-columns: 1fr; } }
+        .chen_detail_skeleton .chen_sk_img {
+            width: 100%; aspect-ratio: 1 / 1; border-radius: 14px;
+        }
+        .chen_detail_skeleton .chen_sk_body { padding: 0; }
+
+        /* ---------- 页脚 ---------- */
+        .chen_footer {
+            margin-top: 30px; text-align: center;
+            color: var(--chen_muted); font-size: 13px;
+            padding: 14px 0 4px;
+            border-top: 1px solid var(--chen_border);
+        }
+
+        @media (max-width: 560px) {
+            .chen_page { padding: 20px 14px 30px; }
+            .chen_header { padding: 20px; }
+            .chen_header h1 { font-size: 19px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="chen_page">
+        <header class="chen_header">
+            <div class="chen_header_icon"><span class="iconfont icon-jiazaixiao"></span></div>
+            <div class="chen_header_text">
+                <h1>商品列表 · fetch 异步请求演示</h1>
+                <p>接口：<code>https://dummyjson.com/products?limit=8</code>（点击卡片查看详情）</p>
+            </div>
+            <button class="chen_btn chen_light" id="chen_reload_btn" type="button">
+                <span class="iconfont icon-shezhi"></span>重新加载
+            </button>
+        </header>
+
+        <div class="chen_toolbar">
+            <h2>商品推荐</h2>
+            <p class="chen_status" id="chen_list_status">准备请求…</p>
+        </div>
+
+        <section class="chen_grid" id="chen_grid" aria-live="polite" aria-busy="true"></section>
+
+        <footer class="chen_footer">学号 24001010722 &nbsp;|&nbsp; 姓名 陈弘毅</footer>
+    </div>
+
+    <!-- 详情弹层 -->
+    <div class="chen_overlay" id="chen_overlay" role="dialog" aria-modal="true" aria-labelledby="chen_modal_title" aria-hidden="true">
+        <div class="chen_modal" id="chen_modal">
+            <div class="chen_modal_head">
+                <h3 id="chen_modal_title">商品详情</h3>
+                <button class="chen_close" id="chen_close_btn" type="button" aria-label="关闭">
+                    <span class="iconfont icon-cuowu"></span>
+                </button>
+            </div>
+            <div class="chen_modal_body" id="chen_modal_body"></div>
+        </div>
+    </div>
+
+    <script>
+        "use strict";
+
+        /* ================= 配置与状态 ================= */
+        var CHEN_API = "https://dummyjson.com";
+        var CHEN_LIMIT = 8;
+        var CHEN_TIMEOUT = 12000;
+
+        var chenProducts = [];
+        var chenListLoading = false;
+        var chenDetailLoading = false;
+        var chenCurrentId = null;
+        var chenLastFocus = null;
+        var chenMockMode = false;
+
+        /* 离线示例数据：仅当接口请求失败、用户点击「离线示例」后启用，
+           结构与接口返回保持一致，方便断网时演示页面效果 */
+        var chenMockProducts = [
+            { id: 901, title: "Essence Mascara Lash Princess", brand: "Essence", category: "beauty",
+              price: 9.99, discountPercentage: 10.48, rating: 4.94, stock: 5,
+              thumbnail: "img/a1.jpg", description: "经典睫毛膏，纤长卷翘，日常通勤与派对妆都适用。",
+              images: ["img/a1.jpg", "img/a2.jpg"] },
+            { id: 902, title: "Eyeshadow Palette with Mirror", brand: "Glamour Beauty", category: "beauty",
+              price: 19.99, discountPercentage: 18.19, rating: 4.31, stock: 44,
+              thumbnail: "img/a2.jpg", description: "带镜子的十二色眼影盘，粉质细腻，显色度高。",
+              images: ["img/a2.jpg", "img/a3.jpg"] },
+            { id: 903, title: "Powder Canister", brand: "Velvet Touch", category: "beauty",
+              price: 14.99, discountPercentage: 9.84, rating: 2.56, stock: 0,
+              thumbnail: "img/a3.jpg", description: "控油定妆散粉，轻拍即贴，打造柔焦妆效。",
+              images: ["img/a3.jpg", "img/a1.jpg"] },
+            { id: 904, title: "Red Lipstick", brand: "Chic Cosmetics", category: "beauty",
+              price: 12.99, discountPercentage: 12.6, rating: 4.36, stock: 21,
+              thumbnail: "img/a1.jpg", description: "丝绒质地正红色口红，饱和显白，持久不脱色。",
+              images: ["img/a1.jpg"] },
+            { id: 905, title: "Calvin Klein Bag", brand: "Calvin Klein", category: "womens-bags",
+              price: 49.99, discountPercentage: 22.1, rating: 4.55, stock: 8,
+              thumbnail: "img/a2.jpg", description: "简约通勤单肩包，大容量分区收纳，日常百搭。",
+              images: ["img/a2.jpg"] },
+            { id: 906, title: "Apple MacBook Pro 14", brand: "Apple", category: "laptops",
+              price: 1999.99, discountPercentage: 6.4, rating: 4.87, stock: 3,
+              thumbnail: "img/a3.jpg", description: "14 英寸专业笔记本，高性能芯片，适合设计与开发。",
+              images: ["img/a3.jpg", "img/a1.jpg"] },
+            { id: 907, title: "Running Sneakers", brand: "Sporty Flex", category: "mens-shoes",
+              price: 79.99, discountPercentage: 14.2, rating: 4.12, stock: 62,
+              thumbnail: "img/a1.jpg", description: "轻量缓震跑鞋，透气网面，长距离奔跑也舒适。",
+              images: ["img/a1.jpg"] },
+            { id: 908, title: "Wireless Headphones", brand: "Audio Wave", category: "mobile-accessories",
+              price: 129.99, discountPercentage: 25.0, rating: 4.72, stock: 15,
+              thumbnail: "img/a2.jpg", description: "主动降噪头戴耳机，续航 40 小时，支持多点连接。",
+              images: ["img/a2.jpg", "img/a3.jpg"] }
+        ];
+
+        var chenEl = {
+            grid: document.getElementById("chen_grid"),
+            status: document.getElementById("chen_list_status"),
+            reload: document.getElementById("chen_reload_btn"),
+            overlay: document.getElementById("chen_overlay"),
+            modalTitle: document.getElementById("chen_modal_title"),
+            modalBody: document.getElementById("chen_modal_body"),
+            close: document.getElementById("chen_close_btn")
+        };
+
+        /* ================= 工具函数 ================= */
+        /* 带超时的 fetch，返回解析后的 JSON；任何异常统一向上抛出 */
+        async function chenRequestJSON(url) {
+            var chenController = new AbortController();
+            var chenTimer = setTimeout(function () { chenController.abort(); }, CHEN_TIMEOUT);
+            try {
+                var chenRes = await fetch(url, {
+                    method: "GET",
+                    headers: { "Accept": "application/json" },
+                    signal: chenController.signal
+                });
+                if (!chenRes.ok) {
+                    throw new Error("请求失败：HTTP " + chenRes.status + " " + chenRes.statusText);
+                }
+                return await chenRes.json();
+            } catch (chenErr) {
+                if (chenErr.name === "AbortError") {
+                    throw new Error("请求超时（超过 " + (CHEN_TIMEOUT / 1000) + " 秒），请检查网络后重试");
+                }
+                if (chenErr instanceof TypeError) {
+                    throw new Error("网络异常，无法连接接口（可能是断网、跨域或接口不可用）");
+                }
+                throw chenErr;
+            } finally {
+                clearTimeout(chenTimer);
+            }
+        }
+
+        function chenMoney(n) {
+            var v = Number(n);
+            return isFinite(v) ? "$" + v.toFixed(2) : "--";
+        }
+
+        function chenStars(score) {
+            var s = Number(score) || 0;
+            var chenFull = Math.round(s);
+            var chenStr = "";
+            for (var i = 0; i < 5; i++) {
+                chenStr += i < chenFull ? "★" : "☆";
+            }
+            return chenStr;
+        }
+
+        function chenStockClass(stock) {
+            var s = Number(stock) || 0;
+            if (s <= 0) return "chen_stock_out";
+            if (s < 10) return "chen_stock_low";
+            return "chen_stock_ok";
+        }
+
+        function chenStockText(stock) {
+            var s = Number(stock) || 0;
+            if (s <= 0) return "暂时无货";
+            if (s < 10) return "仅剩 " + s + " 件";
+            return "库存 " + s + " 件";
+        }
+
+        /* 元素快捷创建：文本一律走 textContent */
+        function chenNode(tag, className, text) {
+            var el = document.createElement(tag);
+            if (className) el.className = className;
+            if (text !== undefined && text !== null) el.textContent = String(text);
+            return el;
+        }
+
+        /* ================= 列表状态渲染 ================= */
+        function chenRenderSkeletons(count) {
+            chenEl.grid.innerHTML = "";
+            for (var i = 0; i < count; i++) {
+                var card = chenNode("div", "chen_skeleton");
+                var thumb = chenNode("div", "chen_sk_thumb chen_shimmer");
+                var body = chenNode("div", "chen_sk_body");
+                body.appendChild(chenNode("div", "chen_sk_line chen_shimmer"));
+                body.appendChild(chenNode("div", "chen_sk_line chen_sk_mid chen_shimmer"));
+                body.appendChild(chenNode("div", "chen_sk_line chen_sk_short chen_shimmer"));
+                card.appendChild(thumb);
+                card.appendChild(body);
+                chenEl.grid.appendChild(card);
+            }
+            chenEl.grid.setAttribute("aria-busy", "true");
+        }
+
+        function chenRenderStateBlock(iconClass, iconName, title, desc, actions) {
+            chenEl.grid.innerHTML = "";
+            var box = chenNode("div", "chen_state");
+            var icon = chenNode("div", "chen_state_icon " + iconClass);
+            icon.appendChild(chenNode("span", "iconfont " + iconName));
+            box.appendChild(icon);
+            box.appendChild(chenNode("h3", "", title));
+            if (desc) box.appendChild(chenNode("p", "", desc));
+            (actions || []).forEach(function (act) {
+                var btn = chenNode("button", "chen_btn" + (act.ghost ? " chen_ghost" : ""), act.text);
+                btn.type = "button";
+                btn.addEventListener("click", act.handler);
+                box.appendChild(btn);
+            });
+            chenEl.grid.appendChild(box);
+            chenEl.grid.setAttribute("aria-busy", "false");
+        }
+
+        /* ================= 商品卡片 ================= */
+        function chenBuildCard(product, index) {
+            var card = chenNode("article", "chen_card");
+            card.tabIndex = 0;
+            card.setAttribute("role", "button");
+            card.setAttribute("aria-label", "查看商品详情：" + (product.title || ""));
+
+            /* 缩略图 + 折扣角标 */
+            var wrap = chenNode("div", "chen_thumb_wrap");
+            var img = document.createElement("img");
+            img.className = "chen_thumb";
+            img.loading = "lazy";
+            img.decoding = "async";
+            img.alt = product.title ? String(product.title) : "商品图片";
+            img.src = product.thumbnail || "";
+            img.addEventListener("error", function () {
+                wrap.classList.add("chen_img_fail");
+                img.style.visibility = "hidden";
+            });
+            wrap.appendChild(img);
+
+            var discount = Number(product.discountPercentage) || 0;
+            if (discount > 0) {
+                wrap.appendChild(chenNode("span", "chen_badge", "-" + discount.toFixed(1) + "%"));
+            }
+
+            /* 文字信息 */
+            var body = chenNode("div", "chen_body");
+            body.appendChild(chenNode("h3", "chen_title", product.title || "未命名商品"));
+            body.appendChild(chenNode("p", "chen_brand", "品牌：" + (product.brand || "未标注")));
+
+            var priceRow = chenNode("div", "chen_price_row");
+            priceRow.appendChild(chenNode("span", "chen_price", chenMoney(product.price)));
+            var origin = Number(product.price) / (1 - discount / 100);
+            if (discount > 0 && isFinite(origin)) {
+                priceRow.appendChild(chenNode("span", "chen_price_origin", chenMoney(origin)));
+                priceRow.appendChild(chenNode("span", "chen_save", "省 " + chenMoney(Number(product.price) - origin)));
+            }
+            body.appendChild(priceRow);
+
+            var meta = chenNode("div", "chen_meta_row");
+            meta.appendChild(chenNode("span", "chen_star", chenStars(product.rating)));
+            meta.appendChild(chenNode("span", "", (Number(product.rating) || 0).toFixed(1)));
+            meta.appendChild(chenNode("span", "chen_dot", "·"));
+            meta.appendChild(chenNode("span", chenStockClass(product.stock), chenStockText(product.stock)));
+            body.appendChild(meta);
+
+            card.appendChild(wrap);
+            card.appendChild(body);
+
+            function chenOpen() { chenOpenDetail(product.id); }
+            card.addEventListener("click", chenOpen);
+            card.addEventListener("keydown", function (e) {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    chenOpen();
+                }
+            });
+            return card;
+        }
+
+        function chenRenderProducts() {
+            chenEl.grid.innerHTML = "";
+            if (!Array.isArray(chenProducts) || chenProducts.length === 0) {
+                chenRenderStateBlock("chen_empty_icon", "icon-kongshuju", "暂无商品数据",
+                    "接口返回的数据为空，可以点击下方按钮重新请求。", [
+                        { text: "重新加载", handler: chenLoadList },
+                        { text: "使用离线示例数据", handler: chenLoadMock, ghost: true }
+                    ]);
+                chenEl.status.textContent = "接口返回 0 条数据";
+                return;
+            }
+            chenProducts.forEach(function (p, i) {
+                chenEl.grid.appendChild(chenBuildCard(p, i));
+            });
+            chenEl.grid.setAttribute("aria-busy", "false");
+            chenEl.status.textContent = "共 " + chenProducts.length + " 件商品 · 点击卡片查看详情";
+        }
+
+        /* ================= 列表请求 ================= */
+        async function chenLoadList() {
+            if (chenListLoading) return;
+            chenListLoading = true;
+            chenEl.status.textContent = "加载中…";
+            chenRenderSkeletons(4);
+
+            try {
+                var data = await chenRequestJSON(CHEN_API + "/products?limit=" + CHEN_LIMIT);
+                var list = data && Array.isArray(data.products) ? data.products : [];
+                chenProducts = list;
+                chenMockMode = false;
+                chenRenderProducts();
+            } catch (err) {
+                chenProducts = [];
+                chenEl.status.textContent = "加载失败";
+                chenRenderStateBlock("chen_error_icon", "icon-jinggao", "商品列表加载失败",
+                    err.message || "未知错误", [
+                        { text: "重试", handler: chenLoadList },
+                        { text: "使用离线示例数据", handler: chenLoadMock, ghost: true }
+                    ]);
+            } finally {
+                chenListLoading = false;
+            }
+        }
+
+        /* 离线兜底：接口不可达时用本地示例数据演示页面（不替代接口请求） */
+        function chenLoadMock() {
+            chenMockMode = true;
+            chenProducts = chenMockProducts.slice();
+            chenRenderProducts();
+            chenEl.status.textContent = "离线示例数据 · 共 " + chenProducts.length + " 件（接口恢复后点右上角重新加载）";
+        }
+
+        /* ================= 详情弹层 ================= */
+        function chenShowOverlay() {
+            chenLastFocus = document.activeElement;
+            chenEl.overlay.classList.add("chen_open");
+            chenEl.overlay.setAttribute("aria-hidden", "false");
+            document.body.classList.add("chen_lock");
+            chenEl.close.focus();
+        }
+
+        function chenHideOverlay() {
+            chenEl.overlay.classList.remove("chen_open");
+            chenEl.overlay.setAttribute("aria-hidden", "true");
+            document.body.classList.remove("chen_lock");
+            chenCurrentId = null;
+            chenDetailLoading = false;
+            if (chenLastFocus && typeof chenLastFocus.focus === "function") {
+                chenLastFocus.focus();
+            }
+        }
+
+        function chenDetailSkeleton() {
+            chenEl.modalBody.innerHTML = "";
+            var wrap = chenNode("div", "chen_detail_skeleton");
+            var img = chenNode("div", "chen_sk_img chen_shimmer");
+            var body = chenNode("div", "chen_sk_body");
+            for (var i = 0; i < 6; i++) {
+                var line = chenNode("div", "chen_sk_line chen_shimmer" + (i % 2 ? " chen_sk_mid" : ""));
+                line.style.marginBottom = "10px";
+                body.appendChild(line);
+            }
+            wrap.appendChild(img);
+            wrap.appendChild(body);
+            chenEl.modalBody.appendChild(wrap);
+        }
+
+        function chenDetailState(iconClass, iconName, title, desc, retryId) {
+            chenEl.modalBody.innerHTML = "";
+            var box = chenNode("div", "chen_state");
+            box.style.borderStyle = "solid";
+            box.style.gridColumn = "1 / -1";
+            var icon = chenNode("div", "chen_state_icon " + iconClass);
+            icon.appendChild(chenNode("span", "iconfont " + iconName));
+            box.appendChild(icon);
+            box.appendChild(chenNode("h3", "", title));
+            if (desc) box.appendChild(chenNode("p", "", desc));
+            if (retryId !== null && retryId !== undefined) {
+                var btn = chenNode("button", "chen_btn", "重试");
+                btn.type = "button";
+                btn.addEventListener("click", function () { chenOpenDetail(retryId); });
+                box.appendChild(btn);
+            }
+            chenEl.modalBody.appendChild(box);
+        }
+
+        function chenRenderDetail(product) {
+            chenEl.modalBody.innerHTML = "";
+            chenEl.modalTitle.textContent = product.title || "商品详情";
+
+            /* 左：大图 */
+            var img = document.createElement("img");
+            img.className = "chen_detail_img";
+            img.alt = product.title ? String(product.title) : "商品图片";
+            var imgs = Array.isArray(product.images) && product.images.length ? product.images : [product.thumbnail];
+            img.src = imgs[0] || "";
+            img.addEventListener("error", function () {
+                img.style.visibility = "hidden";
+            });
+
+            /* 右：信息 */
+            var info = chenNode("div", "chen_detail_info");
+
+            info.appendChild(chenNode("h2", "chen_detail_title", product.title || "未命名商品"));
+
+            var chips = chenNode("div", "chen_chips");
+            chips.appendChild(chenNode("span", "chen_chip", "品牌：" + (product.brand || "未标注")));
+            chips.appendChild(chenNode("span", "chen_chip chen_chip_gray", "分类：" + (product.category || "未分类")));
+            if (product.sku) chips.appendChild(chenNode("span", "chen_chip chen_chip_gray", "SKU：" + product.sku));
+            info.appendChild(chips);
+
+            info.appendChild(chenNode("p", "chen_detail_desc", product.description || "该商品暂无描述。"));
+
+            var priceBox = chenNode("div", "chen_detail_price");
+            priceBox.appendChild(chenNode("span", "chen_price", chenMoney(product.price)));
+            var discount = Number(product.discountPercentage) || 0;
+            var origin = Number(product.price) / (1 - discount / 100);
+            if (discount > 0 && isFinite(origin)) {
+                priceBox.appendChild(chenNode("span", "chen_price_origin", chenMoney(origin)));
+                priceBox.appendChild(chenNode("span", "chen_save", "立省 " + chenMoney(origin - Number(product.price)) + "（-" + discount.toFixed(1) + "%）"));
+            }
+            info.appendChild(priceBox);
+
+            var specs = chenNode("div", "chen_specs");
+            function chenSpec(label, value) {
+                var box = chenNode("div", "chen_spec");
+                box.appendChild(chenNode("span", "", label));
+                box.appendChild(chenNode("strong", "", value));
+                return box;
+            }
+            specs.appendChild(chenSpec("评分", chenStars(product.rating) + " " + (Number(product.rating) || 0).toFixed(1)));
+            specs.appendChild(chenSpec("库存", chenStockText(product.stock)));
+            specs.appendChild(chenSpec("折扣", discount > 0 ? "-" + discount.toFixed(1) + "%" : "无折扣"));
+            if (product.warrantyInformation) specs.appendChild(chenSpec("保修", product.warrantyInformation));
+            if (product.returnPolicy) specs.appendChild(chenSpec("退换", product.returnPolicy));
+            if (product.shippingInformation) specs.appendChild(chenSpec("物流", product.shippingInformation));
+            info.appendChild(specs);
+
+            if (Array.isArray(product.images) && product.images.length > 1) {
+                var gallery = chenNode("div", "chen_chips");
+                product.images.slice(1, 4).forEach(function (src) {
+                    var thumb = document.createElement("img");
+                    thumb.src = src;
+                    thumb.alt = "商品细节图";
+                    thumb.loading = "lazy";
+                    thumb.style.cssText = "width:56px;height:56px;object-fit:cover;border-radius:10px;border:1px solid #dbe3f2;cursor:pointer;";
+                    thumb.addEventListener("click", function () { img.src = src; });
+                    gallery.appendChild(thumb);
+                });
+                info.appendChild(gallery);
+            }
+
+            chenEl.modalBody.appendChild(img);
+            chenEl.modalBody.appendChild(info);
+        }
+
+        async function chenOpenDetail(id) {
+            if (id === null || id === undefined) {
+                chenShowOverlay();
+                chenEl.modalTitle.textContent = "商品详情";
+                chenDetailState("chen_empty_icon", "icon-kongshuju", "缺少商品编号",
+                    "无法确定要查看哪件商品，请关闭弹层后重新选择。", null);
+                return;
+            }
+            if (chenDetailLoading) return;
+
+            chenCurrentId = id;
+            chenDetailLoading = true;
+            chenShowOverlay();
+            chenEl.modalTitle.textContent = "商品详情";
+            chenDetailSkeleton();
+
+            /* 离线模式：直接从本地示例数据中取详情，不发起请求 */
+            if (chenMockMode) {
+                await new Promise(function (resolve) { setTimeout(resolve, 350); });
+                var chenMockItem = null;
+                for (var k = 0; k < chenMockProducts.length; k++) {
+                    if (String(chenMockProducts[k].id) === String(id)) { chenMockItem = chenMockProducts[k]; break; }
+                }
+                if (!chenMockItem) {
+                    chenDetailState("chen_empty_icon", "icon-kongshuju", "未找到该商品",
+                        "离线示例数据中没有商品编号 " + id + "。", null);
+                } else {
+                    chenRenderDetail(chenMockItem);
+                    chenEl.modalTitle.textContent = chenMockItem.title || "商品详情";
+                }
+                chenDetailLoading = false;
+                return;
+            }
+
+            try {
+                var detail = await chenRequestJSON(CHEN_API + "/products/" + encodeURIComponent(id));
+                if (!detail || typeof detail !== "object") {
+                    throw new Error("接口返回的数据格式不正确");
+                }
+                chenRenderDetail(detail);
+            } catch (err) {
+                chenEl.modalTitle.textContent = "商品详情";
+                chenDetailState("chen_error_icon", "icon-jinggao", "详情加载失败",
+                    (err && err.message ? err.message : "未知错误") + "（商品编号：" + id + "）", id);
+            } finally {
+                chenDetailLoading = false;
+            }
+        }
+
+        /* ================= 事件绑定 ================= */
+        chenEl.reload.addEventListener("click", chenLoadList);
+        chenEl.close.addEventListener("click", chenHideOverlay);
+
+        /* 点击遮罩关闭（点弹层内部不关闭） */
+        chenEl.overlay.addEventListener("click", function (e) {
+            if (e.target === chenEl.overlay) {
+                chenHideOverlay();
+            }
+        });
+
+        /* Esc 关闭 */
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape" && chenEl.overlay.classList.contains("chen_open")) {
+                chenHideOverlay();
+            }
+        });
+
+        /* ================= 启动 ================= */
+        chenLoadList();
+    </script>
+</body>
+</html>

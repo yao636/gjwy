@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-11-02
+功能名称：远程接口测试工具（支持 GET/POST/PUT/PATCH/DELETE，显示状态、耗时、响应数据与错误提示）
+    -->
+    <title>17-4 接口测试工具</title>
+    <link rel="stylesheet" href="font/font_5244855_fm8s0yq40te/iconfont.css">
+    <style>
+        :root {
+            --chen_bg: #eef2ff;
+            --chen_surface: #ffffff;
+            --chen_text: #1e293b;
+            --chen_text_soft: #475569;
+            --chen_muted: #64748b;
+            --chen_primary: #4f46e5;
+            --chen_primary_soft: #e0e7ff;
+            --chen_border: #dbe3f2;
+            --chen_danger: #dc2626;
+            --chen_ok: #059669;
+            --chen_warn: #d97706;
+            --chen_radius: 14px;
+            --chen_shadow: 0 18px 45px -28px rgba(30, 64, 175, 0.55);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(99, 102, 241, 0.16), transparent 32rem),
+                radial-gradient(circle at 90% 10%, rgba(16, 185, 129, 0.14), transparent 28rem),
+                var(--chen_bg);
+            color: var(--chen_text);
+            line-height: 1.65;
+            min-height: 100vh;
+        }
+
+        .chen_page { max-width: 1140px; margin: 0 auto; padding: 32px 22px 40px; }
+
+        /* ---------- 头部 ---------- */
+        .chen_header {
+            background: linear-gradient(135deg, #4f46e5, #0891b2 55%, #059669);
+            color: #fff;
+            border-radius: var(--chen_radius);
+            padding: 24px 28px;
+            box-shadow: var(--chen_shadow);
+        }
+        .chen_header h1 { font-size: 22px; letter-spacing: .5px; }
+        .chen_header p { font-size: 13px; opacity: .92; margin-top: 3px; }
+        .chen_header code { font-family: Consolas, monospace; background: rgba(255,255,255,.16); padding: 1px 6px; border-radius: 5px; }
+
+        /* ---------- 卡片 ---------- */
+        .chen_card {
+            background: var(--chen_surface);
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            box-shadow: var(--chen_shadow);
+            padding: 20px 24px;
+            margin-top: 18px;
+        }
+        .chen_card_title {
+            font-size: 16px; color: var(--chen_primary);
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 12px;
+        }
+        .chen_card_title .iconfont { font-size: 17px; }
+        .chen_note { font-size: 12.5px; color: var(--chen_muted); margin-bottom: 12px; }
+
+        /* ---------- 请求构造区 ---------- */
+        .chen_request_row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .chen_method {
+            width: 118px;
+            padding: 10px 12px;
+            border: 1.5px solid var(--chen_border);
+            border-radius: 10px;
+            font-family: Consolas, monospace;
+            font-size: 14px; font-weight: 700;
+            background: #fbfcff; color: var(--chen_primary);
+            cursor: pointer; outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .chen_url {
+            flex: 1 1 320px;
+            padding: 10px 14px;
+            border: 1.5px solid var(--chen_border);
+            border-radius: 10px;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+            background: #fbfcff; color: var(--chen_text);
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .chen_method:focus, .chen_url:focus, .chen_body_input:focus, .chen_ct:focus {
+            border-color: var(--chen_primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, .15);
+        }
+
+        .chen_body_row { margin-top: 12px; }
+        .chen_body_label {
+            font-size: 12.5px; color: var(--chen_muted);
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 6px; flex-wrap: wrap; gap: 8px;
+        }
+        .chen_ct {
+            padding: 5px 10px;
+            border: 1px solid var(--chen_border);
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-family: Consolas, monospace;
+            background: #fbfcff; color: var(--chen_text);
+            outline: none;
+        }
+        .chen_body_input {
+            width: 100%;
+            min-height: 130px;
+            padding: 12px 14px;
+            border: 1.5px solid var(--chen_border);
+            border-radius: 10px;
+            background: #1e1b4b;
+            color: #e0e7ff;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 13.5px;
+            line-height: 1.7;
+            resize: vertical;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .chen_body_input.chen_error { border-color: #ef4444; }
+
+        .chen_send_row { margin-top: 14px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+        .chen_btn {
+            padding: 10px 24px;
+            border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #4f46e5, #6d28d9);
+            color: #fff;
+            font-size: 14.5px; font-weight: 600; font-family: inherit;
+            cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px;
+            transition: transform .15s, box-shadow .15s, opacity .15s;
+        }
+        .chen_btn:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -10px rgba(79,70,229,.7); }
+        .chen_btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+        .chen_btn.chen_ghost {
+            background: #fff; color: var(--chen_primary);
+            border: 1px solid #c7d2fe;
+        }
+        .chen_btn.chen_ghost:hover { background: var(--chen_primary_soft); }
+        .chen_hint { font-size: 12px; color: var(--chen_muted); }
+
+        /* ---------- 预设 ---------- */
+        .chen_presets { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+        .chen_preset {
+            border: 1px solid #c7d2fe;
+            background: #f8faff;
+            color: var(--chen_text_soft);
+            font-family: Consolas, monospace;
+            font-size: 12.5px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background .15s, color .15s, border-color .15s;
+        }
+        .chen_preset:hover { background: var(--chen_primary_soft); color: var(--chen_primary); border-color: var(--chen_primary); }
+
+        /* ---------- 响应区 ---------- */
+        .chen_resp_meta {
+            display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+            margin-bottom: 12px; min-height: 30px;
+        }
+        .chen_pill {
+            font-size: 12.5px;
+            font-family: Consolas, monospace;
+            padding: 3px 12px;
+            border-radius: 999px;
+            background: #f1f5f9; color: var(--chen_text_soft);
+        }
+        .chen_pill.chen_status_ok { background: #d1fae5; color: var(--chen_ok); font-weight: 700; }
+        .chen_pill.chen_status_err { background: #fee2e2; color: var(--chen_danger); font-weight: 700; }
+        .chen_pill.chen_method_pill { background: var(--chen_primary_soft); color: var(--chen_primary); font-weight: 700; }
+
+        .chen_resp_view {
+            max-height: 420px;
+            overflow: auto;
+            padding: 14px 16px;
+            border: 1.5px solid var(--chen_border);
+            border-radius: 12px;
+            background: #1e1b4b;
+            color: #e0e7ff;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 13.5px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .chen_resp_view.chen_empty_view { color: #818cf8; font-style: normal; }
+
+        /* 高亮 */
+        .chen_j_key  { color: #fbbf24; font-weight: 600; }
+        .chen_j_str  { color: #6ee7b7; }
+        .chen_j_num  { color: #93c5fd; }
+        .chen_j_bool { color: #f0abfc; font-weight: 600; }
+        .chen_j_null { color: #94a3b8; font-style: italic; }
+
+        /* ---------- 错误提示 ---------- */
+        .chen_error_box {
+            display: flex; align-items: flex-start; gap: 10px;
+            border: 1.5px solid #fecaca;
+            background: #fef2f2;
+            color: #991b1b;
+            border-radius: 12px;
+            padding: 13px 16px;
+            font-size: 13.5px;
+        }
+        .chen_error_box .iconfont { color: var(--chen_danger); font-size: 17px; flex: none; }
+        .chen_error_box b { display: block; }
+        .chen_error_box code { font-family: Consolas, monospace; word-break: break-all; }
+        .chen_hidden { display: none !important; }
+
+        /* ---------- 历史 ---------- */
+        .chen_history { list-style: none; }
+        .chen_history li {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 10px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: Consolas, monospace;
+            transition: background .15s;
+        }
+        .chen_history li:hover { background: var(--chen_primary_soft); }
+        .chen_history .chen_h_method {
+            font-weight: 700; width: 62px; flex: none;
+        }
+        .chen_history .chen_h_method.chen_m_get { color: #059669; }
+        .chen_history .chen_h_method.chen_m_post { color: #4f46e5; }
+        .chen_history .chen_h_method.chen_m_put { color: #d97706; }
+        .chen_history .chen_h_method.chen_m_patch { color: #db2777; }
+        .chen_history .chen_h_method.chen_m_delete { color: #dc2626; }
+        .chen_history .chen_h_url {
+            flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            color: var(--chen_text_soft);
+        }
+        .chen_history .chen_h_time { color: var(--chen_muted); font-size: 12px; flex: none; }
+        .chen_history_empty { font-size: 12.5px; color: var(--chen_muted); padding: 6px 10px; }
+
+        /* ---------- 页脚 ---------- */
+        .chen_footer {
+            margin-top: 28px; text-align: center;
+            color: var(--chen_muted); font-size: 13px;
+            padding: 14px 0 4px;
+            border-top: 1px solid var(--chen_border);
+        }
+
+        @media (max-width: 560px) {
+            .chen_page { padding: 20px 14px 30px; }
+            .chen_method { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="chen_page">
+        <header class="chen_header">
+            <h1>远程接口测试工具</h1>
+            <p>支持 <code>GET</code> / <code>POST</code> / <code>PUT</code> / <code>PATCH</code> / <code>DELETE</code>，示例站点：<code>jsonplaceholder.typicode.com</code>（Ctrl+Enter 发送）</p>
+        </header>
+
+        <!-- 请求构造 -->
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-bianji"></span>构造请求</h2>
+            <p class="chen_note">选择方法并输入完整 URL；带请求体的方法（POST / PUT / PATCH）请在下方填写 JSON 内容。</p>
+
+            <div class="chen_request_row">
+                <select class="chen_method" id="chen_method" aria-label="请求方法">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="PATCH">PATCH</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+                <input class="chen_url" id="chen_url" type="text" spellcheck="false"
+                       value="https://jsonplaceholder.typicode.com/posts/1" aria-label="接口地址" placeholder="https://...">
+            </div>
+
+            <div class="chen_body_row" id="chen_body_row">
+                <div class="chen_body_label">
+                    <span>请求体（JSON）</span>
+                    <select class="chen_ct" id="chen_content_type" aria-label="内容类型">
+                        <option value="application/json">Content-Type: application/json</option>
+                        <option value="text/plain;charset=UTF-8">Content-Type: text/plain</option>
+                    </select>
+                </div>
+                <textarea class="chen_body_input" id="chen_body_input" spellcheck="false"
+                          aria-label="请求体"></textarea>
+            </div>
+
+            <div class="chen_send_row">
+                <button class="chen_btn" id="chen_send_btn" type="button">
+                    <span class="iconfont icon-fenxiang"></span>发送请求
+                </button>
+                <button class="chen_btn chen_ghost" id="chen_clear_btn" type="button">清空响应</button>
+                <span class="chen_hint" id="chen_send_hint">尚未发送请求</span>
+            </div>
+
+            <div class="chen_presets" id="chen_presets" aria-label="预置示例"></div>
+
+            <div class="chen_error_box chen_hidden" id="chen_error_box" role="alert" style="margin-top:14px;">
+                <span class="iconfont icon-jinggao"></span>
+                <span><b id="chen_error_title">请求失败</b><code id="chen_error_text"></code></span>
+            </div>
+        </section>
+
+        <!-- 响应 -->
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-xiaoxi"></span>响应结果</h2>
+            <div class="chen_resp_meta" id="chen_resp_meta">
+                <span class="chen_pill">状态 --</span>
+                <span class="chen_pill">耗时 --</span>
+                <span class="chen_pill">大小 --</span>
+            </div>
+            <div class="chen_resp_view chen_empty_view" id="chen_resp_view">响应内容将显示在这里…</div>
+
+            <h2 class="chen_card_title" style="margin-top:18px;"><span class="iconfont icon-dingdan"></span>响应头</h2>
+            <div class="chen_resp_view" id="chen_headers_view" style="max-height:200px;">请求后显示响应头…</div>
+        </section>
+
+        <!-- 历史 -->
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-rili"></span>请求历史（点击回填）</h2>
+            <ul class="chen_history" id="chen_history"></ul>
+        </section>
+
+        <footer class="chen_footer">学号 24001010722 &nbsp;|&nbsp; 姓名 陈弘毅</footer>
+    </div>
+
+    <script>
+        "use strict";
+
+        var CHEN_BASE = "https://jsonplaceholder.typicode.com";
+        var CHEN_TIMEOUT = 15000;
+        var CHEN_MAX_HISTORY = 8;
+
+        var chenEl = {
+            method: document.getElementById("chen_method"),
+            url: document.getElementById("chen_url"),
+            bodyRow: document.getElementById("chen_body_row"),
+            bodyInput: document.getElementById("chen_body_input"),
+            contentType: document.getElementById("chen_content_type"),
+            send: document.getElementById("chen_send_btn"),
+            clear: document.getElementById("chen_clear_btn"),
+            hint: document.getElementById("chen_send_hint"),
+            presets: document.getElementById("chen_presets"),
+            errorBox: document.getElementById("chen_error_box"),
+            errorTitle: document.getElementById("chen_error_title"),
+            errorText: document.getElementById("chen_error_text"),
+            respMeta: document.getElementById("chen_resp_meta"),
+            respView: document.getElementById("chen_resp_view"),
+            headersView: document.getElementById("chen_headers_view"),
+            history: document.getElementById("chen_history")
+        };
+
+        var chenHistory = [];
+        var chenSending = false;
+
+        /* ================= 预置示例 ================= */
+        var chenPresets = [
+            {
+                label: "GET /posts（列表）",
+                method: "GET", url: CHEN_BASE + "/posts", body: ""
+            },
+            {
+                label: "GET /posts/1（单条）",
+                method: "GET", url: CHEN_BASE + "/posts/1", body: ""
+            },
+            {
+                label: "GET /posts?userId=1",
+                method: "GET", url: CHEN_BASE + "/posts?userId=1", body: ""
+            },
+            {
+                label: "POST /posts（新建）",
+                method: "POST", url: CHEN_BASE + "/posts",
+                body: '{\n  "title": "陈弘毅的测试文章",\n  "body": "这是通过 fetch 发送的 POST 请求体。",\n  "userId": 1\n}'
+            },
+            {
+                label: "PUT /posts/1（整体更新）",
+                method: "PUT", url: CHEN_BASE + "/posts/1",
+                body: '{\n  "id": 1,\n  "title": "整体更新后的标题",\n  "body": "PUT 会用这份内容整体替换原记录。",\n  "userId": 1\n}'
+            },
+            {
+                label: "PATCH /posts/1（部分更新）",
+                method: "PATCH", url: CHEN_BASE + "/posts/1",
+                body: '{\n  "title": "只改标题（PATCH）"\n}'
+            },
+            {
+                label: "DELETE /posts/1（删除）",
+                method: "DELETE", url: CHEN_BASE + "/posts/1", body: ""
+            },
+            {
+                label: "GET 不存在的地址（404 演示）",
+                method: "GET", url: CHEN_BASE + "/notfound/999", body: ""
+            }
+        ];
+
+        function chenRenderPresets() {
+            chenEl.presets.innerHTML = "";
+            chenPresets.forEach(function (p) {
+                var btn = chenNode("button", "chen_preset", p.label);
+                btn.type = "button";
+                btn.addEventListener("click", function () {
+                    chenEl.method.value = p.method;
+                    chenEl.url.value = p.url;
+                    chenEl.bodyInput.value = p.body;
+                    chenSyncBodyVisible();
+                    chenEl.bodyInput.classList.remove("chen_error");
+                    chenHideError();
+                });
+                chenEl.presets.appendChild(btn);
+            });
+        }
+
+        /* ================= 工具 ================= */
+        function chenNode(tag, className, text) {
+            var el = document.createElement(tag);
+            if (className) el.className = className;
+            if (text !== undefined && text !== null) el.textContent = String(text);
+            return el;
+        }
+
+        function chenEscape(s) {
+            return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        /* JSON 语法高亮 */
+        function chenHighlight(text) {
+            return chenEscape(text).replace(
+                /("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false)\b|(\bnull\b)|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g,
+                function (m, str, colon, bool, nul, num) {
+                    if (str !== undefined) {
+                        if (colon) return '<span class="chen_j_key">' + str + '</span><span class="chen_j_pun">' + colon + '</span>';
+                        return '<span class="chen_j_str">' + str + '</span>';
+                    }
+                    if (bool !== undefined) return '<span class="chen_j_bool">' + bool + '</span>';
+                    if (nul !== undefined) return '<span class="chen_j_null">' + nul + '</span>';
+                    if (num !== undefined) return '<span class="chen_j_num">' + num + '</span>';
+                    return m;
+                }
+            );
+        }
+
+        function chenHideError() {
+            chenEl.errorBox.classList.add("chen_hidden");
+        }
+
+        function chenShowError(title, detail) {
+            chenEl.errorTitle.textContent = title;
+            chenEl.errorText.textContent = detail || "";
+            chenEl.errorBox.classList.remove("chen_hidden");
+        }
+
+        function chenPill(text, cls) {
+            var pill = chenNode("span", "chen_pill" + (cls ? " " + cls : ""), text);
+            chenEl.respMeta.appendChild(pill);
+            return pill;
+        }
+
+        function chenSyncBodyVisible() {
+            var chenHasBody = ["POST", "PUT", "PATCH"].indexOf(chenEl.method.value) >= 0;
+            chenEl.bodyRow.style.display = chenHasBody ? "" : "none";
+        }
+
+        /* ================= 历史 ================= */
+        function chenPushHistory(method, url) {
+            chenHistory.unshift({
+                method: method,
+                url: url,
+                time: new Date().toLocaleTimeString("zh-CN", { hour12: false })
+            });
+            if (chenHistory.length > CHEN_MAX_HISTORY) chenHistory.length = CHEN_MAX_HISTORY;
+            chenRenderHistory();
+        }
+
+        function chenRenderHistory() {
+            chenEl.history.innerHTML = "";
+            if (!chenHistory.length) {
+                var empty = chenNode("li", "chen_history_empty", "暂无记录，发送请求后这里会保留最近 " + CHEN_MAX_HISTORY + " 条。");
+                chenEl.history.appendChild(empty);
+                return;
+            }
+            chenHistory.forEach(function (h) {
+                var li = document.createElement("li");
+                li.appendChild(chenNode("span", "chen_h_method chen_m_" + h.method.toLowerCase(), h.method));
+                li.appendChild(chenNode("span", "chen_h_url", h.url));
+                li.appendChild(chenNode("span", "chen_h_time", h.time));
+                li.addEventListener("click", function () {
+                    chenEl.method.value = h.method;
+                    chenEl.url.value = h.url;
+                    chenSyncBodyVisible();
+                });
+                chenEl.history.appendChild(li);
+            });
+        }
+
+        /* ================= 发送请求 ================= */
+        async function chenSend() {
+            if (chenSending) return;
+
+            /* URL 校验 */
+            var chenUrlText = chenEl.url.value.trim();
+            var chenParsed;
+            try {
+                chenParsed = new URL(chenUrlText);
+            } catch (err) {
+                chenShowError("URL 格式不正确", "请输入以 http:// 或 https:// 开头的完整地址，例如 " + CHEN_BASE + "/posts");
+                return;
+            }
+            if (chenParsed.protocol !== "http:" && chenParsed.protocol !== "https:") {
+                chenShowError("不支持的协议", "仅支持 http 与 https 请求");
+                return;
+            }
+
+            /* 请求体校验（JSON 时校验格式） */
+            var chenMethod = chenEl.method.value;
+            var chenHasBody = ["POST", "PUT", "PATCH"].indexOf(chenMethod) >= 0;
+            var chenBody = null;
+            var chenHeaders = { "Accept": "application/json" };
+            if (chenHasBody) {
+                var chenRaw = chenEl.bodyInput.value.trim();
+                if (chenEl.contentType.value === "application/json") {
+                    try {
+                        JSON.parse(chenRaw); /* 先校验格式 */
+                    } catch (err) {
+                        chenEl.bodyInput.classList.add("chen_error");
+                        chenShowError("请求体不是合法的 JSON", err.message);
+                        return;
+                    }
+                    chenEl.bodyInput.classList.remove("chen_error");
+                    chenHeaders["Content-Type"] = "application/json";
+                    chenBody = chenRaw;
+                } else {
+                    chenHeaders["Content-Type"] = "text/plain;charset=UTF-8";
+                    chenBody = chenRaw;
+                }
+            }
+
+            chenSending = true;
+            chenEl.send.disabled = true;
+            chenEl.send.innerHTML = "请求中…";
+            chenHideError();
+            chenEl.hint.textContent = "正在请求 " + chenMethod + " " + chenUrlText;
+
+            var chenStart = performance.now();
+            var chenController = new AbortController();
+            var chenTimer = setTimeout(function () { chenController.abort(); }, CHEN_TIMEOUT);
+
+            try {
+                var chenRes = await fetch(chenUrlText, {
+                    method: chenMethod,
+                    headers: chenHeaders,
+                    body: chenBody,
+                    signal: chenController.signal
+                });
+
+                var chenCost = Math.round(performance.now() - chenStart);
+                var chenRawText = await chenRes.text();
+
+                /* 状态与元信息 */
+                chenEl.respMeta.innerHTML = "";
+                chenPill(chenMethod, "chen_method_pill");
+                var chenOk = chenRes.ok;
+                chenPill("HTTP " + chenRes.status + " " + (chenRes.statusText || ""),
+                    chenOk ? "chen_status_ok" : "chen_status_err");
+                chenPill("耗时 " + chenCost + " ms");
+                var chenSizeBytes = new Blob([chenRawText]).size;
+                chenPill(chenSizeBytes < 1024 ? chenSizeBytes + " B" : (chenSizeBytes / 1024).toFixed(1) + " KB");
+                chenEl.hint.textContent = "请求完成";
+
+                /* 响应体：优先按 JSON 解析并高亮，失败则按纯文本显示 */
+                var chenParsedBody = null;
+                var chenIsJson = false;
+                try {
+                    chenParsedBody = JSON.parse(chenRawText);
+                    chenIsJson = true;
+                } catch (err) { chenIsJson = false; }
+
+                if (!chenRawText) {
+                    chenEl.respView.className = "chen_resp_view chen_empty_view";
+                    chenEl.respView.textContent = "（响应体为空，HTTP " + chenRes.status + "）";
+                } else if (chenIsJson) {
+                    chenEl.respView.className = "chen_resp_view";
+                    chenEl.respView.innerHTML = chenHighlight(JSON.stringify(chenParsedBody, null, 2));
+                } else {
+                    chenEl.respView.className = "chen_resp_view";
+                    chenEl.respView.textContent = chenRawText;
+                }
+
+                /* 响应头 */
+                chenEl.headersView.innerHTML = "";
+                chenEl.headersView.className = "chen_resp_view";
+                var chenHeadLines = [];
+                chenRes.headers.forEach(function (value, key) {
+                    chenHeadLines.push(key + ": " + value);
+                });
+                chenEl.headersView.textContent = chenHeadLines.length
+                    ? chenHeadLines.join("\n")
+                    : "（浏览器未暴露任何响应头）";
+
+                /* 非 2xx：页面级错误提示 */
+                if (!chenOk) {
+                    chenShowError("服务器返回错误状态 " + chenRes.status,
+                        chenMethod + " " + chenUrlText + " —— 详见上方响应内容（4xx 通常是地址或参数问题，5xx 是服务器问题）");
+                }
+
+                chenPushHistory(chenMethod, chenUrlText);
+            } catch (err) {
+                var chenMsg;
+                if (err && err.name === "AbortError") {
+                    chenMsg = "请求超时（超过 " + (CHEN_TIMEOUT / 1000) + " 秒），服务器未及时响应";
+                } else if (err instanceof TypeError) {
+                    chenMsg = "网络异常或跨域被拦截：浏览器无法完成该请求，请检查网络、地址拼写与接口的 CORS 设置";
+                } else {
+                    chenMsg = err.message || "未知错误";
+                }
+                chenEl.respMeta.innerHTML = "";
+                chenPill(chenMethod, "chen_method_pill");
+                chenPill("请求失败", "chen_status_err");
+                chenPill("耗时 " + Math.round(performance.now() - chenStart) + " ms");
+                chenEl.respView.className = "chen_resp_view chen_empty_view";
+                chenEl.respView.textContent = "（无响应内容）";
+                chenEl.headersView.className = "chen_resp_view chen_empty_view";
+                chenEl.headersView.textContent = "（无响应头）";
+                chenShowError("请求未能完成", chenMsg);
+                chenEl.hint.textContent = "请求失败";
+            } finally {
+                clearTimeout(chenTimer);
+                chenSending = false;
+                chenEl.send.disabled = false;
+                chenEl.send.innerHTML = '<span class="iconfont icon-fenxiang"></span>发送请求';
+            }
+        }
+
+        /* ================= 事件绑定 ================= */
+        chenEl.send.addEventListener("click", chenSend);
+        chenEl.method.addEventListener("change", function () {
+            chenSyncBodyVisible();
+            chenHideError();
+        });
+        chenEl.clear.addEventListener("click", function () {
+            chenEl.respMeta.innerHTML =
+                '<span class="chen_pill">状态 --</span><span class="chen_pill">耗时 --</span><span class="chen_pill">大小 --</span>';
+            chenEl.respView.className = "chen_resp_view chen_empty_view";
+            chenEl.respView.textContent = "响应内容将显示在这里…";
+            chenEl.headersView.className = "chen_resp_view chen_empty_view";
+            chenEl.headersView.textContent = "请求后显示响应头…";
+            chenEl.hint.textContent = "尚未发送请求";
+            chenHideError();
+        });
+        chenEl.bodyInput.addEventListener("input", function () {
+            chenEl.bodyInput.classList.remove("chen_error");
+        });
+        document.addEventListener("keydown", function (e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                e.preventDefault();
+                chenSend();
+            }
+        });
+
+        /* ================= 初始化 ================= */
+        (function chenInit() {
+            chenRenderPresets();
+            chenRenderHistory();
+            chenSyncBodyVisible();
+            /* 默认填入一个 POST 示例，切换到 POST 即可看到 */
+            var chenDefaultPost = chenPresets[3];
+            chenEl.bodyInput.value = chenDefaultPost.body;
+        })();
+    </script>
+</body>
+</html>

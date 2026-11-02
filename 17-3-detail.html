@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-11-02
+功能名称：商品详情页（根据 URL 中的 id 参数 fetch https://dummyjson.com/products/{id}，默认 id=1）
+    -->
+    <title>17-3 商品详情</title>
+    <style>
+        :root {
+            --chen_bg: #eef2ff;
+            --chen_surface: #ffffff;
+            --chen_text: #1e293b;
+            --chen_text_soft: #475569;
+            --chen_muted: #64748b;
+            --chen_primary: #4f46e5;
+            --chen_primary_soft: #e0e7ff;
+            --chen_border: #dbe3f2;
+            --chen_danger: #dc2626;
+            --chen_ok: #059669;
+            --chen_star: #f59e0b;
+            --chen_radius: 14px;
+            --chen_shadow: 0 18px 45px -28px rgba(30, 64, 175, 0.55);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 8% 0%, rgba(99, 102, 241, 0.16), transparent 30rem),
+                radial-gradient(circle at 92% 8%, rgba(14, 165, 233, 0.14), transparent 26rem),
+                var(--chen_bg);
+            color: var(--chen_text);
+            line-height: 1.65;
+            min-height: 100vh;
+        }
+
+        .chen_page { max-width: 1000px; margin: 0 auto; padding: 32px 22px 40px; }
+
+        /* ---------- 面包屑 ---------- */
+        .chen_crumb {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; color: var(--chen_muted);
+            margin-bottom: 14px; flex-wrap: wrap;
+        }
+        .chen_crumb a {
+            color: var(--chen_primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .chen_crumb a:hover { text-decoration: underline; }
+        .chen_crumb .chen_sep { color: #cbd5e1; }
+        .chen_crumb .chen_here { color: var(--chen_text); }
+        .chen_crumb code { font-family: Consolas, monospace; word-break: break-all; }
+
+        /* ---------- 卡片 ---------- */
+        .chen_card {
+            background: var(--chen_surface);
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            box-shadow: var(--chen_shadow);
+            padding: 26px 28px;
+        }
+
+        .chen_detail {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 28px;
+        }
+        @media (max-width: 760px) { .chen_detail { grid-template-columns: 1fr; } }
+
+        .chen_img {
+            width: 100%; aspect-ratio: 1 / 1;
+            border-radius: 14px;
+            background: #f1f5ff;
+            object-fit: cover;
+            border: 1px solid var(--chen_border);
+        }
+        .chen_gallery { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+        .chen_gallery img {
+            width: 62px; height: 62px;
+            object-fit: cover; border-radius: 10px;
+            border: 2px solid var(--chen_border);
+            cursor: pointer;
+            transition: border-color .15s, transform .15s;
+        }
+        .chen_gallery img:hover { border-color: var(--chen_primary); transform: translateY(-2px); }
+        .chen_gallery img.chen_on { border-color: var(--chen_primary); }
+
+        .chen_info { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+        .chen_title { font-size: 22px; line-height: 1.4; }
+        .chen_chips { display: flex; gap: 8px; flex-wrap: wrap; }
+        .chen_chip {
+            font-size: 12px; padding: 2px 10px; border-radius: 999px;
+            background: var(--chen_primary_soft); color: var(--chen_primary);
+        }
+        .chen_chip.chen_gray { background: #f1f5f9; color: #475569; }
+        .chen_desc { font-size: 14px; color: var(--chen_text_soft); }
+
+        .chen_price_row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+        .chen_price { font-size: 28px; font-weight: 700; color: #dc2626; font-family: Consolas, monospace; }
+        .chen_price_origin { font-size: 14px; color: #94a3b8; text-decoration: line-through; font-family: Consolas, monospace; }
+        .chen_save { font-size: 13px; color: var(--chen_ok); font-weight: 600; }
+
+        .chen_specs {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            border-top: 1px dashed var(--chen_border);
+            padding-top: 14px;
+        }
+        .chen_spec {
+            background: #f8faff;
+            border: 1px solid var(--chen_border);
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+        .chen_spec span { display: block; font-size: 11.5px; color: var(--chen_muted); }
+        .chen_spec strong { font-size: 14px; font-weight: 600; word-break: break-all; }
+        .chen_star { color: var(--chen_star); letter-spacing: 1px; }
+        .chen_stock_ok { color: var(--chen_ok); }
+        .chen_stock_low { color: #d97706; }
+        .chen_stock_out { color: var(--chen_danger); }
+
+        /* ---------- 骨架屏 ---------- */
+        .chen_skeleton { display: grid; grid-template-columns: 360px 1fr; gap: 28px; }
+        @media (max-width: 760px) { .chen_skeleton { grid-template-columns: 1fr; } }
+        .chen_sk_img { width: 100%; aspect-ratio: 1 / 1; border-radius: 14px; }
+        .chen_sk_body { display: flex; flex-direction: column; gap: 12px; }
+        .chen_sk_line { height: 14px; border-radius: 7px; }
+        .chen_sk_short { width: 55%; }
+        .chen_sk_mid { width: 78%; }
+        .chen_shimmer {
+            background: linear-gradient(90deg, #eef2f7 25%, #f8fafc 37%, #eef2f7 63%);
+            background-size: 400% 100%;
+            animation: chen_shimmer 1.3s ease infinite;
+        }
+        @keyframes chen_shimmer {
+            0% { background-position: 100% 50%; }
+            100% { background-position: 0 50%; }
+        }
+
+        /* ---------- 状态块 ---------- */
+        .chen_state {
+            text-align: center;
+            padding: 40px 24px;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .chen_state_icon {
+            width: 58px; height: 58px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; margin-bottom: 4px;
+            font-family: Consolas, monospace; font-weight: 700;
+        }
+        .chen_state_icon.chen_empty_icon { background: #eef2ff; color: #8b8ff0; }
+        .chen_state_icon.chen_error_icon { background: #fee2e2; color: #dc2626; }
+        .chen_state h3 { font-size: 16px; }
+        .chen_state p { font-size: 13.5px; color: var(--chen_muted); max-width: 540px; word-break: break-all; }
+        .chen_state_actions { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+
+        .chen_btn {
+            padding: 9px 18px;
+            border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #4f46e5, #6d28d9);
+            color: #fff;
+            font-size: 14px; font-weight: 600; font-family: inherit;
+            cursor: pointer; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 7px;
+            transition: transform .15s, box-shadow .15s;
+        }
+        .chen_btn:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -10px rgba(79,70,229,.7); }
+        .chen_btn.chen_ghost {
+            background: #fff; color: var(--chen_primary);
+            border: 1px solid #c7d2fe;
+        }
+        .chen_btn.chen_ghost:hover { background: var(--chen_primary_soft); }
+
+        /* ---------- 页脚 ---------- */
+        .chen_footer {
+            margin-top: 30px; text-align: center;
+            color: var(--chen_muted); font-size: 13px;
+            padding: 14px 0 4px;
+            border-top: 1px solid var(--chen_border);
+        }
+    </style>
+</head>
+<body>
+    <div class="chen_page">
+        <nav class="chen_crumb">
+            <a href="17-3.html">商品列表</a>
+            <span class="chen_sep">/</span>
+            <span class="chen_here" id="chen_crumb_here">加载中…</span>
+        </nav>
+
+        <main class="chen_card" id="chen_card" aria-live="polite" aria-busy="true">
+            <div class="chen_skeleton" id="chen_skeleton">
+                <div class="chen_sk_img chen_shimmer"></div>
+                <div class="chen_sk_body">
+                    <div class="chen_sk_line chen_shimmer"></div>
+                    <div class="chen_sk_line chen_sk_mid chen_shimmer"></div>
+                    <div class="chen_sk_line chen_shimmer"></div>
+                    <div class="chen_sk_line chen_sk_short chen_shimmer"></div>
+                    <div class="chen_sk_line chen_shimmer"></div>
+                    <div class="chen_sk_line chen_sk_mid chen_shimmer"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="chen_footer">学号 24001010722 &nbsp;|&nbsp; 姓名 陈弘毅</footer>
+    </div>
+
+    <script>
+        "use strict";
+
+        var CHEN_API = "https://dummyjson.com";
+        var CHEN_LIST_PAGE = "17-3.html";
+        var CHEN_TIMEOUT = 12000;
+
+        var chenEl = {
+            card: document.getElementById("chen_card"),
+            crumbHere: document.getElementById("chen_crumb_here")
+        };
+
+        /* 从 URL 读取商品 id（?id=xx），缺省使用 1 */
+        function chenGetIdFromUrl() {
+            var chenParams = new URLSearchParams(window.location.search);
+            var chenRaw = chenParams.get("id");
+            var chenId = parseInt(chenRaw, 10);
+            return isFinite(chenId) && chenId > 0 ? chenId : 1;
+        }
+
+        /* 带超时的 fetch，统一抛错 */
+        async function chenRequestJSON(url) {
+            var chenController = new AbortController();
+            var chenTimer = setTimeout(function () { chenController.abort(); }, CHEN_TIMEOUT);
+            try {
+                var chenRes = await fetch(url, {
+                    method: "GET",
+                    headers: { "Accept": "application/json" },
+                    signal: chenController.signal
+                });
+                if (!chenRes.ok) {
+                    throw new Error("请求失败：HTTP " + chenRes.status + " " + chenRes.statusText);
+                }
+                return await chenRes.json();
+            } catch (chenErr) {
+                if (chenErr.name === "AbortError") {
+                    throw new Error("请求超时（超过 " + (CHEN_TIMEOUT / 1000) + " 秒），请检查网络后重试");
+                }
+                if (chenErr instanceof TypeError) {
+                    throw new Error("网络异常，无法连接接口（可能是断网、跨域或接口不可用）");
+                }
+                throw chenErr;
+            } finally {
+                clearTimeout(chenTimer);
+            }
+        }
+
+        function chenMoney(n) {
+            var v = Number(n);
+            return isFinite(v) ? "$" + v.toFixed(2) : "--";
+        }
+
+        function chenStars(score) {
+            var s = Number(score) || 0;
+            var chenFull = Math.round(s);
+            var chenStr = "";
+            for (var i = 0; i < 5; i++) chenStr += i < chenFull ? "★" : "☆";
+            return chenStr;
+        }
+
+        function chenStockText(stock) {
+            var s = Number(stock) || 0;
+            if (s <= 0) return "暂时无货";
+            if (s < 10) return "仅剩 " + s + " 件";
+            return "库存 " + s + " 件";
+        }
+
+        function chenStockClass(stock) {
+            var s = Number(stock) || 0;
+            if (s <= 0) return "chen_stock_out";
+            if (s < 10) return "chen_stock_low";
+            return "chen_stock_ok";
+        }
+
+        /* 元素快捷创建：接口文本一律 textContent */
+        function chenNode(tag, className, text) {
+            var el = document.createElement(tag);
+            if (className) el.className = className;
+            if (text !== undefined && text !== null) el.textContent = String(text);
+            return el;
+        }
+
+        /* ================= 状态渲染 ================= */
+        function chenRenderState(iconText, iconClass, title, desc) {
+            chenEl.card.innerHTML = "";
+            var box = chenNode("div", "chen_state");
+            var icon = chenNode("div", "chen_state_icon " + iconClass, iconText);
+            box.appendChild(icon);
+            box.appendChild(chenNode("h3", "", title));
+            if (desc) box.appendChild(chenNode("p", "", desc));
+
+            var actions = chenNode("div", "chen_state_actions");
+            var retry = chenNode("button", "chen_btn", "重试");
+            retry.type = "button";
+            retry.addEventListener("click", chenLoadDetail);
+            actions.appendChild(retry);
+            var back = chenNode("a", "chen_btn chen_ghost", "返回商品列表");
+            back.href = CHEN_LIST_PAGE;
+            actions.appendChild(back);
+
+            box.appendChild(actions);
+            chenEl.card.appendChild(box);
+            chenEl.card.setAttribute("aria-busy", "false");
+        }
+
+        /* ================= 详情渲染 ================= */
+        function chenRenderDetail(product) {
+            chenEl.card.innerHTML = "";
+            chenEl.crumbHere.textContent = product.title || "商品 " + product.id;
+            document.title = (product.title ? product.title + " · " : "") + "17-3 商品详情";
+
+            var detail = chenNode("div", "chen_detail");
+
+            /* 左：大图 + 缩略图 */
+            var imgBox = chenNode("div");
+            var img = document.createElement("img");
+            img.className = "chen_img";
+            img.alt = product.title ? String(product.title) : "商品图片";
+            var chenImgs = Array.isArray(product.images) && product.images.length
+                ? product.images
+                : [product.thumbnail || ""];
+            img.src = chenImgs[0];
+            img.addEventListener("error", function () { img.style.visibility = "hidden"; });
+            imgBox.appendChild(img);
+
+            if (chenImgs.length > 1) {
+                var gallery = chenNode("div", "chen_gallery");
+                chenImgs.forEach(function (src, idx) {
+                    var thumb = document.createElement("img");
+                    thumb.src = src;
+                    thumb.alt = "商品图 " + (idx + 1);
+                    thumb.loading = "lazy";
+                    if (idx === 0) thumb.className = "chen_on";
+                    thumb.addEventListener("click", function () {
+                        img.src = src;
+                        img.style.visibility = "visible";
+                        var all = gallery.querySelectorAll("img");
+                        for (var i = 0; i < all.length; i++) all[i].classList.remove("chen_on");
+                        thumb.classList.add("chen_on");
+                    });
+                    gallery.appendChild(thumb);
+                });
+                imgBox.appendChild(gallery);
+            }
+
+            /* 右：信息 */
+            var info = chenNode("div", "chen_info");
+            info.appendChild(chenNode("h1", "chen_title", product.title || "未命名商品"));
+
+            var chips = chenNode("div", "chen_chips");
+            chips.appendChild(chenNode("span", "chen_chip", "品牌：" + (product.brand || "未标注")));
+            chips.appendChild(chenNode("span", "chen_chip chen_gray", "分类：" + (product.category || "未分类")));
+            if (product.sku) chips.appendChild(chenNode("span", "chen_chip chen_gray", "SKU：" + product.sku));
+            info.appendChild(chips);
+
+            info.appendChild(chenNode("p", "chen_desc", product.description || "该商品暂无描述。"));
+
+            var priceRow = chenNode("div", "chen_price_row");
+            priceRow.appendChild(chenNode("span", "chen_price", chenMoney(product.price)));
+            var discount = Number(product.discountPercentage) || 0;
+            var origin = Number(product.price) / (1 - discount / 100);
+            if (discount > 0 && isFinite(origin)) {
+                priceRow.appendChild(chenNode("span", "chen_price_origin", chenMoney(origin)));
+                priceRow.appendChild(chenNode("span", "chen_save",
+                    "立省 " + chenMoney(origin - Number(product.price)) + "（-" + discount.toFixed(1) + "%）"));
+            }
+            info.appendChild(priceRow);
+
+            var specs = chenNode("div", "chen_specs");
+            function chenSpec(label, value) {
+                var box = chenNode("div", "chen_spec");
+                box.appendChild(chenNode("span", "", label));
+                box.appendChild(chenNode("strong", "", value));
+                return box;
+            }
+            specs.appendChild(chenSpec("评分", chenStars(product.rating) + " " + (Number(product.rating) || 0).toFixed(1)));
+            var stockSpan = chenNode("div", "chen_spec");
+            stockSpan.appendChild(chenNode("span", "", "库存"));
+            var stockStrong = chenNode("strong", chenStockClass(product.stock), chenStockText(product.stock));
+            stockSpan.appendChild(stockStrong);
+            specs.appendChild(stockSpan);
+            specs.appendChild(chenSpec("折扣", discount > 0 ? "-" + discount.toFixed(1) + "%" : "无折扣"));
+            if (product.warrantyInformation) specs.appendChild(chenSpec("保修", product.warrantyInformation));
+            if (product.returnPolicy) specs.appendChild(chenSpec("退换", product.returnPolicy));
+            if (product.shippingInformation) specs.appendChild(chenSpec("物流", product.shippingInformation));
+            info.appendChild(specs);
+
+            detail.appendChild(imgBox);
+            detail.appendChild(info);
+            chenEl.card.appendChild(detail);
+            chenEl.card.setAttribute("aria-busy", "false");
+        }
+
+        /* ================= 请求详情 ================= */
+        var chenLoading = false;
+        async function chenLoadDetail() {
+            if (chenLoading) return;
+            var id = chenGetIdFromUrl();
+            chenLoading = true;
+
+            chenEl.card.innerHTML = "";
+            var sk = chenNode("div", "chen_skeleton");
+            sk.appendChild(chenNode("div", "chen_sk_img chen_shimmer"));
+            var skBody = chenNode("div", "chen_sk_body");
+            for (var i = 0; i < 6; i++) {
+                skBody.appendChild(chenNode("div", "chen_sk_line chen_shimmer" + (i % 2 ? " chen_sk_mid" : "")));
+            }
+            sk.appendChild(skBody);
+            chenEl.card.appendChild(sk);
+            chenEl.card.setAttribute("aria-busy", "true");
+            chenEl.crumbHere.textContent = "加载中…";
+
+            try {
+                var product = await chenRequestJSON(CHEN_API + "/products/" + encodeURIComponent(id));
+                if (!product || typeof product !== "object") {
+                    throw new Error("接口返回的数据格式不正确");
+                }
+                chenRenderDetail(product);
+            } catch (err) {
+                chenEl.crumbHere.textContent = "加载失败";
+                chenRenderState("!", "chen_error_icon", "商品详情加载失败",
+                    (err.message || "未知错误") + "（商品编号：" + id + "）");
+            } finally {
+                chenLoading = false;
+            }
+        }
+
+        chenLoadDetail();
+    </script>
+</body>
+</html>
