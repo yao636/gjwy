@@ -3,84 +3,343 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>722陈弘毅的《高级网页设计》课堂实践</title>
+    <!--
+姓名：陈弘毅
+日期：2026-11-02
+功能名称：课程实践导航页（收录全部课堂练习页面，支持关键字搜索过滤）
+    -->
+    <title>722 陈弘毅的《高级网页设计》课堂实践</title>
     <style>
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
+        :root {
+            --chen_bg: #f4f6fb;
+            --chen_surface: #ffffff;
+            --chen_text: #1e293b;
+            --chen_text_soft: #475569;
+            --chen_muted: #64748b;
+            --chen_primary: #1d4ed8;
+            --chen_primary_soft: #dbeafe;
+            --chen_border: #dbe3f0;
+            --chen_radius: 14px;
+            --chen_shadow: 0 14px 36px -26px rgba(29, 78, 216, 0.5);
         }
-        body{
-            background-color:#f5f7fa;
-            font-family:"Microsoft Yahei",sans-serif;
-            padding:40px;
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(29, 78, 216, 0.12), transparent 30rem),
+                radial-gradient(circle at 90% 12%, rgba(5, 150, 105, 0.1), transparent 26rem),
+                var(--chen_bg);
+            color: var(--chen_text);
+            line-height: 1.65;
+            min-height: 100vh;
         }
-        .container{
-            max-width:800px;
-            margin:0 auto;
-            background:#fff;
-            padding:35px;
-            border-radius:12px;
-            box-shadow:0 2px 12px rgba(0,0,0,0.1);
+
+        .chen_page { max-width: 1080px; margin: 0 auto; padding: 36px 22px 42px; }
+
+        /* ---------- 头部 ---------- */
+        .chen_hero {
+            background: linear-gradient(135deg, #1d4ed8, #7c3aed 55%, #059669);
+            color: #fff;
+            border-radius: var(--chen_radius);
+            padding: 30px 32px;
+            box-shadow: var(--chen_shadow);
         }
-        h1{
-            text-align:center;
-            color:#039;
-            margin-bottom:30px;
-            font-size:24px;
+        .chen_hero h1 { font-size: 24px; letter-spacing: 1px; }
+        .chen_hero p { font-size: 13.5px; opacity: .93; margin-top: 6px; }
+        .chen_hero_stats {
+            display: flex; gap: 22px; flex-wrap: wrap;
+            margin-top: 16px;
+            font-size: 13px;
         }
-        ul{
-            list-style:none;
+        .chen_hero_stats span {
+            background: rgba(255, 255, 255, .16);
+            border: 1px solid rgba(255, 255, 255, .35);
+            padding: 3px 14px;
+            border-radius: 999px;
         }
-        li{
-            margin-bottom:16px;
+
+        /* ---------- 搜索 ---------- */
+        .chen_search_wrap { margin-top: 18px; }
+        .chen_search {
+            width: 100%;
+            padding: 12px 18px;
+            border: 1.5px solid var(--chen_border);
+            border-radius: 12px;
+            font-size: 14.5px;
+            font-family: inherit;
+            background: var(--chen_surface);
+            color: var(--chen_text);
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
         }
-        a{
-            display:block;
-            padding:14px 20px;
-            background:#eef6ff;
-            color:#039;
-            text-decoration:none;
-            border-radius:8px;
-            font-size:16px;
-            transition:background 0.2s;
+        .chen_search:focus {
+            border-color: var(--chen_primary);
+            box-shadow: 0 0 0 3px rgba(29, 78, 216, .15);
         }
-        a:hover{
-            background:#039;
-            color:#fff;
+        .chen_search_tip { font-size: 12px; color: var(--chen_muted); margin-top: 6px; }
+
+        /* ---------- 分组 ---------- */
+        .chen_group { margin-top: 26px; }
+        .chen_group_head {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 12px;
         }
-        .tip{
-            margin-top:35px;
-            padding:20px;
-            background:#f0f4f9;
-            border-left:4px solid #039;
-            color:#333;
-            line-height:1.7;
+        .chen_group_badge {
+            width: 34px; height: 34px; flex: none;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700;
+            color: #fff;
+            font-family: Consolas, monospace;
+        }
+        .chen_group_head h2 { font-size: 17px; }
+        .chen_group_head span { font-size: 12.5px; color: var(--chen_muted); }
+
+        .chen_cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(236px, 1fr));
+            gap: 12px;
+        }
+        .chen_card {
+            display: block;
+            background: var(--chen_surface);
+            border: 1px solid var(--chen_border);
+            border-radius: 12px;
+            padding: 13px 15px;
+            text-decoration: none;
+            color: inherit;
+            transition: transform .16s, box-shadow .16s, border-color .16s;
+        }
+        .chen_card:hover {
+            transform: translateY(-3px);
+            border-color: var(--chen_primary);
+            box-shadow: 0 16px 30px -22px rgba(29, 78, 216, .8);
+        }
+        .chen_card h3 { font-size: 14.5px; margin-bottom: 3px; }
+        .chen_card p { font-size: 12.5px; color: var(--chen_muted); margin-bottom: 7px; }
+        .chen_card code {
+            font-family: Consolas, monospace;
+            font-size: 11.5px;
+            color: var(--chen_primary);
+            background: var(--chen_primary_soft);
+            padding: 1px 7px;
+            border-radius: 5px;
+            word-break: break-all;
+        }
+        .chen_no_result {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: var(--chen_muted);
+            font-size: 13.5px;
+            padding: 26px 0;
+            background: var(--chen_surface);
+            border: 1px dashed var(--chen_border);
+            border-radius: 12px;
+        }
+
+        /* ---------- 说明 ---------- */
+        .chen_tip {
+            margin-top: 30px;
+            background: var(--chen_surface);
+            border: 1px solid var(--chen_border);
+            border-left: 4px solid var(--chen_primary);
+            border-radius: var(--chen_radius);
+            padding: 18px 22px;
+            font-size: 13px;
+            color: var(--chen_text_soft);
+        }
+        .chen_tip b { color: var(--chen_primary); }
+
+        /* ---------- 页脚 ---------- */
+        .chen_footer {
+            margin-top: 28px; text-align: center;
+            color: var(--chen_muted); font-size: 13px;
+            padding: 14px 0 4px;
+            border-top: 1px solid var(--chen_border);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>722陈弘毅的《高级网页设计》课堂实践</h1>
-        <ul>
-            <li><a href="1.html">1.html</a></li>
-            <li><a href="2-2.html">2-2.html</a></li>
-            <li><a href="3-1.html">3-1.html</a></li>
-            <li><a href="3-2-css.html">3-2 css.html</a></li>
-            <li><a href="4-1.html">4-1.html</a></li>
-            <li><a href="4-2.html">4-2.html</a></li>
-            <li><a href="5-1.html">5-1.html</a></li>
-            <li><a href="5-2-he-mo-xing.html">5-2盒模型.html</a></li>
-            <li><a href="6-1-flex.html">6-1 flex.html</a></li>
-            <li><a href="6-2-yi-zuo-yi-you.html">6-2一左一右.html</a></li>
-            <li><a href="7-1-shang-tu-xia-wen.html">7-1上图下文.html</a></li>
-            <li><a href="7-2-zuo-tu-you-wen.html">7-2左图右文.html</a></li>
-            <li><a href="8-1-css3-xuan-ze-qi.html">8-1 CSS3选择器.html</a></li>
-            <li><a href="9-1-transition.html">9-1 transition.html</a></li>
-        </ul>
-        <div class="tip">
-            创建一个新页面，包括本目录下的所有网页的超链接，使用原生代码，不使用cdn，新页面名称为index.html，主题为722陈弘毅的《高级网页设计》课堂实践，美化页面，页面中包括本提示词。
+    <div class="chen_page">
+        <header class="chen_hero">
+            <h1>722 陈弘毅的《高级网页设计》课堂实践</h1>
+            <p>学号 24001010722 · 全部页面使用原生 HTML / CSS / JavaScript 完成，不使用任何框架与 CDN</p>
+            <div class="chen_hero_stats">
+                <span id="chen_stat_pages">0 个页面</span>
+                <span id="chen_stat_groups">0 个章节</span>
+                <span>覆盖 HTML · CSS · 布局 · 动画 · JavaScript · 异步与接口</span>
+            </div>
+        </header>
+
+        <div class="chen_search_wrap">
+            <input class="chen_search" id="chen_search" type="text"
+                   placeholder="搜索页面：输入编号或关键词，如 flex、盒子、fetch、定时器…"
+                   aria-label="搜索页面">
+            <p class="chen_search_tip">支持按页面名称、说明、文件名模糊匹配</p>
         </div>
+
+        <main id="chen_groups"></main>
+
+        <div class="chen_tip">
+            <b>作业说明：</b>创建一个新页面，包括本目录下的所有网页的超链接，使用原生代码，不使用 CDN，新页面名称为
+            index.html，主题为 722 陈弘毅的《高级网页设计》课堂实践，美化页面，页面中包括本提示词。
+            本页即按该要求实现，并额外提供了分组浏览与关键字搜索功能。
+        </div>
+
+        <footer class="chen_footer">学号 24001010722 &nbsp;|&nbsp; 姓名 陈弘毅</footer>
     </div>
+
+    <script>
+        "use strict";
+
+        /* ================= 页面数据（按章节分组） ================= */
+        var CHEN_GROUPS = [
+            {
+                name: "HTML 基础", badge: "1-2", color: "#0891b2",
+                pages: [
+                    { file: "1.html", title: "第一个网页", desc: "HTML 文档基本结构" },
+                    { file: "2-1.html", title: "HTML 基础练习（一）", desc: "常用标签与文本排版" },
+                    { file: "2-2.html", title: "HTML 基础练习（二）", desc: "列表、图片与超链接" }
+                ]
+            },
+            {
+                name: "CSS 样式与布局", badge: "3-8", color: "#2563eb",
+                pages: [
+                    { file: "3-1.html", title: "CSS 基础（一）", desc: "行内、内嵌与外链样式" },
+                    { file: "3-2-css.html", title: "CSS 基础（二）", desc: "样式表综合练习" },
+                    { file: "4-1.html", title: "选择器与样式（一）", desc: "基础选择器应用" },
+                    { file: "4-2.html", title: "选择器与样式（二）", desc: "选择器进阶练习" },
+                    { file: "5-1.html", title: "文本与背景样式", desc: "常用文本属性练习" },
+                    { file: "5-2-he-mo-xing.html", title: "盒模型", desc: "margin / border / padding" },
+                    { file: "6-1-flex.html", title: "Flex 弹性布局", desc: "display: flex 基础用法" },
+                    { file: "6-2-yi-zuo-yi-you.html", title: "一左一右布局", desc: "双栏自适应布局" },
+                    { file: "7-1-shang-tu-xia-wen.html", title: "上图下文", desc: "常见图文卡片结构" },
+                    { file: "7-2-zuo-tu-you-wen.html", title: "左图右文", desc: "横向图文混排" },
+                    { file: "8-1-css3-xuan-ze-qi.html", title: "CSS3 选择器", desc: "属性、伪类与伪元素" }
+                ]
+            },
+            {
+                name: "过渡与动画", badge: "9-10", color: "#7c3aed",
+                pages: [
+                    { file: "9-1-transition.html", title: "transition 过渡", desc: "CSS3 过渡效果" },
+                    { file: "10-1 animation.html", title: "animation 动画", desc: "关键帧动画练习" }
+                ]
+            },
+            {
+                name: "JavaScript 基础", badge: "11-15", color: "#d97706",
+                pages: [
+                    { file: "11-1.html", title: "JavaScript 初识", desc: "第一个脚本页面" },
+                    { file: "11-3.html", title: "CSS3 3D 动画", desc: "JS 配合 3D 变换" },
+                    { file: "11-4.html", title: "排行榜", desc: "DOM 动态渲染列表" },
+                    { file: "12-1.html", title: "JavaScript 练习（12-1）", desc: "基础语法应用" },
+                    { file: "13-1.html", title: "JavaScript 练习（13-1）", desc: "流程控制练习" },
+                    { file: "13-2.html", title: "JavaScript 练习（13-2）", desc: "函数与事件" },
+                    { file: "13-3.html", title: "JavaScript 练习（13-3）", desc: "综合小案例" },
+                    { file: "13-4.html", title: "JavaScript 练习（13-4）", desc: "综合小案例" },
+                    { file: "14-1.html", title: "JavaScript 练习（14-1）", desc: "对象入门" },
+                    { file: "14-2.html", title: "六种基础数据类型", desc: "数据类型演示" },
+                    { file: "15-1.html", title: "数 7 游戏 · 100 个盒子", desc: "循环与条件渲染" },
+                    { file: "15-2.html", title: "条件语句与循环结构", desc: "程序结构演示" }
+                ]
+            },
+            {
+                name: "DOM 与异步进阶", badge: "16-17", color: "#dc2626",
+                pages: [
+                    { file: "16-1.html", title: "数组方法可视化", desc: "17 个数组方法交互演示" },
+                    { file: "16-2.html", title: "对象与字符串", desc: "对象操作与字符串方法" },
+                    { file: "16-3.html", title: "热搜榜", desc: "仿热搜界面，双榜切换" },
+                    { file: "16-4.html", title: "点击排行（课堂测试 2）", desc: "像素级还原 + 可点击" },
+                    { file: "17-1.html", title: "JSON 数据格式", desc: "parse / stringify 与语法高亮" },
+                    { file: "17-2.html", title: "fetch 商品列表", desc: "卡片网格 + 详情弹层" },
+                    { file: "17-3.html", title: "商品列表页", desc: "fetch 请求，跳转详情页" },
+                    { file: "17-3-detail.html", title: "商品详情页", desc: "按 id 请求单个商品" },
+                    { file: "17-4.html", title: "接口测试工具", desc: "GET/POST/PUT/PATCH/DELETE" },
+                    { file: "17-5.html", title: "两种定时器", desc: "setTimeout 与 setInterval" },
+                    { file: "17-6.html", title: "异步包饺子流程", desc: "Promise 与 async/await" }
+                ]
+            },
+            {
+                name: "综合页面", badge: "综合", color: "#059669",
+                pages: [
+                    { file: "photography.html", title: "摄影主题页面", desc: "图片展示综合练习" }
+                ]
+            }
+        ];
+
+        var chenEl = {
+            groups: document.getElementById("chen_groups"),
+            search: document.getElementById("chen_search"),
+            statPages: document.getElementById("chen_stat_pages"),
+            statGroups: document.getElementById("chen_stat_groups")
+        };
+
+        function chenNode(tag, className, text) {
+            var el = document.createElement(tag);
+            if (className) el.className = className;
+            if (text !== undefined && text !== null) el.textContent = text;
+            return el;
+        }
+
+        function chenTotalPages() {
+            var n = 0;
+            CHEN_GROUPS.forEach(function (g) { n += g.pages.length; });
+            return n;
+        }
+
+        /* ================= 渲染 ================= */
+        function chenRender(filterText) {
+            var chenFilter = (filterText || "").trim().toLowerCase();
+            chenEl.groups.innerHTML = "";
+            var chenShown = 0;
+
+            CHEN_GROUPS.forEach(function (group) {
+                var chenPages = group.pages.filter(function (p) {
+                    if (!chenFilter) return true;
+                    return (p.title + p.desc + p.file).toLowerCase().indexOf(chenFilter) >= 0;
+                });
+                if (!chenPages.length) return;
+                chenShown += chenPages.length;
+
+                var section = chenNode("section", "chen_group");
+                var head = chenNode("div", "chen_group_head");
+                var badge = chenNode("div", "chen_group_badge", group.badge);
+                badge.style.background = group.color;
+                head.appendChild(badge);
+                head.appendChild(chenNode("h2", "", group.name));
+                head.appendChild(chenNode("span", "", "共 " + chenPages.length + " 个页面"));
+                section.appendChild(head);
+
+                var cards = chenNode("div", "chen_cards");
+                chenPages.forEach(function (p) {
+                    var a = chenNode("a", "chen_card");
+                    a.href = encodeURI(p.file);
+                    a.appendChild(chenNode("h3", "", p.title));
+                    a.appendChild(chenNode("p", "", p.desc));
+                    a.appendChild(chenNode("code", "", p.file));
+                    cards.appendChild(a);
+                });
+                section.appendChild(cards);
+                chenEl.groups.appendChild(section);
+            });
+
+            if (chenFilter && !chenShown) {
+                var none = chenNode("div", "chen_no_result", "没有匹配“" + filterText + "”的页面，换个关键词试试");
+                chenEl.groups.appendChild(none);
+            }
+        }
+
+        /* ================= 初始化 ================= */
+        (function chenInit() {
+            chenEl.statPages.textContent = chenTotalPages() + " 个页面";
+            chenEl.statGroups.textContent = CHEN_GROUPS.length + " 个章节";
+            chenRender("");
+
+            chenEl.search.addEventListener("input", function () {
+                chenRender(this.value);
+            });
+        })();
+    </script>
 </body>
 </html>
