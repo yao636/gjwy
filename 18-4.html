@@ -196,8 +196,6 @@
         var chenChartGl = null;
         var chenAutoRotate = false;
         var chenGlPoints = new Float32Array(0);
-        var chenIsFallback3d = false;   /* 图一是否处于 2D 兼容模式 */
-        var chenIsFallbackGl = false;   /* 图二是否处于 2D 兼容模式 */
 
         var chenEl = {
             status3d: document.getElementById("chen_status_3d"),
@@ -247,25 +245,6 @@
             chenEl.errorBox.classList.add("chen_hidden");
         }
 
-        /* ================= WebGL 能力检测（识别无 WebGL / 软件渲染） ================= */
-        function chenGLAvailable() {
-            try {
-                var chenTest = document.createElement("canvas");
-                var chenCtx = chenTest.getContext("webgl") || chenTest.getContext("experimental-webgl");
-                if (!chenCtx) return { ok: false, renderer: "无法创建 WebGL 上下文" };
-                var chenInfo = chenCtx.getExtension("WEBGL_debug_renderer_info");
-                var chenName = chenInfo ? String(chenCtx.getParameter(chenInfo.UNMASKED_RENDERER_WEBGL)) : "";
-                if (!chenName) chenName = String(chenCtx.getParameter(chenCtx.RENDERER) || "未知");
-                /* SwiftShader / llvmpipe 等是 CPU 软渲染，跑 3D 会非常卡且常出黑屏 */
-                if (/swiftshader|llvmpipe|software|basic render/i.test(chenName)) {
-                    return { ok: false, renderer: chenName + "（软件渲染）" };
-                }
-                return { ok: true, renderer: chenName };
-            } catch (err) {
-                return { ok: false, renderer: "检测异常：" + err.message };
-            }
-        }
-
         /* ================= 图一：geo3D + bar3D ================= */
         function chenInit3D() {
             chenChart3d = echarts.init(document.getElementById("chen_chart3d"), null, { renderer: "canvas" });
@@ -275,7 +254,6 @@
                 return [c[0], c[1], Math.sqrt(c[2]) * 6];
             });
 
-            /* 为保证流畅：关闭阴影与 SSAO 后期特效（官方示例的这类特效在部分机器上极耗性能） */
             chenChart3d.setOption({
                 backgroundColor: "#cdcfd5",
                 geo3D: {
@@ -284,11 +262,12 @@
                     light: {
                         main: {
                             intensity: 5,
-                            shadow: false,
+                            shadow: true,
+                            shadowQuality: "high",
                             alpha: 30
                         },
                         ambient: {
-                            intensity: 0.4
+                            intensity: 0.3
                         }
                     },
                     viewControl: {
@@ -304,12 +283,12 @@
                         color: "#999"
                     },
                     postEffect: {
-                        enable: false,
+                        enable: true,
                         bloom: { enable: false },
                         SSAO: {
                             radius: 1,
                             intensity: 1.2,
-                            enable: false
+                            enable: true
                         },
                         depthOfField: {
                             enable: false,
@@ -381,6 +360,7 @@
                         blendMode: "lighter",
                         large: true,
                         itemStyle: { color: "rgb(255, 200, 80)" },
+                        postEffect: { enable: true },
                         silent: true,
                         dimensions: ["lng", "lat"],
                         data: new Float32Array()
@@ -427,100 +407,8 @@
                 chenGlPoints = chenNew;
             }
 
-            /* 降级模式下用普通数组并限制点数，保证流畅；GL 模式直接用 Float32Array */
-            var chenSeriesData;
-            if (chenIsFallbackGl) {
-                var chenMaxPts = Math.min(chenGlPoints.length / 2, 40000);
-                var chenArr = [];
-                for (var k = 0; k < chenMaxPts; k++) {
-                    chenArr.push([chenGlPoints[k * 2], chenGlPoints[k * 2 + 1]]);
-                }
-                chenSeriesData = chenArr;
-            } else {
-                chenSeriesData = chenGlPoints;
-            }
-            chenChartGl.setOption({ series: [{ data: chenSeriesData }] });
-            chenEl.pointCount.textContent = (chenGlPoints.length / 2).toLocaleString() +
-                (chenIsFallbackGl && chenGlPoints.length / 2 > 40000 ? "（兼容模式渲染 40,000）" : "");
-        }
-
-        /* ================= 2D 兼容模式：无 WebGL / 软件渲染时自动降级 ================= */
-        function chenFallback3D(chenReason) {
-            chenIsFallback3d = true;
-            chenChart3d = echarts.init(document.getElementById("chen_chart3d"));
-            chenChart3d.setOption({
-                backgroundColor: "#cdcfd5",
-                title: {
-                    text: "当前环境 WebGL 不可用（" + chenReason + "），已切换 2D 兼容模式",
-                    left: "center", top: 10,
-                    textStyle: { fontSize: 13, color: "#555" }
-                },
-                tooltip: {
-                    trigger: "item",
-                    formatter: function (p) { return "城市<br>都市圈人口：" + p.value[2] + " 百万"; }
-                },
-                visualMap: {
-                    max: 40,
-                    calculable: true,
-                    realtime: false,
-                    inRange: {
-                        color: [
-                            "#313695", "#4575b4", "#74add1", "#abd9e9", "#e0f3f8",
-                            "#ffffbf", "#fee090", "#fdae61", "#f46d43", "#d73027", "#a50026"
-                        ]
-                    },
-                    outOfRange: { colorAlpha: 0 }
-                },
-                geo: {
-                    map: "world",
-                    roam: true,
-                    silent: true,
-                    itemStyle: { areaColor: "#3e5f7a", borderColor: "#26415a" },
-                    emphasis: { areaColor: "#4a6d8c" }
-                },
-                series: [{
-                    type: "scatter",
-                    coordinateSystem: "geo",
-                    data: CHEN_CITIES.map(function (c) { return { value: [c[0], c[1], c[2]] }; }),
-                    symbolSize: function (v) { return 4 + Math.sqrt(v[2]) * 2.4; },
-                    itemStyle: { opacity: 0.9 }
-                }]
-            });
-            document.getElementById("chen_rotate_btn").disabled = true;
-            chenEl.status3d.textContent = "已切换 2D 兼容模式（原因：" + chenReason + "）";
-        }
-
-        function chenFallbackGL() {
-            chenIsFallbackGl = true;
-            chenChartGl = echarts.init(document.getElementById("chen_chart_gl"));
-            chenChartGl.setOption({
-                backgroundColor: "#000",
-                title: {
-                    text: "全球人口分布模拟点（2D 兼容模式）",
-                    left: "center",
-                    textStyle: { color: "#fff", fontSize: 14 }
-                },
-                geo: {
-                    map: "world",
-                    roam: true,
-                    silent: true,
-                    itemStyle: { areaColor: "#323c48", borderColor: "#111" },
-                    emphasis: { areaColor: "#2a333d" }
-                },
-                series: [{
-                    name: "模拟点",
-                    type: "scatter",
-                    coordinateSystem: "geo",
-                    symbolSize: 1.5,
-                    large: true,
-                    largeThreshold: 2000,
-                    progressive: 20000,
-                    progressiveThreshold: 20000,
-                    itemStyle: { color: "rgb(255, 200, 80)", opacity: 0.85 },
-                    silent: true,
-                    data: []
-                }]
-            });
+            chenChartGl.setOption({ series: [{ data: chenGlPoints }] });
+            chenEl.pointCount.textContent = (chenGlPoints.length / 2).toLocaleString();
         }
 
         /* ================= 启动 ================= */
@@ -531,9 +419,16 @@
                 return;
             }
 
-            /* WebGL 能力检测：不可用或仅软件渲染时自动切换 2D 兼容模式（仍能看到图，且不卡） */
-            var chenGLCap = chenGLAvailable();
-            var chenUseGL = chenGLCap.ok;
+            /* WebGL 能力检测：geo3D 与 scatterGL 都依赖 WebGL 渲染 */
+            try {
+                var chenTestCanvas = document.createElement("canvas");
+                var chenGlTest = chenTestCanvas.getContext("webgl") || chenTestCanvas.getContext("experimental-webgl");
+                if (!chenGlTest) {
+                    chenShowError("浏览器不支持 WebGL",
+                        "geo3D 和 scatterGL 都需要 WebGL 渲染，请在 Chrome / Edge 中打开，或检查显卡驱动与浏览器硬件加速设置");
+                    return;
+                }
+            } catch (err) { /* 检测本身异常时继续尝试渲染 */ }
 
             /* 地图数据通过 cdn/echarts/world.js 以脚本方式加载（file:// 下也能用） */
             if (typeof window.CHEN_WORLD_GEOJSON === "undefined") {
@@ -543,15 +438,8 @@
             }
             echarts.registerMap("world", window.CHEN_WORLD_GEOJSON);
 
-            if (chenUseGL) {
-                try { chenInit3D(); }
-                catch (err) { chenFallback3D(err.message); }
-                try { chenInitGL(); }
-                catch (err) { chenFallbackGL(); }
-            } else {
-                chenFallback3D(chenGLCap.renderer);
-                chenFallbackGL();
-            }
+            chenInit3D();
+            chenInitGL();
             chenGeneratePoints(100000, false);
 
             document.getElementById("chen_rotate_btn").addEventListener("click", function () {
