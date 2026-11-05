@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-11-05
+功能名称：智能客服运营数据大屏（echarts 三列布局，中列上方为中国地图热点与飞线；echarts 与地图数据已本地化到 cdn 目录）
+    -->
+    <title>18-8 ECharts 数据大屏：智能客服运营监控</title>
+    <link rel="stylesheet" href="font/font_5244855_fm8s0yq40te/iconfont.css">
+    <style>
+        :root {
+            --chen_bg: #060d1f;
+            --chen_panel: rgba(13, 28, 56, 0.72);
+            --chen_border: rgba(64, 128, 255, 0.35);
+            --chen_cyan: #00d4ff;
+            --chen_blue: #3f7fff;
+            --chen_gold: #ffc53d;
+            --chen_green: #2ee6a6;
+            --chen_text: #d7e6ff;
+            --chen_muted: #7d95c0;
+            --chen_radius: 10px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 50% -10%, rgba(63, 127, 255, 0.18), transparent 42rem),
+                radial-gradient(circle at 0% 100%, rgba(0, 212, 255, 0.08), transparent 30rem),
+                var(--chen_bg);
+            color: var(--chen_text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .chen_screen {
+            max-width: 1720px;
+            margin: 0 auto;
+            padding: 14px 16px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 100vh;
+        }
+
+        /* ========== 顶部标题栏 ========== */
+        .chen_topbar {
+            position: relative;
+            height: 74px;
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            background: linear-gradient(180deg, rgba(20, 44, 90, 0.85), rgba(8, 18, 40, 0.55));
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 24px -8px rgba(63, 127, 255, 0.45), inset 0 0 30px -18px rgba(0, 212, 255, 0.6);
+        }
+        .chen_topbar h1 {
+            font-size: 24px; letter-spacing: 4px;
+            background: linear-gradient(90deg, #7fdcff, #e5f2ff 45%, #7fdcff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .chen_topbar h1 .iconfont { -webkit-text-fill-color: var(--chen_cyan); font-size: 22px; }
+        .chen_clock {
+            position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+            font-family: Consolas, monospace; font-size: 14px; color: var(--chen_muted);
+            text-align: right; line-height: 1.5;
+        }
+        .chen_clock b { color: var(--chen_cyan); font-size: 17px; }
+        .chen_badge {
+            position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
+            display: flex; gap: 8px;
+        }
+        .chen_badge span {
+            font-size: 12px; padding: 3px 10px; border-radius: 20px;
+            border: 1px solid var(--chen_border);
+            color: var(--chen_green); background: rgba(46, 230, 166, 0.08);
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .chen_badge span i {
+            width: 7px; height: 7px; border-radius: 50%; background: var(--chen_green);
+            animation: chen_blink 1.4s infinite;
+        }
+        @keyframes chen_blink { 50% { opacity: .25; } }
+
+        /* ========== 三列主体 ========== */
+        .chen_main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1.55fr 1fr;
+            gap: 12px;
+            align-items: stretch;
+        }
+        .chen_col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+        .chen_panel {
+            position: relative;
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            background: var(--chen_panel);
+            box-shadow: inset 0 0 30px -18px rgba(0, 212, 255, 0.55);
+            padding: 12px 14px 6px;
+            display: flex; flex-direction: column;
+            min-height: 0;
+        }
+        .chen_panel_head {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 15px; font-weight: 600; letter-spacing: 1px;
+            padding-bottom: 8px; margin-bottom: 6px;
+            border-bottom: 1px solid rgba(64, 128, 255, 0.22);
+        }
+        .chen_panel_head .iconfont { color: var(--chen_cyan); font-size: 15px; }
+        .chen_panel_head small { margin-left: auto; font-size: 11px; font-weight: 400; color: var(--chen_muted); }
+        .chen_chart { flex: 1; min-height: 0; }
+        #chen_map_chart { min-height: 380px; }
+        #chen_trend_chart { min-height: 250px; }
+        .chen_side_chart { min-height: 235px; }
+
+        .chen_kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .chen_kpi {
+            border: 1px solid rgba(64, 128, 255, 0.3);
+            border-radius: var(--chen_radius);
+            background: linear-gradient(180deg, rgba(28, 58, 116, 0.5), rgba(10, 22, 46, 0.5));
+            padding: 10px 12px;
+            text-align: center;
+        }
+        .chen_kpi b {
+            display: block; font-size: 24px; font-family: Consolas, monospace;
+            background: linear-gradient(90deg, var(--chen_cyan), #fff);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .chen_kpi span { font-size: 12px; color: var(--chen_muted); }
+        .chen_kpi em { font-style: normal; font-size: 11px; margin-left: 4px; }
+        .chen_up { color: var(--chen_green); }
+        .chen_down { color: #ff7a7a; }
+
+        /* ========== 底部 ========== */
+        .chen_footer {
+            text-align: center; font-size: 12.5px; color: var(--chen_muted);
+            padding: 8px 0 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chen_screen">
+        <!-- 顶部标题栏 -->
+        <header class="chen_topbar">
+            <div class="chen_badge">
+                <span><i></i>系统运行正常</span>
+                <span><i></i>数据实时更新</span>
+            </div>
+            <h1><span class="iconfont icon-dingdan"></span>智能客服运营数据大屏</h1>
+            <div class="chen_clock">
+                <div id="chen_clock_time">--:--:--</div>
+                <div id="chen_clock_date">----年--月--日 星期-</div>
+            </div>
+        </header>
+
+        <!-- 核心指标 -->
+        <div class="chen_kpis">
+            <div class="chen_kpi"><b id="chen_kpi_1">0</b><span>今日咨询总量<em class="chen_up">▲ 12.4%</em></span></div>
+            <div class="chen_kpi"><b id="chen_kpi_2">0</b><span>机器人解决率<em class="chen_up">▲ 3.1%</em></span></div>
+            <div class="chen_kpi"><b id="chen_kpi_3">0</b><span>平均响应（秒）<em class="chen_down">▼ 0.8s</em></span></div>
+            <div class="chen_kpi"><b id="chen_kpi_4">0</b><span>客户满意度<em class="chen_up">▲ 1.6%</em></span></div>
+        </div>
+
+        <!-- 三列主体 -->
+        <div class="chen_main">
+            <!-- 左列 -->
+            <div class="chen_col">
+                <section class="chen_panel" style="flex:1;">
+                    <div class="chen_panel_head"><span class="iconfont icon-sousuo"></span>各渠道咨询量占比<small>单位：万次</small></div>
+                    <div class="chen_chart chen_side_chart" id="chen_channel_chart"></div>
+                </section>
+                <section class="chen_panel" style="flex:1;">
+                    <div class="chen_panel_head"><span class="iconfont icon-shezhi"></span>热点问题 TOP5<small>近 24 小时</small></div>
+                    <div class="chen_chart chen_side_chart" id="chen_top_chart"></div>
+                </section>
+            </div>
+
+            <!-- 中列：上地图 + 下趋势 -->
+            <div class="chen_col">
+                <section class="chen_panel" style="flex:1.5;">
+                    <div class="chen_panel_head"><span class="iconfont icon-dingdan"></span>全国咨询热点分布与数据回传<small>数据回传至云平台</small></div>
+                    <div class="chen_chart" id="chen_map_chart"></div>
+                </section>
+                <section class="chen_panel">
+                    <div class="chen_panel_head"><span class="iconfont icon-jinggao"></span>近 7 日咨询与解决趋势<small>柱：咨询量 / 线：解决率</small></div>
+                    <div class="chen_chart" id="chen_trend_chart"></div>
+                </section>
+            </div>
+
+            <!-- 右列 -->
+            <div class="chen_col">
+                <section class="chen_panel" style="flex:1;">
+                    <div class="chen_panel_head"><span class="iconfont icon-jinggao"></span>客户满意度<small>本季度综合</small></div>
+                    <div class="chen_chart chen_side_chart" id="chen_gauge_chart"></div>
+                </section>
+                <section class="chen_panel" style="flex:1;">
+                    <div class="chen_panel_head"><span class="iconfont icon-sousuo"></span>坐席组负载对比<small>实时</small></div>
+                    <div class="chen_chart chen_side_chart" id="chen_radar_chart"></div>
+                </section>
+            </div>
+        </div>
+
+        <footer class="chen_footer">学号 24001010722 &nbsp;|&nbsp; 姓名 陈弘毅</footer>
+    </div>
+
+    <script src="cdn/echarts/echarts.min.js"></script>
+    <script src="cdn/echarts/china.js"></script>
+    <script>
+        "use strict";
+
+        var chenCharts = [];
+
+        /* ---------- 工具 ---------- */
+        function chenStyleAxis() {
+            return {
+                axisLine: { lineStyle: { color: "rgba(125, 149, 192, 0.5)" } },
+                axisLabel: { color: "#9fb6dd", fontSize: 11 },
+                splitLine: { lineStyle: { color: "rgba(64, 128, 255, 0.14)" } }
+            };
+        }
+
+        function chenMakeChart(id) {
+            var chenChart = echarts.init(document.getElementById(id));
+            chenCharts.push(chenChart);
+            return chenChart;
+        }
+
+        /* 数字滚动动画 */
+        function chenCountUp(chenId, chenTarget, chenDecimals, chenSuffix) {
+            var chenDom = document.getElementById(chenId);
+            var chenStart = performance.now(), chenDur = 1600;
+            (function chenStep() {
+                var chenP = Math.min(1, (performance.now() - chenStart) / chenDur);
+                var chenEased = 1 - Math.pow(1 - chenP, 3);
+                chenDom.textContent = (chenTarget * chenEased).toFixed(chenDecimals) + (chenSuffix || "");
+                if (chenP < 1) requestAnimationFrame(chenStep);
+            })();
+        }
+
+        /* ---------- 时钟 ---------- */
+        function chenTick() {
+            var chenD = new Date();
+            var chenW = ["日", "一", "二", "三", "四", "五", "六"][chenD.getDay()];
+            function chenPad(n) { return (n < 10 ? "0" : "") + n; }
+            document.getElementById("chen_clock_time").textContent =
+                chenPad(chenD.getHours()) + ":" + chenPad(chenD.getMinutes()) + ":" + chenPad(chenD.getSeconds());
+            document.getElementById("chen_clock_date").textContent =
+                chenD.getFullYear() + "年" + chenPad(chenD.getMonth() + 1) + "月" + chenPad(chenD.getDate()) +
+                "日 星期" + chenW;
+        }
+
+        /* ---------- 左列①：渠道咨询量（环形图） ---------- */
+        function chenBuildChannel() {
+            chenMakeChart("chen_channel_chart").setOption({
+                tooltip: { trigger: "item", formatter: "{b}<br/>占比：{d}%" },
+                legend: {
+                    orient: "vertical", right: 6, top: "middle",
+                    textStyle: { color: "#9fb6dd", fontSize: 11 },
+                    itemWidth: 10, itemHeight: 10
+                },
+                color: ["#00d4ff", "#3f7fff", "#2ee6a6", "#ffc53d", "#b58cff"],
+                series: [{
+                    type: "pie",
+                    radius: ["48%", "72%"],
+                    center: ["38%", "52%"],
+                    label: { show: false },
+                    itemStyle: { borderColor: "#060d1f", borderWidth: 2 },
+                    data: [
+                        { name: "网页端", value: 38.2 },
+                        { name: "APP", value: 29.5 },
+                        { name: "小程序", value: 17.8 },
+                        { name: "电话", value: 9.6 },
+                        { name: "其他", value: 4.9 }
+                    ]
+                }]
+            });
+        }
+
+        /* ---------- 左列②：热点问题 TOP5（横向条形） ---------- */
+        function chenBuildTop() {
+            var chenNames = ["订单物流查询", "退款进度", "账号登录异常", "优惠券使用", "发票开具"];
+            chenMakeChart("chen_top_chart").setOption({
+                grid: { left: 110, right: 40, top: 12, bottom: 26 },
+                tooltip: {},
+                xAxis: Object.assign({ type: "value" }, chenStyleAxis()),
+                yAxis: Object.assign({
+                    type: "category",
+                    data: chenNames.slice().reverse(),
+                    axisLabel: { color: "#c3d6f5", fontSize: 12 }
+                }, {}),
+                series: [{
+                    type: "bar",
+                    data: [982, 1354, 1568, 2107, 2843].slice().reverse(),
+                    barWidth: 12,
+                    itemStyle: {
+                        borderRadius: 8,
+                        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                            { offset: 0, color: "#1c5eff" },
+                            { offset: 1, color: "#00d4ff" }
+                        ])
+                    },
+                    label: { show: true, position: "right", color: "#7fdcff", fontSize: 11, fontFamily: "Consolas" }
+                }]
+            });
+        }
+
+        /* ---------- 中列①：中国地图热点与飞线 ---------- */
+        function chenBuildMap() {
+            if (typeof window.CHEN_CHINA_GEOJSON === "undefined") {
+                document.getElementById("chen_map_chart").innerHTML =
+                    '<div style="color:#ff7a7a;font-size:13px;padding:20px;">未找到 cdn/echarts/china.js，请确认文件存在</div>';
+                return;
+            }
+            echarts.registerMap("china", window.CHEN_CHINA_GEOJSON);
+
+            /* [省名, 经度, 纬度, 咨询量(万)] */
+            var chenProvinces = [
+                ["广东", 113.26, 23.13, 28.6], ["北京", 116.4, 39.9, 22.1], ["上海", 121.47, 31.23, 19.8],
+                ["浙江", 120.15, 30.27, 16.4], ["四川", 104.07, 30.57, 13.2], ["江苏", 118.8, 32.06, 12.7],
+                ["山东", 117.12, 36.65, 10.3], ["湖北", 114.31, 30.59, 9.4], ["福建", 119.3, 26.08, 8.2],
+                ["陕西", 108.94, 34.34, 7.6], ["湖南", 112.98, 28.19, 7.1], ["河南", 113.62, 34.75, 6.8],
+                ["重庆", 106.55, 29.56, 6.2], ["辽宁", 123.43, 41.8, 4.9], ["云南", 102.71, 25.04, 4.3]
+            ];
+            var chenHub = [116.4, 39.9]; /* 云平台：北京 */
+
+            chenMakeChart("chen_map_chart").setOption({
+                tooltip: {
+                    trigger: "item",
+                    formatter: function (p) {
+                        if (p.seriesType === "effectScatter") {
+                            return p.name + "<br/>咨询量：" + p.value[2] + " 万次";
+                        }
+                        return p.name;
+                    }
+                },
+                visualMap: {
+                    min: 0, max: 30,
+                    left: 8, bottom: 6,
+                    text: ["高", "低"],
+                    textStyle: { color: "#9fb6dd", fontSize: 11 },
+                    inRange: { color: ["#123a7a", "#1f6fd6", "#00d4ff", "#7ff5e0"] },
+                    calculable: false
+                },
+                geo: {
+                    map: "china",
+                    roam: true,
+                    zoom: 1.12,
+                    label: { show: false },
+                    itemStyle: {
+                        areaColor: "#0e2a5c",
+                        borderColor: "rgba(0, 212, 255, 0.55)",
+                        borderWidth: 1,
+                        shadowColor: "rgba(0, 212, 255, 0.45)",
+                        shadowBlur: 18
+                    },
+                    emphasis: { areaColor: "#1c4e9e", label: { show: false } }
+                },
+                series: [
+                    {
+                        name: "咨询热点",
+                        type: "effectScatter",
+                        coordinateSystem: "geo",
+                        data: chenProvinces.map(function (p) {
+                            return { name: p[0], value: [p[1], p[2], p[3]] };
+                        }),
+                        symbolSize: function (v) { return 4 + v[2] * 0.55; },
+                        rippleEffect: { brushType: "stroke", scale: 2.6 },
+                        itemStyle: { color: "#ffc53d", shadowBlur: 8 },
+                        label: {
+                            show: true, position: "right",
+                            formatter: "{b}", color: "#cfe3ff", fontSize: 10
+                        },
+                        zlevel: 2
+                    },
+                    {
+                        name: "数据回传",
+                        type: "lines",
+                        coordinateSystem: "geo",
+                        zlevel: 3,
+                        effect: { show: true, period: 4.2, trailLength: 0.55, symbol: "arrow", symbolSize: 5, color: "#7ff5e0" },
+                        lineStyle: { color: "#3f7fff", width: 1, opacity: 0.35, curveness: 0.28 },
+                        data: chenProvinces.filter(function (p) { return p[0] !== "北京"; }).map(function (p) {
+                            return { coords: [[p[1], p[2]], chenHub] };
+                        })
+                    }
+                ]
+            });
+        }
+
+        /* ---------- 中列②：近 7 日趋势（柱 + 线） ---------- */
+        function chenBuildTrend() {
+            chenMakeChart("chen_trend_chart").setOption({
+                grid: { left: 44, right: 44, top: 30, bottom: 26 },
+                tooltip: { trigger: "axis" },
+                legend: {
+                    top: 2, right: 8, itemWidth: 12, itemHeight: 8,
+                    textStyle: { color: "#9fb6dd", fontSize: 11 }
+                },
+                xAxis: Object.assign({
+                    type: "category",
+                    data: ["10-30", "10-31", "11-01", "11-02", "11-03", "11-04", "11-05"]
+                }, chenStyleAxis()),
+                yAxis: [
+                    Object.assign({ type: "value", name: "万次", nameTextStyle: { color: "#7d95c0" } }, chenStyleAxis()),
+                    Object.assign({
+                        type: "value", min: 60, max: 100,
+                        name: "%", nameTextStyle: { color: "#7d95c0" },
+                        axisLabel: { color: "#9fb6dd", fontSize: 11, formatter: "{value}%" }
+                    }, {})
+                ],
+                series: [
+                    {
+                        name: "咨询量",
+                        type: "bar",
+                        data: [8.6, 9.2, 10.1, 9.4, 11.8, 12.6, 13.5],
+                        barWidth: 14,
+                        itemStyle: {
+                            borderRadius: [6, 6, 0, 0],
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: "#00d4ff" },
+                                { offset: 1, color: "rgba(63,127,255,0.15)" }
+                            ])
+                        }
+                    },
+                    {
+                        name: "机器人解决率",
+                        type: "line",
+                        yAxisIndex: 1,
+                        data: [76, 78, 80.5, 79, 83, 85, 86.8],
+                        smooth: true,
+                        symbol: "circle", symbolSize: 7,
+                        lineStyle: { color: "#2ee6a6", width: 2.5 },
+                        itemStyle: { color: "#2ee6a6", borderColor: "#060d1f", borderWidth: 2 },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: "rgba(46, 230, 166, 0.28)" },
+                                { offset: 1, color: "rgba(46, 230, 166, 0)" }
+                            ])
+                        }
+                    }
+                ]
+            });
+        }
+
+        /* ---------- 右列①：满意度仪表盘 ---------- */
+        function chenBuildGauge() {
+            chenMakeChart("chen_gauge_chart").setOption({
+                series: [{
+                    type: "gauge",
+                    center: ["50%", "58%"],
+                    radius: "92%",
+                    startAngle: 210, endAngle: -30,
+                    min: 0, max: 100,
+                    progress: {
+                        show: true, width: 14,
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                                { offset: 0, color: "#3f7fff" },
+                                { offset: 1, color: "#2ee6a6" }
+                            ])
+                        }
+                    },
+                    axisLine: { lineStyle: { width: 14, color: [[1, "rgba(64,128,255,0.18)"]] } },
+                    axisTick: { show: false },
+                    splitLine: { length: 6, lineStyle: { color: "rgba(125,149,192,0.5)" } },
+                    axisLabel: { color: "#7d95c0", fontSize: 10, distance: 18 },
+                    pointer: { length: "58%", width: 4, itemStyle: { color: "#ffc53d" } },
+                    anchor: { show: true, size: 10, itemStyle: { color: "#ffc53d" } },
+                    detail: {
+                        valueAnimation: true,
+                        fontSize: 26, fontFamily: "Consolas",
+                        color: "#7ff5e0", offsetCenter: [0, "38%"],
+                        formatter: "{value}%"
+                    },
+                    title: { offsetCenter: [0, "62%"], color: "#9fb6dd", fontSize: 12 },
+                    data: [{ value: 94.6, name: "综合满意度" }]
+                }]
+            });
+        }
+
+        /* ---------- 右列②：坐席组负载雷达 ---------- */
+        function chenBuildRadar() {
+            chenMakeChart("chen_radar_chart").setOption({
+                radar: {
+                    center: ["50%", "54%"],
+                    radius: "66%",
+                    indicator: [
+                        { name: "售前", max: 100 }, { name: "售后", max: 100 },
+                        { name: "技术", max: 100 }, { name: "投诉", max: 100 },
+                        { name: "财务", max: 100 }, { name: "综合", max: 100 }
+                    ],
+                    axisName: { color: "#9fb6dd", fontSize: 11 },
+                    splitArea: { areaStyle: { color: ["rgba(63,127,255,0.04)", "rgba(63,127,255,0.08)"] } },
+                    splitLine: { lineStyle: { color: "rgba(64,128,255,0.25)" } },
+                    axisLine: { lineStyle: { color: "rgba(64,128,255,0.3)" } }
+                },
+                legend: {
+                    bottom: 2, itemWidth: 12, itemHeight: 8,
+                    textStyle: { color: "#9fb6dd", fontSize: 11 }
+                },
+                series: [{
+                    type: "radar",
+                    symbolSize: 4,
+                    data: [
+                        {
+                            name: "今日负载",
+                            value: [86, 72, 64, 91, 58, 78],
+                            lineStyle: { color: "#00d4ff", width: 2 },
+                            itemStyle: { color: "#00d4ff" },
+                            areaStyle: { color: "rgba(0, 212, 255, 0.2)" }
+                        },
+                        {
+                            name: "昨日同期",
+                            value: [74, 81, 59, 80, 63, 71],
+                            lineStyle: { color: "#b58cff", width: 2 },
+                            itemStyle: { color: "#b58cff" },
+                            areaStyle: { color: "rgba(181, 140, 255, 0.12)" }
+                        }
+                    ]
+                }]
+            });
+        }
+
+        /* ---------- 启动 ---------- */
+        (function chenInit() {
+            if (typeof echarts === "undefined") {
+                document.getElementById("chen_map_chart").innerHTML =
+                    '<div style="color:#ff7a7a;font-size:14px;padding:20px;">未找到 cdn/echarts/echarts.min.js，请确认本地依赖存在</div>';
+                return;
+            }
+
+            chenTick();
+            setInterval(chenTick, 1000);
+
+            chenCountUp("chen_kpi_1", 13.5, 1, " 万");
+            chenCountUp("chen_kpi_2", 86.8, 1, "%");
+            chenCountUp("chen_kpi_3", 1.2, 1, " s");
+            chenCountUp("chen_kpi_4", 94.6, 1, "%");
+
+            chenBuildChannel();
+            chenBuildTop();
+            chenBuildMap();
+            chenBuildTrend();
+            chenBuildGauge();
+            chenBuildRadar();
+
+            window.addEventListener("resize", function () {
+                chenCharts.forEach(function (c) { c.resize(); });
+            });
+        })();
+    </script>
+</body>
+</html>

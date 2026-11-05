@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-11-05
+功能名称：基于 Mermaid 的智能客服系统：业务流程图（flowchart）与数据模型 ER 图（erDiagram），mermaid 已本地化到 cdn 目录
+    -->
+    <title>18-6 Mermaid 智能客服系统：流程图与 ER 图</title>
+    <style>
+        :root {
+            --chen_bg: #eef4ff;
+            --chen_surface: #ffffff;
+            --chen_text: #1e293b;
+            --chen_muted: #64748b;
+            --chen_primary: #0d9488;
+            --chen_primary_soft: #ccfbf1;
+            --chen_border: #dbe7f2;
+            --chen_danger: #dc2626;
+            --chen_radius: 14px;
+            --chen_shadow: 0 18px 45px -28px rgba(13, 148, 136, 0.55);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 12% 0%, rgba(13, 148, 136, 0.14), transparent 30rem),
+                radial-gradient(circle at 88% 8%, rgba(79, 70, 229, 0.12), transparent 28rem),
+                var(--chen_bg);
+            color: var(--chen_text);
+            line-height: 1.65;
+            min-height: 100vh;
+        }
+
+        .chen_page { max-width: 1180px; margin: 0 auto; padding: 32px 22px 40px; }
+
+        .chen_header {
+            background: linear-gradient(135deg, #0f172a, #0d9488 62%, #4f46e5);
+            color: #fff;
+            border-radius: var(--chen_radius);
+            padding: 24px 28px;
+            box-shadow: var(--chen_shadow);
+        }
+        .chen_header h1 { font-size: 22px; letter-spacing: .5px; }
+        .chen_header p { font-size: 13.5px; opacity: .92; margin-top: 3px; }
+        .chen_header code { font-family: Consolas, monospace; background: rgba(255,255,255,.16); padding: 1px 6px; border-radius: 5px; }
+
+        .chen_card {
+            background: var(--chen_surface);
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            box-shadow: var(--chen_shadow);
+            padding: 20px 24px;
+            margin-top: 18px;
+        }
+        .chen_card_title {
+            font-size: 16px; color: var(--chen_primary);
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+        .chen_card_title code {
+            font-family: Consolas, monospace;
+            background: var(--chen_primary_soft);
+            padding: 1px 8px; border-radius: 6px;
+        }
+        .chen_card_note { font-size: 12.5px; color: var(--chen_muted); margin-bottom: 14px; }
+
+        .chen_diagram {
+            width: 100%;
+            border-radius: 12px;
+            border: 1.5px solid var(--chen_border);
+            background: #fbfdff;
+            padding: 14px 10px;
+            overflow-x: auto;
+        }
+        .chen_diagram .mermaid { display: flex; justify-content: center; min-width: 640px; }
+        .chen_diagram svg { max-width: 100%; height: auto; }
+
+        .chen_btn_row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; align-items: center; }
+        .chen_btn {
+            padding: 9px 18px;
+            border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #0d9488, #4f46e5);
+            color: #fff;
+            font-size: 14px; font-weight: 600; font-family: inherit;
+            cursor: pointer;
+            display: inline-flex; align-items: center; gap: 7px;
+            transition: transform .15s, box-shadow .15s, opacity .15s;
+        }
+        .chen_btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 22px -10px rgba(13,148,136,.7); }
+        .chen_btn:disabled { opacity: .5; cursor: not-allowed; }
+        .chen_btn.chen_ghost { background: #fff; color: var(--chen_primary); border: 1px solid #99f6e4; }
+        .chen_btn.chen_ghost:hover:not(:disabled) { background: var(--chen_primary_soft); }
+        .chen_status { font-size: 13px; color: var(--chen_muted); font-family: Consolas, monospace; }
+        .chen_status b { color: var(--chen_primary); }
+
+        .chen_error_box {
+            display: flex; align-items: flex-start; gap: 10px;
+            border: 1.5px solid #fecaca;
+            background: #fef2f2;
+            color: #991b1b;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 13.5px;
+            margin-top: 12px;
+        }
+        .chen_error_box .iconfont { color: var(--chen_danger); flex: none; }
+        .chen_error_box code { font-family: Consolas, monospace; word-break: break-all; }
+        .chen_hidden { display: none !important; }
+
+        .chen_files { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+        .chen_file {
+            background: #f7fdfc;
+            border: 1px solid var(--chen_border);
+            border-radius: 10px;
+            padding: 9px 13px;
+            font-size: 12.5px;
+            font-family: Consolas, monospace;
+            word-break: break-all;
+        }
+
+        .chen_footer {
+            margin-top: 28px; text-align: center;
+            color: var(--chen_muted); font-size: 13px;
+            padding: 14px 0 4px;
+            border-top: 1px solid var(--chen_border);
+        }
+    </style>
+</head>
+<body>
+    <div class="chen_page">
+        <header class="chen_header">
+            <h1>Mermaid 图表：智能客服系统流程图与 ER 图</h1>
+            <p>基于 <code>mermaid@11</code> 渲染 <code>flowchart</code> 业务流程图与 <code>erDiagram</code> 数据模型图，mermaid.min.js 已下载到本地 <code>cdn/mermaid/</code> 目录，无需访问在线 CDN</p>
+        </header>
+
+        <!-- 图一：智能客服业务流程图 -->
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-dingdan"></span>图一：智能客服业务流程图 <code>flowchart TD</code></h2>
+            <p class="chen_card_note">用户提问 → 接入与预处理 → 意图识别 → 知识库检索（RAG）→ 命中则生成回答，未命中或用户不满意则转人工；全过程记录满意度并回流更新知识库。</p>
+
+            <div class="chen_diagram" id="chen_flow_wrap">
+<pre class="mermaid">
+flowchart TD
+    A([用户发起咨询]) --> B[接入层<br/>网页 / APP / 小程序]
+    B --> C{预处理与鉴权<br/>是否有效会话?}
+    C -- 无效 --> C1[拒绝并提示登录]
+    C -- 有效 --> D[意图识别<br/>NLU 分类 + 实体抽取]
+    D --> E{意图类型?}
+    E -- 常见问题 --> F[知识库检索 RAG<br/>向量匹配 Top-K]
+    E -- 业务办理 --> G[调用业务 API<br/>订单 / 退款 / 查询]
+    E -- 闲聊寒暄 --> H[闲聊回复模板]
+    F --> I{置信度达标?}
+    I -- 是 --> J[生成回答<br/>大模型润色 + 引用来源]
+    I -- 否 --> K[兜底话术<br/>推荐猜你想问]
+    G --> J
+    H --> J
+    K --> L{用户是否满意?}
+    J --> M[满意度评价<br/>点赞 / 点踩]
+    M -- 不满意 --> L
+    L -- 否 / 两次未解决 --> N[转人工客服<br/>创建工单]
+    L -- 是 --> O[结束会话<br/>记录日志与评价]
+    N --> P[人工处理并回复]
+    P --> O
+    O --> Q[(会话日志 / 知识沉淀<br/>回流优化知识库)]
+    Q -.数据回流.-> F
+</pre>
+            </div>
+
+            <div class="chen_btn_row">
+                <button class="chen_btn chen_ghost" id="chen_export_flow" type="button">导出流程图 SVG</button>
+                <span class="chen_status" id="chen_status_flow">状态：<b>等待渲染…</b></span>
+            </div>
+        </section>
+
+        <!-- 图二：智能客服数据模型 ER 图 -->
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-shezhi"></span>图二：智能客服数据模型 <code>erDiagram</code></h2>
+            <p class="chen_card_note">核心实体：用户、会话、消息、知识条目、工单、客服坐席。一次会话包含多条消息；命中知识条目生成回答；未解决升级为工单并分配给坐席。</p>
+
+            <div class="chen_diagram" id="chen_er_wrap">
+<pre class="mermaid">
+erDiagram
+    USER ||--o{ SESSION : "发起"
+    SESSION ||--|{ MESSAGE : "包含"
+    SESSION ||--o{ TICKET : "可升级为"
+    MESSAGE }o--o{ KB_ENTRY : "引用命中"
+    TICKET }o--|| AGENT : "分配给"
+    AGENT ||--o{ TICKET : "处理"
+    KB_ENTRY ||--o{ KB_FEEDBACK : "收到反馈"
+    MESSAGE ||--o| KB_FEEDBACK : "产生"
+
+    USER {
+        bigint user_id PK "用户ID"
+        string nickname "昵称"
+        string channel "来源渠道"
+        datetime created_at "注册时间"
+    }
+    SESSION {
+        bigint session_id PK "会话ID"
+        bigint user_id FK "所属用户"
+        string status "进行中/已结束"
+        float satisfaction "满意度评分"
+        datetime started_at "开始时间"
+    }
+    MESSAGE {
+        bigint msg_id PK "消息ID"
+        bigint session_id FK "所属会话"
+        string role "user/bot/agent"
+        text content "消息内容"
+        float confidence "回答置信度"
+        datetime sent_at "发送时间"
+    }
+    KB_ENTRY {
+        bigint kb_id PK "知识条目ID"
+        string title "标题"
+        text content "正文"
+        vector embedding "语义向量"
+        int hit_count "命中次数"
+    }
+    TICKET {
+        bigint ticket_id PK "工单ID"
+        bigint session_id FK "来源会话"
+        bigint agent_id FK "处理坐席"
+        string priority "优先级"
+        string state "待处理/处理中/已关闭"
+    }
+    AGENT {
+        bigint agent_id PK "坐席ID"
+        string name "姓名"
+        string group "技能组"
+        bool online "是否在线"
+    }
+    KB_FEEDBACK {
+        bigint feedback_id PK "反馈ID"
+        bigint msg_id FK "来源消息"
+        bigint kb_id FK "关联条目"
+        string label "有用/无用"
+    }
+</pre>
+            </div>
+
+            <div class="chen_btn_row">
+                <button class="chen_btn chen_ghost" id="chen_export_er" type="button">导出 ER 图 SVG</button>
+                <span class="chen_status" id="chen_status_er">状态：<b>等待渲染…</b></span>
+            </div>
+        </section>
+
+        <div class="chen_error_box chen_hidden" id="chen_error_box" role="alert">
+            <span class="iconfont icon-jinggao"></span>
+            <span><b id="chen_error_title">加载失败</b><code id="chen_error_text"></code></span>
+        </div>
+
+        <!-- 本地依赖清单 -->
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-sousuo"></span>本地化依赖（cdn 目录）</h2>
+            <p class="chen_card_note">按要求将 CDN 文件下载到项目 <code>cdn/mermaid/</code> 目录，页面使用本地相对路径引用，双击打开（file://）也能正常渲染。</p>
+            <div class="chen_files">
+                <div class="chen_file">cdn/mermaid/mermaid.min.js（mermaid 11.4.1 主库，UMD 单文件）</div>
+            </div>
+        </section>
+
+        <footer class="chen_footer">学号 24001010722 &nbsp;|&nbsp; 姓名 陈弘毅</footer>
+    </div>
+
+    <script src="cdn/mermaid/mermaid.min.js"></script>
+    <script>
+        "use strict";
+
+        var chenEl = {
+            errorBox: document.getElementById("chen_error_box"),
+            errorTitle: document.getElementById("chen_error_title"),
+            errorText: document.getElementById("chen_error_text"),
+            statusFlow: document.getElementById("chen_status_flow"),
+            statusEr: document.getElementById("chen_status_er")
+        };
+
+        function chenShowError(title, detail) {
+            chenEl.errorTitle.textContent = title;
+            chenEl.errorText.textContent = detail || "";
+            chenEl.errorBox.classList.remove("chen_hidden");
+        }
+
+        /* 导出某容器内第一张 SVG 图表为文件 */
+        function chenExportSVG(wrapId, filename) {
+            var chenSvg = document.querySelector("#" + wrapId + " svg");
+            if (!chenSvg) return;
+            var chenSource = new XMLSerializer().serializeToString(chenSvg);
+            var chenBlob = new Blob([chenSource], { type: "image/svg+xml;charset=utf-8" });
+            var chenUrl = URL.createObjectURL(chenBlob);
+            var chenA = document.createElement("a");
+            chenA.href = chenUrl;
+            chenA.download = filename;
+            document.body.appendChild(chenA);
+            chenA.click();
+            document.body.removeChild(chenA);
+            URL.revokeObjectURL(chenUrl);
+        }
+
+        (function chenInit() {
+            if (typeof mermaid === "undefined") {
+                chenShowError("本地依赖加载失败",
+                    "未找到 cdn/mermaid/mermaid.min.js，请确认文件已下载到 cdn/mermaid/ 目录");
+                return;
+            }
+
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: "base",
+                securityLevel: "loose",
+                themeVariables: {
+                    fontFamily: '"Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif',
+                    primaryColor: "#e6fffa",
+                    primaryBorderColor: "#0d9488",
+                    primaryTextColor: "#134e4a",
+                    lineColor: "#475569",
+                    secondaryColor: "#eef2ff",
+                    tertiaryColor: "#f8fafc"
+                },
+                flowchart: { curve: "basis", htmlLabels: true },
+                er: { useMaxWidth: true }
+            });
+
+            /* 渲染完成后更新状态并绑定导出按钮 */
+            mermaid.run({ querySelector: ".mermaid" }).then(function () {
+                chenEl.statusFlow.innerHTML = '状态：<b>渲染成功</b>（flowchart TD）';
+                chenEl.statusEr.innerHTML = '状态：<b>渲染成功</b>（erDiagram）';
+            }).catch(function (err) {
+                chenShowError("Mermaid 渲染失败", String(err && err.message || err));
+            });
+
+            document.getElementById("chen_export_flow").addEventListener("click", function () {
+                chenExportSVG("chen_flow_wrap", "智能客服流程图.svg");
+            });
+            document.getElementById("chen_export_er").addEventListener("click", function () {
+                chenExportSVG("chen_er_wrap", "智能客服ER图.svg");
+            });
+        })();
+    </script>
+</body>
+</html>
