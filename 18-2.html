@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-11-05
+功能名称：Canvas 绘制电商系统架构图（分层结构 + 流动数据动画 + 悬停查看节点说明）
+    -->
+    <title>18-2 电商系统架构图（Canvas）</title>
+    <style>
+        :root {
+            --chen_bg: #eef2ff;
+            --chen_surface: #ffffff;
+            --chen_text: #1e293b;
+            --chen_muted: #64748b;
+            --chen_primary: #4f46e5;
+            --chen_primary_soft: #e0e7ff;
+            --chen_border: #dbe3f2;
+            --chen_radius: 14px;
+            --chen_shadow: 0 18px 45px -28px rgba(30, 64, 175, 0.55);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(99, 102, 241, 0.16), transparent 32rem),
+                radial-gradient(circle at 90% 10%, rgba(5, 150, 105, 0.12), transparent 28rem),
+                var(--chen_bg);
+            color: var(--chen_text);
+            line-height: 1.65;
+            min-height: 100vh;
+        }
+
+        .chen_page { max-width: 1100px; margin: 0 auto; padding: 32px 22px 40px; }
+
+        .chen_header {
+            background: linear-gradient(135deg, #0f172a, #1d4ed8 60%, #059669);
+            color: #fff;
+            border-radius: var(--chen_radius);
+            padding: 24px 28px;
+            box-shadow: var(--chen_shadow);
+        }
+        .chen_header h1 { font-size: 22px; letter-spacing: .5px; }
+        .chen_header p { font-size: 13.5px; opacity: .92; margin-top: 3px; }
+
+        .chen_card {
+            background: var(--chen_surface);
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            box-shadow: var(--chen_shadow);
+            padding: 20px 24px;
+            margin-top: 18px;
+        }
+        .chen_card_title {
+            font-size: 16px; color: var(--chen_primary);
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 12px;
+        }
+        .chen_card_note { font-size: 12.5px; color: var(--chen_muted); margin-bottom: 14px; }
+
+        /* ---------- 画布 ---------- */
+        .chen_canvas_wrap {
+            position: relative;
+            border: 1.5px solid var(--chen_border);
+            border-radius: 12px;
+            background: #0b1224;
+            overflow: hidden;
+        }
+        .chen_canvas_scroll { overflow-x: auto; }
+        .chen_canvas {
+            display: block;
+            min-width: 820px;
+            width: 100%;
+            cursor: crosshair;
+        }
+        .chen_tooltip {
+            position: absolute;
+            pointer-events: none;
+            background: rgba(15, 23, 42, .92);
+            color: #e2e8f0;
+            font-size: 12.5px;
+            padding: 7px 11px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, .35);
+            max-width: 260px;
+            opacity: 0;
+            transition: opacity .12s;
+            z-index: 5;
+        }
+        .chen_tooltip b { color: #7dd3fc; display: block; }
+
+        .chen_btn_row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; align-items: center; }
+        .chen_btn {
+            padding: 9px 18px;
+            border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #4f46e5, #6d28d9);
+            color: #fff;
+            font-size: 14px; font-weight: 600; font-family: inherit;
+            cursor: pointer;
+            display: inline-flex; align-items: center; gap: 7px;
+            transition: transform .15s, box-shadow .15s;
+        }
+        .chen_btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 22px -10px rgba(79,70,229,.7); }
+        .chen_btn.chen_ghost { background: #fff; color: var(--chen_primary); border: 1px solid #c7d2fe; }
+        .chen_btn.chen_ghost:hover:not(:disabled) { background: var(--chen_primary_soft); }
+        .chen_status { font-size: 13px; color: var(--chen_muted); font-family: Consolas, monospace; }
+        .chen_status b { color: var(--chen_primary); }
+
+        /* ---------- 图例 ---------- */
+        .chen_legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; font-size: 12.5px; color: var(--chen_muted); }
+        .chen_legend span { display: inline-flex; align-items: center; gap: 6px; }
+        .chen_legend i {
+            width: 12px; height: 12px; border-radius: 4px; display: inline-block;
+        }
+
+        /* ---------- 分层说明 ---------- */
+        .chen_layers_desc { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; }
+        .chen_layer_desc {
+            background: #f8faff;
+            border: 1px solid var(--chen_border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 12.5px;
+            color: var(--chen_text_soft);
+        }
+        .chen_layer_desc b { color: var(--chen_primary); }
+
+        .chen_footer {
+            margin-top: 28px; text-align: center;
+            color: var(--chen_muted); font-size: 13px;
+            padding: 14px 0 4px;
+            border-top: 1px solid var(--chen_border);
+        }
+    </style>
+</head>
+<body>
+    <div class="chen_page">
+        <header class="chen_header">
+            <h1>电商系统架构图 · Canvas 绘制</h1>
+            <p>用户层 → 接入层 → 业务服务层 → 中间件层 → 数据层 → 基础设施层，光点表示数据流动方向，悬停节点可查看说明</p>
+        </header>
+
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-dingdan"></span>系统架构全景</h2>
+            <p class="chen_card_note">整张架构图完全由 Canvas 2D API 绘制：分层底板、圆角节点、流动虚线管道与数据光点均为逐帧绘制。</p>
+
+            <div class="chen_canvas_wrap" id="chen_wrap">
+                <div class="chen_canvas_scroll">
+                    <canvas class="chen_canvas" id="chen_canvas"></canvas>
+                </div>
+                <div class="chen_tooltip" id="chen_tooltip"></div>
+            </div>
+
+            <div class="chen_legend">
+                <span><i style="background:#38bdf8;"></i>分层底板 = 一层职责</span>
+                <span><i style="background:#fbbf24;border-radius:50%;"></i>流动光点 = 数据 / 请求流转</span>
+                <span><i style="background:#f472b6;"></i>圆角节点 = 具体组件（悬停查看说明）</span>
+            </div>
+
+            <div class="chen_btn_row">
+                <button class="chen_btn chen_ghost" id="chen_pause_btn" type="button">暂停动画</button>
+                <button class="chen_btn chen_ghost" id="chen_speed_btn" type="button">流速：正常</button>
+                <span class="chen_status">状态：<b id="chen_state_text">动画运行中</b></span>
+            </div>
+        </section>
+
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-dingdan"></span>各层职责说明</h2>
+            <div class="chen_layers_desc" id="chen_layers_desc"></div>
+        </section>
+
+        <footer class="chen_footer">学号 24001010722 &nbsp;|&nbsp; 姓名 陈弘毅</footer>
+    </div>
+
+    <script>
+        "use strict";
+
+        /* ================= 架构数据 ================= */
+        var CHEN_LAYERS = [
+            {
+                name: "用户层", hue: 199,
+                nodes: [
+                    { name: "PC 浏览器", desc: "顾客通过网页浏览与下单" },
+                    { name: "移动 App", desc: "原生 App 入口，推送营销消息" },
+                    { name: "微信小程序", desc: "轻量入口，便于分享裂变" }
+                ]
+            },
+            {
+                name: "接入层", hue: 239,
+                nodes: [
+                    { name: "CDN 加速", desc: "图片、JS、CSS 边缘分发" },
+                    { name: "Nginx 负载均衡", desc: "反向代理，把流量分到多台服务器" },
+                    { name: "API 网关", desc: "统一鉴权、限流、路由、日志" }
+                ]
+            },
+            {
+                name: "业务服务层（微服务）", hue: 262,
+                nodes: [
+                    { name: "用户服务", desc: "注册登录、个人信息、收货地址" },
+                    { name: "商品服务", desc: "商品、分类、详情、上下架" },
+                    { name: "订单服务", desc: "创建订单、状态流转、超时取消" },
+                    { name: "支付服务", desc: "对接微信 / 支付宝，回调对账" },
+                    { name: "库存服务", desc: "扣减、回补、防超卖" },
+                    { name: "购物车服务", desc: "加购、合并、结算清单" },
+                    { name: "搜索推荐", desc: "ES 搜索与个性化推荐" }
+                ]
+            },
+            {
+                name: "中间件层", hue: 24,
+                nodes: [
+                    { name: "Redis 缓存", desc: "热点商品、购物车、会话缓存" },
+                    { name: "RabbitMQ 消息", desc: "削峰填谷、异步通知下游" },
+                    { name: "Nacos 注册中心", desc: "服务发现与配置管理" },
+                    { name: "任务调度", desc: "定时任务：对账、超时关单" }
+                ]
+            },
+            {
+                name: "数据层", hue: 152,
+                nodes: [
+                    { name: "MySQL 主从", desc: "订单、商品等核心数据，读写分离" },
+                    { name: "MongoDB", desc: "评论、日志等文档型数据" },
+                    { name: "Elasticsearch", desc: "商品全文检索与聚合分析" },
+                    { name: "OSS 对象存储", desc: "商品图片、视频等静态资源" }
+                ]
+            },
+            {
+                name: "基础设施层", hue: 210,
+                nodes: [
+                    { name: "Docker / K8s", desc: "容器化部署，弹性伸缩" },
+                    { name: "监控告警", desc: "Prometheus 指标与告警" },
+                    { name: "日志中心", desc: "ELK 收集检索全链路日志" },
+                    { name: "CI / CD", desc: "自动化构建、测试、发布" }
+                ]
+            }
+        ];
+
+        /* 相邻两层之间流动管道的文案 */
+        var CHEN_PIPE_LABELS = [
+            "HTTPS 请求",
+            "路由转发 · RPC 调用",
+            "缓存读写 · 发送消息",
+            "数据落库 · 建索引",
+            "部署发布 · 日志上报"
+        ];
+
+        /* ================= 画布与布局 ================= */
+        var chenCanvas = document.getElementById("chen_canvas");
+        var chenCtx = chenCanvas.getContext("2d");
+        var chenTooltip = document.getElementById("chen_tooltip");
+        var chenDpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        var CHEN_NODE_H = 46;
+        var CHEN_BAND_PAD_X = 18;
+        var CHEN_BAND_TOP = 30;
+        var CHEN_GAP_Y = 56;      /* 两层之间留白（画管道） */
+        var CHEN_LABEL_W = 0;     /* 层名竖排宽度（动态） */
+
+        var chenW = 0, chenH = 0;
+        var chenRects = [];       /* 可悬停的节点矩形 */
+        var chenPipes = [];       /* 流动管道 */
+        var chenFlow = [];        /* 数据光点 */
+        var chenSpeedLevel = 1;
+        var chenSpeedNames = ["慢速", "正常", "快速"];
+        var chenSpeedIdx = 1;
+        var chenPaused = false;
+        var chenDashOffset = 0;
+
+        function chenLayout() {
+            var chenWrap = document.getElementById("chen_wrap");
+            chenW = Math.max(chenWrap.clientWidth - 2, 820);
+
+            /* 先算每层行数与总高 */
+            var chenY = 26;
+            CHEN_LAYERS.forEach(function (layer) {
+                var rows = Math.ceil(layer.nodes.length / 4);
+                layer.rows = rows;
+                layer.bandH = CHEN_BAND_TOP + rows * (CHEN_NODE_H + 10) + 14;
+                layer.y = chenY;
+                chenY += layer.bandH + CHEN_GAP_Y;
+            });
+            chenH = chenY - CHEN_GAP_Y + 22;
+
+            chenCanvas.style.height = chenH + "px";
+            chenCanvas.width = chenW * chenDpr;
+            chenCanvas.height = chenH * chenDpr;
+            chenCtx.setTransform(chenDpr, 0, 0, chenDpr, 0, 0);
+
+            /* 层内节点位置 */
+            var chenLeft = 86;
+            var chenBandW = chenW - chenLeft - 22;
+            chenRects = [];
+            CHEN_LAYERS.forEach(function (layer) {
+                var perRow = Math.min(4, Math.ceil(layer.nodes.length / layer.rows));
+                var chenGapX = 14;
+                var chenNodeW = Math.min(178, (chenBandW - (perRow - 1) * chenGapX - CHEN_BAND_PAD_X * 2) / perRow);
+                var chenRowW = perRow * chenNodeW + (perRow - 1) * chenGapX;
+                var chenStartX = chenLeft + (chenBandW - chenRowW) / 2;
+
+                layer.nodes.forEach(function (node, i) {
+                    var row = Math.floor(i / perRow);
+                    var col = i % perRow;
+                    var rowCount = Math.min(perRow, layer.nodes.length - row * perRow);
+                    var chenRowStartX = chenLeft + (chenBandW - (rowCount * chenNodeW + (rowCount - 1) * chenGapX)) / 2;
+                    node._x = chenRowStartX + col * (chenNodeW + chenGapX);
+                    node._y = layer.y + CHEN_BAND_TOP + row * (CHEN_NODE_H + 10);
+                    node._w = chenNodeW;
+                    node._h = CHEN_NODE_H;
+                    node._layer = layer.name;
+                    chenRects.push(node);
+                });
+            });
+
+            /* 管道：相邻两层之间 */
+            chenPipes = [];
+            for (var i = 0; i < CHEN_LAYERS.length - 1; i++) {
+                var top = CHEN_LAYERS[i];
+                var bottom = CHEN_LAYERS[i + 1];
+                var y1 = top.y + top.bandH + 6;
+                var y2 = bottom.y - 6;
+                var chenFractions = [0.32, 0.68];
+                chenFractions.forEach(function (f) {
+                    chenPipes.push({
+                        x: chenLeft + chenBandW * f,
+                        y1: y1, y2: y2,
+                        label: CHEN_PIPE_LABELS[i]
+                    });
+                });
+                if (i === 1) { /* 服务层调用多，加一根中间管道 */
+                    chenPipes.push({
+                        x: chenLeft + chenBandW * 0.5,
+                        y1: y1, y2: y2,
+                        label: CHEN_PIPE_LABELS[i]
+                    });
+                }
+            }
+
+            /* 数据光点：每根管道 2 个，交错出发 */
+            chenFlow = [];
+            chenPipes.forEach(function (pipe, pi) {
+                for (var k = 0; k < 2; k++) {
+                    chenFlow.push({
+                        pipe: pi,
+                        t: (k / 2 + Math.random() * 0.3) % 1,
+                        speed: 0.004 + Math.random() * 0.004,
+                        hue: 190 + Math.random() * 60
+                    });
+                }
+            });
+
+            /* 层说明面板 */
+            var chenDesc = document.getElementById("chen_layers_desc");
+            chenDesc.innerHTML = "";
+            CHEN_LAYERS.forEach(function (layer) {
+                var chenNames = layer.nodes.map(function (n) { return n.name; }).join("、");
+                var div = chenNode("div", "chen_layer_desc");
+                div.innerHTML = "<b>" + layer.name + "：</b>" + chenNames;
+                chenDesc.appendChild(div);
+            });
+        }
+
+        function chenNode(tag, className, text) {
+            var el = document.createElement(tag);
+            if (className) el.className = className;
+            if (text) el.textContent = text;
+            return el;
+        }
+
+        function chenRoundRect(x, y, w, h, r) {
+            chenCtx.beginPath();
+            chenCtx.moveTo(x + r, y);
+            chenCtx.arcTo(x + w, y, x + w, y + h, r);
+            chenCtx.arcTo(x + w, y + h, x, y + h, r);
+            chenCtx.arcTo(x, y + h, x, y, r);
+            chenCtx.arcTo(x, y, x + w, y, r);
+            chenCtx.closePath();
+        }
+
+        /* ================= 绘制 ================= */
+        function chenDraw() {
+            chenCtx.clearRect(0, 0, chenW, chenH);
+
+            /* 背景 */
+            var chenBg = chenCtx.createLinearGradient(0, 0, 0, chenH);
+            chenBg.addColorStop(0, "#0d1530");
+            chenBg.addColorStop(1, "#111c3d");
+            chenCtx.fillStyle = chenBg;
+            chenCtx.fillRect(0, 0, chenW, chenH);
+
+            /* 分层底板 + 层名 */
+            CHEN_LAYERS.forEach(function (layer) {
+                var chenBandX = 60;
+                chenCtx.fillStyle = "hsla(" + layer.hue + ", 75%, 60%, 0.09)";
+                chenRoundRect(chenBandX, layer.y, chenW - chenBandX - 22, layer.bandH, 12);
+                chenCtx.fill();
+                chenCtx.strokeStyle = "hsla(" + layer.hue + ", 75%, 65%, 0.4)";
+                chenCtx.lineWidth = 1;
+                chenCtx.stroke();
+
+                chenCtx.save();
+                chenCtx.translate(26, layer.y + layer.bandH / 2);
+                chenCtx.rotate(-Math.PI / 2);
+                chenCtx.fillStyle = "hsla(" + layer.hue + ", 85%, 72%, 0.95)";
+                chenCtx.font = "600 13px 'Microsoft YaHei', sans-serif";
+                chenCtx.textAlign = "center";
+                chenCtx.textBaseline = "middle";
+                chenCtx.fillText(layer.name, 0, 0);
+                chenCtx.restore();
+            });
+
+            /* 管道（虚线流动） */
+            chenPipes.forEach(function (pipe) {
+                chenCtx.save();
+                chenCtx.strokeStyle = "rgba(125, 211, 252, 0.4)";
+                chenCtx.lineWidth = 2;
+                chenCtx.setLineDash([7, 6]);
+                chenCtx.lineDashOffset = -chenDashOffset;
+                chenCtx.beginPath();
+                chenCtx.moveTo(pipe.x, pipe.y1);
+                chenCtx.lineTo(pipe.x, pipe.y2);
+                chenCtx.stroke();
+                chenCtx.restore();
+
+                /* 箭头头部 */
+                chenCtx.beginPath();
+                chenCtx.fillStyle = "rgba(125, 211, 252, 0.55)";
+                chenCtx.moveTo(pipe.x - 4, pipe.y2 - 7);
+                chenCtx.lineTo(pipe.x + 4, pipe.y2 - 7);
+                chenCtx.lineTo(pipe.x, pipe.y2);
+                chenCtx.closePath();
+                chenCtx.fill();
+            });
+
+            /* 管道文案（每对层只画一次，放在第一根管道右侧） */
+            var chenLabelDone = {};
+            chenPipes.forEach(function (pipe) {
+                var chenKey = pipe.y1 + "-" + pipe.y2;
+                if (chenLabelDone[chenKey]) return;
+                chenLabelDone[chenKey] = true;
+                chenCtx.fillStyle = "rgba(148, 163, 184, 0.85)";
+                chenCtx.font = "11px Consolas, monospace";
+                chenCtx.textAlign = "left";
+                chenCtx.textBaseline = "middle";
+                chenCtx.fillText(pipe.label, pipe.x + 8, (pipe.y1 + pipe.y2) / 2);
+            });
+
+            /* 数据光点 */
+            chenFlow.forEach(function (f) {
+                var pipe = chenPipes[f.pipe];
+                if (!pipe) return;
+                var chenY = pipe.y1 + (pipe.y2 - pipe.y1) * f.t;
+                var chenGrad = chenCtx.createRadialGradient(pipe.x, chenY, 0, pipe.x, chenY, 9);
+                chenGrad.addColorStop(0, "hsla(" + f.hue + ", 95%, 75%, 0.95)");
+                chenGrad.addColorStop(1, "hsla(" + f.hue + ", 95%, 60%, 0)");
+                chenCtx.fillStyle = chenGrad;
+                chenCtx.beginPath();
+                chenCtx.arc(pipe.x, chenY, 9, 0, Math.PI * 2);
+                chenCtx.fill();
+                chenCtx.fillStyle = "hsla(" + f.hue + ", 95%, 85%, 1)";
+                chenCtx.beginPath();
+                chenCtx.arc(pipe.x, chenY, 2.6, 0, Math.PI * 2);
+                chenCtx.fill();
+            });
+
+            /* 节点 */
+            chenRects.forEach(function (node) {
+                var chenHue = 0;
+                CHEN_LAYERS.forEach(function (layer) {
+                    if (layer.name === node._layer) chenHue = layer.hue;
+                });
+                var chenGrad = chenCtx.createLinearGradient(node._x, node._y, node._x, node._y + node._h);
+                chenGrad.addColorStop(0, "hsla(" + chenHue + ", 60%, 30%, 0.95)");
+                chenGrad.addColorStop(1, "hsla(" + chenHue + ", 55%, 22%, 0.95)");
+                chenRoundRect(node._x, node._y, node._w, node._h, 10);
+                chenCtx.fillStyle = chenGrad;
+                chenCtx.fill();
+                chenCtx.strokeStyle = "hsla(" + chenHue + ", 85%, 70%, 0.75)";
+                chenCtx.lineWidth = 1.2;
+                chenCtx.stroke();
+
+                if (node === chenHoverNode) {
+                    chenCtx.shadowColor = "hsla(" + chenHue + ", 95%, 70%, 0.9)";
+                    chenCtx.shadowBlur = 16;
+                    chenCtx.stroke();
+                    chenCtx.shadowBlur = 0;
+                }
+
+                chenCtx.fillStyle = "#eef4ff";
+                chenCtx.font = "600 12.5px 'Microsoft YaHei', sans-serif";
+                chenCtx.textAlign = "center";
+                chenCtx.textBaseline = "middle";
+                var chenName = node.name;
+                if (chenName.length > 8) chenName = chenName.slice(0, 8) + "…";
+                chenCtx.fillText(chenName, node._x + node._w / 2, node._y + node._h / 2);
+            });
+
+            /* 标题 */
+            chenCtx.fillStyle = "rgba(226, 232, 240, 0.9)";
+            chenCtx.font = "700 15px 'Microsoft YaHei', sans-serif";
+            chenCtx.textAlign = "center";
+            chenCtx.fillText("电商系统架构图（分层 + 微服务）", chenW / 2, 14);
+        }
+
+        /* ================= 动画循环 ================= */
+        function chenLoop() {
+            requestAnimationFrame(chenLoop);
+            if (chenPaused) return;
+            var chenStep = chenSpeedLevel;
+            chenDashOffset += 0.8 * chenStep;
+            chenFlow.forEach(function (f) {
+                f.t += f.speed * chenStep;
+                if (f.t > 1) f.t -= 1;
+            });
+            chenDraw();
+        }
+
+        /* ================= 悬停提示 ================= */
+        var chenHoverNode = null;
+
+        chenCanvas.addEventListener("mousemove", function (e) {
+            var rect = chenCanvas.getBoundingClientRect();
+            var chenX = e.clientX - rect.left;
+            var chenY = e.clientY - rect.top;
+            chenHoverNode = null;
+            for (var i = 0; i < chenRects.length; i++) {
+                var n = chenRects[i];
+                if (chenX >= n._x && chenX <= n._x + n._w && chenY >= n._y && chenY <= n._y + n._h) {
+                    chenHoverNode = n;
+                    break;
+                }
+            }
+            if (chenHoverNode) {
+                chenTooltip.innerHTML = "<b>" + chenHoverNode.name +
+                    "（" + chenHoverNode._layer + "）</b>" + chenHoverNode.desc;
+                chenTooltip.style.opacity = "1";
+                var chenTipX = chenX + 16;
+                var chenTipY = chenY + 16;
+                if (chenTipX > chenW - 270) chenTipX = chenX - 270;
+                chenTooltip.style.left = chenTipX + "px";
+                chenTooltip.style.top = chenTipY + "px";
+                chenCanvas.style.cursor = "pointer";
+            } else {
+                chenTooltip.style.opacity = "0";
+                chenCanvas.style.cursor = "crosshair";
+            }
+        });
+
+        chenCanvas.addEventListener("mouseleave", function () {
+            chenHoverNode = null;
+            chenTooltip.style.opacity = "0";
+        });
+
+        /* ================= 控件 ================= */
+        document.getElementById("chen_pause_btn").addEventListener("click", function () {
+            chenPaused = !chenPaused;
+            this.textContent = chenPaused ? "继续动画" : "暂停动画";
+            document.getElementById("chen_state_text").textContent = chenPaused ? "已暂停" : "动画运行中";
+        });
+
+        document.getElementById("chen_speed_btn").addEventListener("click", function () {
+            chenSpeedIdx = (chenSpeedIdx + 1) % 3;
+            chenSpeedLevel = chenSpeedIdx + 1;
+            this.textContent = "流速：" + chenSpeedNames[chenSpeedIdx];
+        });
+
+        window.addEventListener("resize", chenLayout);
+
+        /* ================= 启动 ================= */
+        chenLayout();
+        chenDraw();
+        requestAnimationFrame(chenLoop);
+    </script>
+</body>
+</html>

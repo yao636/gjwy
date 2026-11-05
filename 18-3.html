@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+姓名：陈弘毅
+日期：2026-11-05
+功能名称：基于知识库的智能客服系统架构图（SVG 格式，含科研方向标注，支持导出 .svg）
+    -->
+    <title>18-3 知识库智能客服系统架构图（SVG）</title>
+    <style>
+        :root {
+            --chen_bg: #eef2ff;
+            --chen_surface: #ffffff;
+            --chen_text: #1e293b;
+            --chen_muted: #64748b;
+            --chen_primary: #4f46e5;
+            --chen_primary_soft: #e0e7ff;
+            --chen_border: #dbe3f2;
+            --chen_radius: 14px;
+            --chen_shadow: 0 18px 45px -28px rgba(30, 64, 175, 0.55);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(99, 102, 241, 0.16), transparent 32rem),
+                radial-gradient(circle at 90% 10%, rgba(225, 29, 72, 0.1), transparent 28rem),
+                var(--chen_bg);
+            color: var(--chen_text);
+            line-height: 1.65;
+            min-height: 100vh;
+        }
+
+        .chen_page { max-width: 1160px; margin: 0 auto; padding: 32px 22px 40px; }
+
+        .chen_header {
+            background: linear-gradient(135deg, #312e81, #7c3aed 55%, #e11d48);
+            color: #fff;
+            border-radius: var(--chen_radius);
+            padding: 24px 28px;
+            box-shadow: var(--chen_shadow);
+        }
+        .chen_header h1 { font-size: 22px; letter-spacing: .5px; }
+        .chen_header p { font-size: 13.5px; opacity: .92; margin-top: 3px; }
+        .chen_header code { font-family: Consolas, monospace; background: rgba(255,255,255,.16); padding: 1px 6px; border-radius: 5px; }
+
+        .chen_card {
+            background: var(--chen_surface);
+            border: 1px solid var(--chen_border);
+            border-radius: var(--chen_radius);
+            box-shadow: var(--chen_shadow);
+            padding: 20px 24px;
+            margin-top: 18px;
+        }
+        .chen_card_title {
+            font-size: 16px; color: var(--chen_primary);
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .chen_card_note { font-size: 12.5px; color: var(--chen_muted); margin-bottom: 14px; }
+
+        /* ---------- SVG 容器 ---------- */
+        .chen_svg_wrap {
+            border: 1.5px solid var(--chen_border);
+            border-radius: 12px;
+            background: #f8faff;
+            padding: 8px;
+            overflow-x: auto;
+        }
+        .chen_svg_wrap svg { display: block; width: 100%; height: auto; min-width: 820px; }
+
+        /* SVG 内部交互样式 */
+        .chen_node { cursor: help; }
+        .chen_node rect { transition: stroke-width .15s; }
+        .chen_node:hover rect { stroke-width: 2.5; filter: drop-shadow(0 4px 9px rgba(30, 41, 59, .25)); }
+        .chen_flow { stroke-dasharray: 7 5; animation: chen_dashmove 1.1s linear infinite; }
+        @keyframes chen_dashmove { to { stroke-dashoffset: -12; } }
+        .chen_research rect { transition: transform .18s, filter .18s; }
+        .chen_research:hover rect { transform: translateY(-3px); filter: drop-shadow(0 8px 14px rgba(225, 29, 72, .25)); }
+
+        /* ---------- 按钮 ---------- */
+        .chen_btn_row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; align-items: center; }
+        .chen_btn {
+            padding: 9px 18px;
+            border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #4f46e5, #6d28d9);
+            color: #fff;
+            font-size: 14px; font-weight: 600; font-family: inherit;
+            cursor: pointer;
+            display: inline-flex; align-items: center; gap: 7px;
+            transition: transform .15s, box-shadow .15s;
+        }
+        .chen_btn:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -10px rgba(79,70,229,.7); }
+        .chen_btn.chen_ghost { background: #fff; color: var(--chen_primary); border: 1px solid #c7d2fe; }
+        .chen_btn.chen_ghost:hover { background: var(--chen_primary_soft); }
+        .chen_status { font-size: 13px; color: var(--chen_muted); font-family: Consolas, monospace; }
+
+        /* ---------- 图例与说明 ---------- */
+        .chen_legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; font-size: 12.5px; color: var(--chen_muted); }
+        .chen_legend span { display: inline-flex; align-items: center; gap: 6px; }
+        .chen_legend i { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+
+        .chen_layers_desc { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 10px; }
+        .chen_layer_desc {
+            background: #f8faff;
+            border: 1px solid var(--chen_border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 12.5px;
+            color: var(--chen_text_soft);
+        }
+        .chen_layer_desc b { color: var(--chen_primary); }
+
+        .chen_footer {
+            margin-top: 28px; text-align: center;
+            color: var(--chen_muted); font-size: 13px;
+            padding: 14px 0 4px;
+            border-top: 1px solid var(--chen_border);
+        }
+    </style>
+</head>
+<body>
+    <div class="chen_page">
+        <header class="chen_header">
+            <h1>基于知识库的智能客服系统架构图（SVG）</h1>
+            <p>知识库问答 = 检索增强生成（RAG）· 图为矢量 <code>SVG</code> 格式，可无损缩放、可一键导出 <code>.svg</code> 文件，右侧标注四个科研方向</p>
+        </header>
+
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-dingdan"></span>系统架构图</h2>
+            <p class="chen_card_note">悬停任意节点可查看说明（鼠标变为问号）；流动虚线表示数据流转方向；红色虚线框为本研究拟解决的问题。</p>
+
+            <div class="chen_svg_wrap">
+                <svg id="chen_svg" viewBox="0 0 1100 880" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="基于知识库的智能客服系统架构图">
+                    <defs>
+                        <marker id="chen_arrow_gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                            <path d="M0,0 L10,5 L0,10 Z" fill="#64748b"></path>
+                        </marker>
+                        <marker id="chen_arrow_blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                            <path d="M0,0 L10,5 L0,10 Z" fill="#0284c7"></path>
+                        </marker>
+                        <marker id="chen_arrow_violet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                            <path d="M0,0 L10,5 L0,10 Z" fill="#7c3aed"></path>
+                        </marker>
+                        <marker id="chen_arrow_green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                            <path d="M0,0 L10,5 L0,10 Z" fill="#059669"></path>
+                        </marker>
+                    </defs>
+
+                    <rect x="0" y="0" width="1100" height="880" fill="#f8faff"></rect>
+                    <text x="550" y="36" text-anchor="middle" font-size="19" font-weight="700" fill="#1e293b">基于知识库的智能客服系统架构（科研方向）</text>
+
+                    <!-- ===== 渠道层 ===== -->
+                    <g>
+                        <rect x="30" y="60" width="1040" height="88" rx="14" fill="rgba(14,165,233,0.08)" stroke="rgba(14,165,233,0.45)"></rect>
+                        <text x="46" y="86" font-size="14" font-weight="700" fill="#0284c7">渠道层</text>
+                        <g class="chen_node"><title>网页客服窗口：嵌入官网右下角的在线聊天组件</title>
+                            <rect x="67" y="98" width="228" height="40" rx="10" fill="#ffffff" stroke="#0ea5e9" stroke-width="1.5"></rect>
+                            <text x="181" y="123" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1e293b">网页客服窗口</text></g>
+                        <g class="chen_node"><title>App 内嵌客服：原生应用内的客服模块</title>
+                            <rect x="313" y="98" width="228" height="40" rx="10" fill="#ffffff" stroke="#0ea5e9" stroke-width="1.5"></rect>
+                            <text x="427" y="123" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1e293b">App 内嵌客服</text></g>
+                        <g class="chen_node"><title>微信 / 企业微信：公众号与小程序客服入口</title>
+                            <rect x="559" y="98" width="228" height="40" rx="10" fill="#ffffff" stroke="#0ea5e9" stroke-width="1.5"></rect>
+                            <text x="673" y="123" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1e293b">微信 / 企业微信</text></g>
+                        <g class="chen_node"><title>电话语音：接入 ASR 语音识别与 TTS 语音合成</title>
+                            <rect x="805" y="98" width="228" height="40" rx="10" fill="#ffffff" stroke="#0ea5e9" stroke-width="1.5"></rect>
+                            <text x="919" y="123" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1e293b">电话语音（ASR·TTS）</text></g>
+                    </g>
+
+                    <line class="chen_flow" x1="550" y1="150" x2="550" y2="180" stroke="#64748b" stroke-width="1.6" marker-end="url(#chen_arrow_gray)"></line>
+                    <text x="566" y="170" font-size="12" fill="#64748b">用户咨询（文本 / 语音）</text>
+
+                    <!-- ===== 接入与预处理层 ===== -->
+                    <g>
+                        <rect x="30" y="184" width="1040" height="88" rx="14" fill="rgba(99,102,241,0.08)" stroke="rgba(99,102,241,0.45)"></rect>
+                        <text x="46" y="210" font-size="14" font-weight="700" fill="#4f46e5">接入与预处理层</text>
+                        <g class="chen_node"><title>会话管理：维护多轮对话上下文与用户会话状态</title>
+                            <rect x="67" y="222" width="228" height="40" rx="10" fill="#ffffff" stroke="#6366f1" stroke-width="1.5"></rect>
+                            <text x="181" y="247" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1e293b">会话管理 · 多轮上下文</text></g>
+                        <g class="chen_node"><title>敏感词过滤：合规校验、隐私脱敏与攻击拦截</title>
+                            <rect x="313" y="222" width="228" height="40" rx="10" fill="#ffffff" stroke="#6366f1" stroke-width="1.5"></rect>
+                            <text x="427" y="247" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1e293b">敏感词与合规过滤</text></g>
+                        <g class="chen_node"><title>语音识别 ASR：把用户语音转成文本</title>
+                            <rect x="559" y="222" width="228" height="40" rx="10" fill="#ffffff" stroke="#6366f1" stroke-width="1.5"></rect>
+                            <text x="673" y="247" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1e293b">语音识别 ASR</text></g>
+                        <g class="chen_node"><title>语音合成 TTS：把回答文本转成语音播报</title>
+                            <rect x="805" y="222" width="228" height="40" rx="10" fill="#ffffff" stroke="#6366f1" stroke-width="1.5"></rect>
+                            <text x="919" y="247" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1e293b">语音合成 TTS</text></g>
+                    </g>
+
+                    <line class="chen_flow" x1="550" y1="274" x2="550" y2="304" stroke="#64748b" stroke-width="1.6" marker-end="url(#chen_arrow_gray)"></line>
+                    <text x="566" y="294" font-size="12" fill="#64748b">结构化 Query · 会话上下文</text>
+
+                    <!-- ===== 智能核心层（RAG） ===== -->
+                    <g>
+                        <rect x="30" y="308" width="1040" height="180" rx="14" fill="rgba(124,58,237,0.07)" stroke="rgba(124,58,237,0.45)"></rect>
+                        <text x="46" y="334" font-size="14" font-weight="700" fill="#7c3aed">智能核心层 · 检索增强生成（RAG）管道</text>
+
+                        <g class="chen_node"><title>用户问题：当前提问与多轮上下文拼接</title>
+                            <rect x="70" y="348" width="176" height="54" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"></rect>
+                            <text x="158" y="370" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1e293b">用户问题</text>
+                            <text x="158" y="389" text-anchor="middle" font-size="11" fill="#64748b">（Query）</text></g>
+                        <g class="chen_node"><title>意图识别与 Query 改写：判定业务意图，补全指代、纠正错别字</title>
+                            <rect x="266" y="348" width="176" height="54" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"></rect>
+                            <text x="354" y="370" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1e293b">意图识别</text>
+                            <text x="354" y="389" text-anchor="middle" font-size="11" fill="#64748b">Query 改写</text></g>
+                        <g class="chen_node"><title>向量检索：Embedding 后在知识库中召回 Top-K 相关片段，可混合 BM25</title>
+                            <rect x="462" y="348" width="176" height="54" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"></rect>
+                            <text x="550" y="370" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1e293b">向量检索</text>
+                            <text x="550" y="389" text-anchor="middle" font-size="11" fill="#64748b">Top-K 召回</text></g>
+                        <g class="chen_node"><title>重排序 Rerank：对召回片段按相关性精排，取最可靠的几段</title>
+                            <rect x="658" y="348" width="176" height="54" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"></rect>
+                            <text x="746" y="370" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1e293b">重排序</text>
+                            <text x="746" y="389" text-anchor="middle" font-size="11" fill="#64748b">Rerank 精排</text></g>
+                        <g class="chen_node"><title>大模型生成：将知识片段填入 Prompt 模板，生成带引用的回答</title>
+                            <rect x="854" y="348" width="176" height="54" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"></rect>
+                            <text x="942" y="370" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1e293b">大模型生成</text>
+                            <text x="942" y="389" text-anchor="middle" font-size="11" fill="#64748b">Prompt + 引用</text></g>
+
+                        <line x1="248" y1="375" x2="262" y2="375" stroke="#64748b" stroke-width="1.6" marker-end="url(#chen_arrow_gray)"></line>
+                        <line x1="444" y1="375" x2="458" y2="375" stroke="#64748b" stroke-width="1.6" marker-end="url(#chen_arrow_gray)"></line>
+                        <line x1="640" y1="375" x2="654" y2="375" stroke="#64748b" stroke-width="1.6" marker-end="url(#chen_arrow_gray)"></line>
+                        <line x1="836" y1="375" x2="850" y2="375" stroke="#64748b" stroke-width="1.6" marker-end="url(#chen_arrow_gray)"></line>
+
+                        <text x="550" y="440" text-anchor="middle" font-size="12" fill="#7c3aed">多轮对话状态跟踪 · 幻觉检测 · 低置信度自动转人工</text>
+                    </g>
+
+                    <!-- 核心 ⇄ 知识库 双向箭头 -->
+                    <line x1="420" y1="492" x2="420" y2="520" stroke="#059669" stroke-width="1.6" marker-end="url(#chen_arrow_green)"></line>
+                    <text x="432" y="510" font-size="12" fill="#64748b">反馈 · 新增问答对回流</text>
+                    <line class="chen_flow" x1="660" y1="520" x2="660" y2="492" stroke="#059669" stroke-width="1.6" marker-end="url(#chen_arrow_green)"></line>
+                    <text x="672" y="510" font-size="12" fill="#64748b">Top-K 知识片段召回</text>
+
+                    <!-- ===== 知识库与数据层 ===== -->
+                    <g>
+                        <rect x="30" y="524" width="1040" height="150" rx="14" fill="rgba(5,150,105,0.07)" stroke="rgba(5,150,105,0.45)"></rect>
+                        <text x="46" y="550" font-size="14" font-weight="700" fill="#059669">知识库构建与数据层</text>
+
+                        <g class="chen_node"><title>文档解析：产品手册、FAQ、工单等 PDF/Word/网页 内容抽取</title>
+                            <rect x="60" y="562" width="150" height="40" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.5"></rect>
+                            <text x="135" y="587" text-anchor="middle" font-size="12" font-weight="600" fill="#1e293b">文档解析 / OCR</text></g>
+                        <g class="chen_node"><title>清洗与切分：去噪、按语义段落切块（Chunking）</title>
+                            <rect x="224" y="562" width="150" height="40" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.5"></rect>
+                            <text x="299" y="587" text-anchor="middle" font-size="12" font-weight="600" fill="#1e293b">清洗与切分</text></g>
+                        <g class="chen_node"><title>向量化：用 Embedding 模型把文本块转为语义向量</title>
+                            <rect x="388" y="562" width="150" height="40" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.5"></rect>
+                            <text x="463" y="587" text-anchor="middle" font-size="12" font-weight="600" fill="#1e293b">向量化 Embedding</text></g>
+                        <g class="chen_node"><title>入库：写入向量数据库与全文索引，建立元数据映射</title>
+                            <rect x="552" y="562" width="150" height="40" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.5"></rect>
+                            <text x="627" y="587" text-anchor="middle" font-size="12" font-weight="600" fill="#1e293b">向量库 / ES 入库</text></g>
+                        <g class="chen_node"><title>人工审核：抽检知识准确性，标注优质问答对</title>
+                            <rect x="716" y="562" width="150" height="40" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.5"></rect>
+                            <text x="791" y="587" text-anchor="middle" font-size="12" font-weight="600" fill="#1e293b">人工审核标注</text></g>
+                        <g class="chen_node"><title>反馈回流：把未解决问题与人工修正结果更新回知识库</title>
+                            <rect x="880" y="562" width="150" height="40" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.5"></rect>
+                            <text x="955" y="587" text-anchor="middle" font-size="12" font-weight="600" fill="#1e293b">反馈回流更新</text></g>
+
+                        <line x1="212" y1="582" x2="220" y2="582" stroke="#64748b" stroke-width="1.5" marker-end="url(#chen_arrow_gray)"></line>
+                        <line x1="376" y1="582" x2="384" y2="582" stroke="#64748b" stroke-width="1.5" marker-end="url(#chen_arrow_gray)"></line>
+                        <line x1="540" y1="582" x2="548" y2="582" stroke="#64748b" stroke-width="1.5" marker-end="url(#chen_arrow_gray)"></line>
+                        <line x1="704" y1="582" x2="712" y2="582" stroke="#64748b" stroke-width="1.5" marker-end="url(#chen_arrow_gray)"></line>
+                        <line x1="868" y1="582" x2="876" y2="582" stroke="#64748b" stroke-width="1.5" marker-end="url(#chen_arrow_gray)"></line>
+
+                        <g class="chen_node"><title>向量数据库：Milvus / FAISS，支持近似最近邻检索</title>
+                            <rect x="64" y="618" width="228" height="40" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.5"></rect>
+                            <text x="178" y="643" text-anchor="middle" font-size="12" font-weight="600" fill="#1e293b">向量数据库（Milvus / FAISS）</text></g>
+                        <g class="chen_node"><title>MySQL 业务库：用户、订单、工单等结构化数据</title>
+                            <rect x="312" y="618" width="228" height="40" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.5"></rect>
+                            <text x="426" y="643" text-anchor="middle" font-size="12" font-weight="600" fill="#1e293b">MySQL 业务库</text></g>
+                        <g class="chen_node"><title>Elasticsearch：关键词全文检索，与向量检索互补</title>
+                            <rect x="560" y="618" width="228" height="40" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.5"></rect>
+                            <text x="674" y="643" text-anchor="middle" font-size="12" font-weight="600" fill="#1e293b">Elasticsearch 索引</text></g>
+                        <g class="chen_node"><title>对话日志：记录问答、满意度评分，用于分析与评测</title>
+                            <rect x="808" y="618" width="228" height="40" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.5"></rect>
+                            <text x="922" y="643" text-anchor="middle" font-size="12" font-weight="600" fill="#1e293b">对话日志与埋点</text></g>
+                    </g>
+
+                    <line class="chen_flow" x1="550" y1="676" x2="550" y2="706" stroke="#64748b" stroke-width="1.6" marker-end="url(#chen_arrow_gray)"></line>
+                    <text x="566" y="696" font-size="12" fill="#64748b">语料 · 评测集构建</text>
+
+                    <!-- ===== 科研方向 ===== -->
+                    <g>
+                        <rect x="30" y="710" width="1040" height="132" rx="14" fill="rgba(225,29,72,0.05)" stroke="rgba(225,29,72,0.4)"></rect>
+                        <text x="46" y="736" font-size="14" font-weight="700" fill="#e11d48">科研方向 · 检索增强问答的效果优化与评测</text>
+
+                        <g class="chen_research"><title>研究点①：比较 BM25+向量混合检索与不同重排序策略对回答质量的影响</title>
+                            <rect x="74" y="746" width="236" height="84" rx="10" fill="#ffffff" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="6 4"></rect>
+                            <text x="90" y="770" font-size="12.5" font-weight="700" fill="#be123c">研究点① 检索增强优化</text>
+                            <text x="90" y="790" font-size="11" fill="#64748b">混合检索（BM25 + 向量）</text>
+                            <text x="90" y="807" font-size="11" fill="#64748b">与重排序策略对比实验</text></g>
+                        <g class="chen_research"><title>研究点②：通过引用溯源与忠实度约束降低大模型幻觉</title>
+                            <rect x="324" y="746" width="236" height="84" rx="10" fill="#ffffff" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="6 4"></rect>
+                            <text x="340" y="770" font-size="12.5" font-weight="700" fill="#be123c">研究点② 幻觉抑制</text>
+                            <text x="340" y="790" font-size="11" fill="#64748b">引用溯源与忠实度约束</text>
+                            <text x="340" y="807" font-size="11" fill="#64748b">降低生成式错误率</text></g>
+                        <g class="chen_research"><title>研究点③：用 LoRA / SFT 小样本微调让通用模型适配领域话术</title>
+                            <rect x="574" y="746" width="236" height="84" rx="10" fill="#ffffff" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="6 4"></rect>
+                            <text x="590" y="770" font-size="12.5" font-weight="700" fill="#be123c">研究点③ 领域小样本适配</text>
+                            <text x="590" y="790" font-size="11" fill="#64748b">LoRA / SFT 高效微调</text>
+                            <text x="590" y="807" font-size="11" fill="#64748b">少量标注数据快速上线</text></g>
+                        <g class="chen_research"><title>研究点④：构建 RAGAS 自动评测与在线 A/B 实验体系</title>
+                            <rect x="824" y="746" width="236" height="84" rx="10" fill="#ffffff" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="6 4"></rect>
+                            <text x="840" y="770" font-size="12.5" font-weight="700" fill="#be123c">研究点④ 自动评测体系</text>
+                            <text x="840" y="790" font-size="11" fill="#64748b">RAGAS：忠实度 · 相关性</text>
+                            <text x="840" y="807" font-size="11" fill="#64748b">离线评测 + 在线 A/B</text></g>
+                    </g>
+
+                    <!-- 闭环反馈：科研结论反哺智能核心层 -->
+                    <path d="M 30 776 C 10 776 10 740 10 700 L 10 440 C 10 400 14 396 30 396" fill="none" stroke="#7c3aed" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#chen_arrow_violet)"></path>
+                    <text x="24" y="610" font-size="11" fill="#e11d48" transform="rotate(-90 24 610)" text-anchor="middle">实验结论反哺 · 闭环优化</text>
+                </svg>
+            </div>
+
+            <div class="chen_btn_row">
+                <button class="chen_btn" id="chen_download_btn" type="button">
+                    <span class="iconfont icon-fenxiang"></span>导出 SVG 文件
+                </button>
+                <span class="chen_status" id="chen_status">架构图为矢量 SVG：缩放不失真，可直接插入论文 / 报告</span>
+            </div>
+
+            <div class="chen_legend">
+                <span><i style="background:rgba(14,165,233,.25);"></i>渠道层</span>
+                <span><i style="background:rgba(99,102,241,.25);"></i>接入与预处理层</span>
+                <span><i style="background:rgba(124,58,237,.2);"></i>智能核心层（RAG）</span>
+                <span><i style="background:rgba(5,150,105,.2);"></i>知识库与数据层</span>
+                <span><i style="background:rgba(225,29,72,.15);border-style:dashed;"></i>科研方向</span>
+                <span><i style="background:#7dd3fc;border-radius:50%;"></i>流动虚线 = 数据流转方向</span>
+            </div>
+        </section>
+
+        <section class="chen_card">
+            <h2 class="chen_card_title"><span class="iconfont icon-xiaoxi"></span>分层职责说明</h2>
+            <div class="chen_layers_desc">
+                <div class="chen_layer_desc"><b>渠道层：</b>覆盖网页、App、微信、电话四类入口，语音渠道经 ASR/TTS 与文本渠道统一。</div>
+                <div class="chen_layer_desc"><b>接入与预处理层：</b>会话与多轮上下文管理、敏感词合规过滤，为下游提供结构化 Query。</div>
+                <div class="chen_layer_desc"><b>智能核心层：</b>RAG 管道——意图识别与 Query 改写、向量检索 Top-K 召回、Rerank 精排、大模型生成带引用的回答；低置信度自动转人工。</div>
+                <div class="chen_layer_desc"><b>知识库构建与数据层：</b>文档解析→切分→向量化→入库的流水线，配合人工审核与反馈回流；存储侧为向量库、MySQL、ES 与对话日志。</div>
+                <div class="chen_layer_desc"><b>科研方向：</b>检索增强优化、幻觉抑制、领域小样本适配（LoRA/SFT）与 RAGAS 自动评测体系，实验结论经左侧闭环通道反哺核心层。</div>
+            </div>
+        </section>
+
+        <footer class="chen_footer">学号 24001010722 &nbsp;|&nbsp; 姓名 陈弘毅</footer>
+    </div>
+
+    <script>
+        "use strict";
+
+        /* 导出 SVG：把内联 <svg> 序列化后保存为独立 .svg 文件 */
+        document.getElementById("chen_download_btn").addEventListener("click", function () {
+            var chenSvg = document.getElementById("chen_svg");
+            var chenClone = chenSvg.cloneNode(true);
+
+            /* 补充 xmlns 并注入页面中的动画样式，保证导出后仍可独立打开 */
+            chenClone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+            var chenStyle = document.createElementNS("http://www.w3.org/2000/svg", "style");
+            chenStyle.textContent =
+                ".chen_node{cursor:help}" +
+                ".chen_node:hover rect{stroke-width:2.5}" +
+                ".chen_flow{stroke-dasharray:7 5;animation:chen_dashmove 1.1s linear infinite}" +
+                "@keyframes chen_dashmove{to{stroke-dashoffset:-12}}" +
+                "text{font-family:'Microsoft YaHei','Noto Sans SC',sans-serif}";
+            chenClone.insertBefore(chenStyle, chenClone.firstChild);
+
+            var chenSource = '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(chenClone);
+            var chenBlob = new Blob([chenSource], { type: "image/svg+xml;charset=utf-8" });
+            var chenUrl = URL.createObjectURL(chenBlob);
+
+            var chenLink = document.createElement("a");
+            chenLink.href = chenUrl;
+            chenLink.download = "知识库智能客服系统架构图.svg";
+            document.body.appendChild(chenLink);
+            chenLink.click();
+            document.body.removeChild(chenLink);
+            URL.revokeObjectURL(chenUrl);
+
+            document.getElementById("chen_status").textContent = "已导出：知识库智能客服系统架构图.svg";
+        });
+    </script>
+</body>
+</html>
